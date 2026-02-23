@@ -19,7 +19,6 @@ generator prismabox {
 
 datasource db {
   provider = "sqlite"
-  url      = "file:./dev.db"
 }
 
 model Photo {
