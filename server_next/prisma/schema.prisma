@@ -1,0 +1,57 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+generator prismabox {
+  provider = "prismabox"
+  typeboxImportDependencyName = "elysia"
+  typeboxImportVariableName = "t"
+  inputModel = true
+  output   = "../src/generated/prismabox"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Photo {
+  id           Int       @id @default(autoincrement())
+  uid          String    @unique @default(cuid())
+  title        String    @unique
+  src          String
+  description  String?
+  location     String?
+  shootTime    DateTime   @default(now()) // 照片拍摄日期
+  createTime   DateTime   @default(now())
+  updateTime   DateTime?   @updatedAt
+  exif         Json?
+  author       String?
+  isPublic     Boolean   @default(false)
+  isSelected   Boolean   @default(false)  // 是否精选
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  uid          String    @unique @default(cuid())
+  name         String    @unique
+  nickname     String?   @default("Nameless User")
+  email        String    @unique
+  password     String
+  permissions  Json?
+}
+
+model VerifyCode {
+  id           Int       @id @default(autoincrement())
+  uid          String    @unique @default(cuid())
+  email        String
+  code         String
+  createTime   DateTime   @default(now())
+}

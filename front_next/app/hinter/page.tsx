@@ -1,0 +1,5 @@
+"use client";
+
+export default function HinterPage() {
+  return <div className="hinter-page-main h-full"></div>;
+}
