@@ -5,6 +5,8 @@ import { Button, Card, Header, Input, toast } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { signToken } from "../api";
+import { useSetAtom } from "jotai";
+import { tokenAtom, userAtom } from "../store";
 
 interface RegisterFormData {
   email: string;
@@ -12,6 +14,9 @@ interface RegisterFormData {
 }
 
 export default function Basic() {
+  const setToken = useSetAtom(tokenAtom);
+  const setUser = useSetAtom(userAtom);
+
   const router = useRouter();
 
   const defaultUser: RegisterFormData = {
@@ -33,7 +38,9 @@ export default function Basic() {
         throw new Error("登录失败: 未收到令牌");
       }
 
-      localStorage.setItem("token", res.token);
+      setToken(res.token);
+      setUser(res.user);
+
       toast.success("登录成功！正在跳转到管理页面...");
 
       setTimeout(() => {

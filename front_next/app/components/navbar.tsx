@@ -1,11 +1,11 @@
 import { Avatar, Dropdown, Label, toast } from "@heroui/react";
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { verifyToken } from "../api";
-import { UserPlain } from "../typings";
-import { useRouter } from "next/navigation";
 import { useAtom } from "jotai";
-import { userAtom } from "../store";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { verifyToken } from "../api";
+import { tokenAtom, userAtom } from "../store";
+import { UserPlain } from "../typings";
 
 export interface NavbarProps {
   data: {
@@ -17,10 +17,11 @@ export interface NavbarProps {
 
 export function Navbar({ data }: NavbarProps) {
   const router = useRouter();
+
+  const [token, setToken] = useAtom(tokenAtom);
   const [user, setUser] = useAtom(userAtom);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
     if (token) {
       verifyToken(token)
         .then((data) => {
@@ -28,7 +29,8 @@ export function Navbar({ data }: NavbarProps) {
         })
         .catch((error) => {
           toast.danger(`获取登录信息失败: ${error.message}`);
-          localStorage.removeItem("token");
+          setUser(null);
+          setToken(null);
         });
     }
   }, [])
@@ -61,7 +63,7 @@ export function Navbar({ data }: NavbarProps) {
               switch (key) {
                 case "logout":
                   if (window.confirm("确定要注销登录吗？")) {
-                    localStorage.removeItem("token");
+                    setToken(null);
                     setUser(null);
                     router.push("/login");
                   }

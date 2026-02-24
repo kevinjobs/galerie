@@ -4,6 +4,7 @@ import {
   UserCreate,
   UserUpdate,
 } from "../typings";
+
 export const BASE_URL = "http://localhost:3000";
 
 export const genSrc = (str?: string) => {
@@ -16,7 +17,7 @@ const _fetch = async (url: string, options: RequestInit = {}) => {
     headers: {
       ...options.headers,
       "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
+      Authorization: `Bearer ${localStorage.getItem("token")?.replaceAll('"', "")}`,
     },
   });
   return resp;
@@ -126,7 +127,7 @@ export const uploadPhoto = async (file: File): Promise<{ src: string }> => {
     method: "POST",
     body: form,
     headers: {
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
+      Authorization: `Bearer ${localStorage.getItem("token")?.replaceAll('"', "")}`,
     },
   });
 

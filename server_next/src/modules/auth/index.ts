@@ -24,7 +24,7 @@ const auth = new Elysia({ name: "auth", prefix: "/auth" })
       }
 
       const token = await AuthTool.sign({ ...user, password: null });
-      return { token };
+      return { token, user: { ...user, password: null } };
     },
     {
       body: t.Object({
@@ -33,6 +33,7 @@ const auth = new Elysia({ name: "auth", prefix: "/auth" })
       }),
       response: t.Object({
         token: t.String(),
+        user: t.Omit(UserPlain, ["password"]),
       }),
     },
   )
