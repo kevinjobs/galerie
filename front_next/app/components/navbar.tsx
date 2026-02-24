@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { verifyToken } from "../api";
 import { UserPlain } from "../typings";
 import { useRouter } from "next/navigation";
+import { useAtom } from "jotai";
+import { userAtom } from "../store";
 
 export interface NavbarProps {
   data: {
@@ -15,7 +17,7 @@ export interface NavbarProps {
 
 export function Navbar({ data }: NavbarProps) {
   const router = useRouter();
-  const [user, setUser] = useState<UserPlain | null>(null);
+  const [user, setUser] = useAtom(userAtom);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
