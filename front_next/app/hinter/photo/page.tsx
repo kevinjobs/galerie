@@ -1,11 +1,13 @@
 "use client";
 
 import { getPhotoLists } from "@/app/api";
-import { Plus, ArrowsRotateLeft } from "@gravity-ui/icons";
+import { ArrowsRotateLeft, Plus } from "@gravity-ui/icons";
 import { Button, ButtonGroup, toast } from "@heroui/react";
-import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { BrowserView, MobileView } from "react-device-detect";
 import PhotoLists from "./lists";
+import { MobilePhotoLists } from "./mobile-lists";
 
 export default function PhotoPage() {
   const router = useRouter();
@@ -41,7 +43,8 @@ export default function PhotoPage() {
         </ButtonGroup>
       </header>
       <main>
-        {data?.lists && <PhotoLists lists={data.lists} onRefresh={refetch} />}
+        <BrowserView>{data?.lists && <PhotoLists lists={data.lists} onRefresh={refetch} />}</BrowserView>
+        <MobileView className="px-8">{data?.lists && <MobilePhotoLists photos={data.lists} onRefresh={refetch} />}</MobileView>
       </main>
     </div>
   );
