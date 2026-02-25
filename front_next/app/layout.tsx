@@ -13,9 +13,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark h-full bg-background" data-theme="dark">
-      <body className="h-full pt-16">
+      <body className="h-full">
         <Toast.Provider placement="top" />
-        <header className="h-16 w-full border-b border-border fixed top-0 left-0">
+        <header className="w-full">
           <Navbar
             data={[
               { label: "Gallery", to: "/gallery" },
