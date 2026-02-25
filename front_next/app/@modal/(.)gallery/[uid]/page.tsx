@@ -1,10 +1,11 @@
 "use client";
 import { genSrc, getPhotoByUid } from "@/app/api";
 import { Photo } from "@/app/typings";
-import { Xmark } from "@gravity-ui/icons";
+import { Xmark, CircleInfo } from "@gravity-ui/icons";
 import { Button } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { use, useEffect, useState } from "react";
+import { BrowserView, isMobile, MobileView } from "react-device-detect";
 import PhotoInfo from "./info";
 
 export default function GalleryModal({
@@ -15,6 +16,7 @@ export default function GalleryModal({
   const { uid } = use(params);
 
   const [photo, setPhoto] = useState<Photo | null>(null);
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
 
   useEffect(() => {
     const fetchPhoto = async () => {
@@ -28,8 +30,11 @@ export default function GalleryModal({
   return (
     <div className="fixed top-0 left-0 w-screen h-screen bg-background overflow-hidden">
       <main className="h-full w-full flex">
-        <section className="photo-preview-left w-19/24 relative py-4">
+        <section className="photo-preview-left relative py-4" style={{width: isMobile ? "100%" : "80%"}}>
           <header className="w-full absolute top-2 left-0 text-right">
+            <Button isIconOnly onClick={() => setIsPanelOpen((prev) => !prev)} variant="ghost">
+              <CircleInfo />
+            </Button>
             <Button isIconOnly onClick={() => router.back()} variant="ghost">
               <Xmark />
             </Button>
@@ -40,11 +45,24 @@ export default function GalleryModal({
             alt={photo?.title}
           />
         </section>
-        <section className="photo-preview-right w-5/24 h-full p-1">
-          <div className="border boder-border h-full rounded-2xl p-4 overflow-auto">
-            {photo && <PhotoInfo photo={photo} />}
-          </div>
-        </section>
+        <BrowserView>
+          <section className="photo-preview-right w-5/24 h-full p-1">
+            <div className="border boder-border h-full rounded-2xl p-4 overflow-auto">
+              {photo && <PhotoInfo photo={photo} />}
+            </div>
+          </section>
+        </BrowserView>
+        {
+          isPanelOpen && (
+            <MobileView>
+              <section className="opacity-70 fixed bottom-2 left-1/2 -translate-x-1/2 w-full px-4 bg-background">
+                <div className="border border-border rounded-2xl p-4 overflow-auto">
+                  {photo && <PhotoInfo photo={photo} />}
+                </div>
+              </section>
+            </MobileView>
+          )
+        }
       </main>
       <footer></footer>
     </div>
