@@ -24,7 +24,7 @@ export default function Toolbar({ items }: ToolbarProps) {
       {items.map((item, i) => {
         return (
           <span
-            className="inline-block w-20 text-center py-2 cursor-pointer"
+            className="inline-block w-14 text-center py-2 cursor-pointer"
             data-name={item.name}
             key={item.name}
             onClick={() => {
@@ -37,8 +37,8 @@ export default function Toolbar({ items }: ToolbarProps) {
         );
       })}
       <span
-        className="absolute toolbar-thumb block w-20 h-10 top-1 text-center py-2 bg-foreground rounded-full transition-all transition-duration-300 backdrop-sm opacity-10"
-        style={{ translate: `${offset * 80}px` }}
+        className="absolute toolbar-thumb block w-14 h-10 top-1 text-center py-2 bg-foreground rounded-full transition-all transition-duration-300 backdrop-sm opacity-10"
+        style={{ translate: `${offset * 56}px` }}
       ></span>
     </div>
   );
