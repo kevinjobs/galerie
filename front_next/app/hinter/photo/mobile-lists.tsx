@@ -4,6 +4,7 @@ import dayjs from "dayjs";
 import { Pencil, LockOpen, LockFill, Star, StarFill, TrashBin } from "@gravity-ui/icons";
 import { Button, toast } from "@heroui/react";
 import { updatePhoto } from "@/app/api";
+import { useRouter } from "next/navigation";
 
 export function MobilePhotoLists({ photos, onRefresh }: { photos: Photo[], onRefresh?: () => void }) {
     return (
@@ -18,6 +19,8 @@ export function MobilePhotoLists({ photos, onRefresh }: { photos: Photo[], onRef
 }
 
 function PhotoItem({ photo, onRefresh }: { photo: Photo, onRefresh?: () => void }) {
+    const router = useRouter();
+    
     return (
         <div className="flex items-center gap-4 my-2">
             <div>
@@ -50,7 +53,9 @@ function PhotoItem({ photo, onRefresh }: { photo: Photo, onRefresh?: () => void 
                     }}>
                         {photo.isSelected ? <StarFill className="text-warning" /> : <Star />}
                     </Button>
-                    <Button isIconOnly size="sm" variant="ghost">
+                    <Button isIconOnly size="sm" variant="ghost" onPress={() => {
+                        router.push(`/hinter/photo/${photo.uid}`);
+                    }}>
                         <Pencil className="text-accent" />
                     </Button>
                     <Button isIconOnly size="sm" variant="ghost">

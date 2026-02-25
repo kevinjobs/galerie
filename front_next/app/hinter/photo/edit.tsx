@@ -10,6 +10,7 @@ import { Exif, Photo } from "../../typings";
 import { parseExif } from "../utils";
 import { UploadCloud, UploadOnDoneParams } from "./upload-cloud";
 import { Button } from "@heroui/react";
+import { isMobile } from "react-device-detect";
 
 dayjs.extend(customParseFormat);
 
@@ -161,10 +162,10 @@ export default function EditPanel({ photo, onFinish }: EditPanelProps) {
   }, [exifs]);
 
   return (
-    <div className="w-175 rounded-2xl p-4 m-auto">
+    <div className="rounded-2xl m-auto">
       <form onSubmit={handleSubmit(submit)} className="">
-        <main className="flex">
-          <section className="p-4 flex items-center flex-wrap">
+        <main style={{ display: isMobile ? "block" : "flex" }}>
+          <section className="p-4 flex items-center justify-center flex-wrap">
             <UploadCloud
               onDone={handleUploadDone}
               previewSrc={memoizedPhoto?.src}
@@ -278,8 +279,10 @@ export default function EditPanel({ photo, onFinish }: EditPanelProps) {
               />
             </div>
           </section>
-          <section className="p-4 flex items-center flex-wrap">
-            <h2 className="font-bold mb-2">编辑 EXIF 信息</h2>
+          <section className="p-4 flex items-center justify-center flex-wrap">
+            <header className="w-full">
+              <h2 className="font-bold mb-2 text-left">编辑 EXIF 信息</h2>
+            </header>
             <Controller
               name="focalLength"
               control={control}
@@ -393,7 +396,7 @@ export default function EditPanel({ photo, onFinish }: EditPanelProps) {
           </section>
         </main>
         <footer className="w-full text-center">
-          <Button type="submit" className="bg-(--accent) rounded-full">
+          <Button type="submit" className="bg-(--accent) rounded-full" style={{ width: isMobile ? "80%" : "200px" }}>
             {memoizedPhoto ? "更新" : "添加"}
           </Button>
         </footer>
@@ -413,7 +416,7 @@ function FormItem({
   errors: FieldErrors<FormData>;
 }) {
   return (
-    <div className="my-1 flex items-center h-9" data-name={name}>
+    <div className="my-2 flex items-center h-9" data-name={name}>
       <Label className="mr-2 w-14 inline-block">{label}</Label>
       <span>{children}</span>
     </div>
