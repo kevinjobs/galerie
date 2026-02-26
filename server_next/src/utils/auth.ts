@@ -6,7 +6,7 @@ type UserInfo = typeof UserPlain.static;
 
 export abstract class AuthTool {
   static async sign(payload: object) {
-    const key = await Bun.file("./key.pem").text();
+    const key = process.env.JWT_SECRET || await Bun.file("./key.pem").text();
     return sign(payload, key, { expiresIn: "7d", algorithm: "HS256" });
   }
 
