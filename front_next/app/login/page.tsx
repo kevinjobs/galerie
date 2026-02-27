@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { signToken } from "../api";
 import { useSetAtom } from "jotai";
-import { tokenAtom, userAtom } from "../store";
+import { tokenAtom, userAtom, settingAtom } from "../store";
 
 interface RegisterFormData {
   email: string;
@@ -16,6 +16,7 @@ interface RegisterFormData {
 export default function Basic() {
   const setToken = useSetAtom(tokenAtom);
   const setUser = useSetAtom(userAtom);
+  const setSetting = useSetAtom(settingAtom);
 
   const router = useRouter();
 
@@ -40,6 +41,7 @@ export default function Basic() {
 
       setToken(res.token);
       setUser(res.user);
+      setSetting(res.user.setting);
 
       toast.success("登录成功！正在跳转到管理页面...");
 
