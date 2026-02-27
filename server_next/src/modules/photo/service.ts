@@ -7,6 +7,8 @@ import {
 } from "../../generated/prismabox/Photo";
 import { ensureDirs } from "../../utils";
 
+const uploadDirs = path.join(__dirname, "../public/upload");
+
 export abstract class PhotoService {
   static async add(
     photo: typeof PhotoPlainInputCreate.static,
@@ -115,9 +117,7 @@ export abstract class PhotoService {
   }
 
   static async upload(file: File): Promise<string> {
-    const uploadDirs = path.join(__dirname, "../public/upload");
     await ensureDirs(uploadDirs);
-
     const filepath = path.join(uploadDirs, file.name);
 
     try {
@@ -129,6 +129,6 @@ export abstract class PhotoService {
   }
 
   static async getFile(filename: string): Promise<ElysiaFile | null> {
-    return file(`./public/upload/${filename}`);
+    return file(path.join(uploadDirs, `${filename}`));
   }
 }
