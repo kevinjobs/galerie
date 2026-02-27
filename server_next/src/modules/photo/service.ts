@@ -1,3 +1,4 @@
+import path from "path";
 import { ElysiaFile, file } from "elysia";
 import { db } from "../../db";
 import {
@@ -114,11 +115,13 @@ export abstract class PhotoService {
   }
 
   static async upload(file: File): Promise<string> {
-    const uploadDirs = "./public/upload";
+    const uploadDirs = path.join(__dirname, "../public/upload");
     await ensureDirs(uploadDirs);
 
+    const filepath = path.join(uploadDirs, file.name);
+
     try {
-      Bun.write(`${uploadDirs}/${file.name}`, await file.arrayBuffer());
+      Bun.write(filepath, await file.arrayBuffer());
       return `/photo/file/${file.name}`;
     } catch (error) {
       throw new Error("Failed to upload photo");
