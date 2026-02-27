@@ -4,6 +4,7 @@ import {
   PhotoPlain,
   PhotoPlainInputCreate,
 } from "../../generated/prismabox/Photo";
+import { ensureDirs } from "../../utils";
 
 export abstract class PhotoService {
   static async add(
@@ -49,7 +50,12 @@ export abstract class PhotoService {
         [orderBy]: order,
       },
       where: {
-        OR: [{ isSelected: true }, { isSelected: false }, { isPublic: true }, { isPublic: false }],
+        OR: [
+          { isSelected: true },
+          { isSelected: false },
+          { isPublic: true },
+          { isPublic: false },
+        ],
       },
     };
 
@@ -108,8 +114,11 @@ export abstract class PhotoService {
   }
 
   static async upload(file: File): Promise<string> {
+    const uploadDirs = "./public/upload";
+    await ensureDirs(uploadDirs);
+
     try {
-      Bun.write(`./public/upload/${file.name}`, await file.arrayBuffer());
+      Bun.write(`${uploadDirs}/${file.name}`, await file.arrayBuffer());
       return `/photo/file/${file.name}`;
     } catch (error) {
       throw new Error("Failed to upload photo");
