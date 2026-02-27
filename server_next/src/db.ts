@@ -1,10 +1,10 @@
 import { PrismaClient } from "./generated/prisma/client";
-import { PrismaLibSql } from "@prisma/adapter-libsql";
+import { PrismaPg } from "@prisma/adapter-pg";
 
-const dbUrl = `${process.env.DATABASE_URL}`;
+const connectionString = `${process.env.DATABASE_URL}`;
 
-const adapter = new PrismaLibSql({
-  url: dbUrl ?? "file:./dev.db",
+const adapter = new PrismaPg({
+  connectionString,
 });
 
 const db = new PrismaClient({

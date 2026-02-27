@@ -10,6 +10,7 @@
     "@elysiajs/bearer": "^1.4.3",
     "@elysiajs/cors": "^1.4.1",
     "@elysiajs/openapi": "^1.4.14",
+    "@prisma/adapter-pg": "^7.4.1",
     "elysia": "latest",
     "jsonwebtoken": "^9.0.3",
     "nodemailer": "^8.0.1"

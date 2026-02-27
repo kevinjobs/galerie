@@ -10,6 +10,7 @@ import {
   NotFoundError,
   WrongPasswordError,
 } from "./errors";
+import { listen } from "bun";
 
 const app = new Elysia()
   .error({
@@ -24,7 +25,12 @@ const app = new Elysia()
   .use(openapi())
   .use(auth)
   .use(photo)
-  .use(user)
+  .use(user);
+
+if (process.env.NODE_ENV === "development") {
+  app.listen(3000);
+  console.log(`Server running on http://localhost:3000`);
+}
 
 export default app;
 
