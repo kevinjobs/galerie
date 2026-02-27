@@ -8,8 +8,11 @@ import {
   Input as I,
   Label,
   toast,
+  TextArea,
 } from "@heroui/react";
 import { Controller, useForm } from "react-hook-form";
+import { settingAtom, userAtom } from "@/app/store";
+import { useAtom } from "jotai";
 
 function Input(props: React.ComponentProps<typeof I>) {
   const { className, value, onChange, ...rest } = props;
@@ -32,6 +35,9 @@ export function UserEdit({
   onCancelAction?: () => void;
   defaultUser?: UserPlain | null;
 }) {
+  const [setting, setSetting] = useAtom(settingAtom);
+  const [user, setUser] = useAtom(userAtom);
+
   const { handleSubmit, control } = useForm<UserPlain>({
     values: {
       id: defaultUser?.id || -1,
@@ -41,22 +47,31 @@ export function UserEdit({
       email: defaultUser?.email || "",
       password: defaultUser?.password || undefined,
       permissions: defaultUser?.permissions || [],
+      setting: defaultUser?.setting || setting || {},
     },
   });
 
   const submit = (data: UserPlain) => {
     if (!defaultUser?.uid) {
-      createUser(data).then(() => {
-        toast.success("创建成功");
-      }).catch((err) => {
-        toast.danger("创建失败: " + err.message);
-      });
+      createUser(data)
+        .then((res) => {
+          toast.success("创建成功");
+        })
+        .catch((err) => {
+          toast.danger("创建失败: " + err.message);
+        });
     } else {
-      updateUser(defaultUser.uid, data).then(() => {
-        toast.success("更新成功");
-      }).catch((err) => {
-        toast.danger("更新失败: " + err.message);
-      });
+      updateUser(defaultUser.uid, data)
+        .then((res) => {
+          if (res.email === user?.email) {
+            setUser(res);
+            setSetting(res.setting);
+          }
+          toast.success("更新成功");
+        })
+        .catch((err) => {
+          toast.danger("更新失败: " + err.message);
+        });
     }
 
     if (onSubmitAction) {
@@ -139,8 +154,8 @@ export function UserEdit({
           </div>
         )}
       />
-      {
-        defaultUser?.uid && <Controller
+      {defaultUser?.uid && (
+        <Controller
           name="password"
           control={control}
           defaultValue=""
@@ -153,7 +168,7 @@ export function UserEdit({
             </div>
           )}
         />
-      }
+      )}
       <Controller
         name="permissions"
         control={control}
@@ -243,6 +258,27 @@ export function UserEdit({
                 </div>
               </div>
             </CheckboxGroup>
+          </div>
+        )}
+      />
+      <Controller
+        name="setting"
+        control={control}
+        render={({ field }) => (
+          <div className="flex flex-nowrap mb-2 items-center w-74">
+            <label htmlFor="setting" className="w-14 min-w-14 inline-block">
+              设置
+            </label>
+            <TextArea
+              fullWidth
+              id="setting"
+              rows={10}
+              {...field}
+              value={JSON.stringify(field.value, null, 2)}
+              onChange={(e) => {
+                field.onChange(JSON.parse(e.target.value));
+              }}
+            />
           </div>
         )}
       />

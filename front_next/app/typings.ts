@@ -39,6 +39,19 @@ export interface Exif {
   src?: string;
 }
 
+export interface Setting {
+  theme?: string;
+  language?: string;
+  upload?: {
+    type: string;
+    secretId: string;
+    secretKey: string;
+    bucket: string;
+    region: string;
+    dir: string;
+  };
+}
+
 export interface UserPlain {
   id: number;
   uid: string;
@@ -47,6 +60,7 @@ export interface UserPlain {
   email: string;
   password?: string;
   permissions?: string[];
+  setting?: Setting;
 }
 
 export type UserCreate = Omit<UserPlain, "id" | "uid">;

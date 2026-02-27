@@ -52,16 +52,23 @@ export async function uploadToCOS(
   file: File,
   onDone?: (src: string) => void,
   onProgress?: (progress: number) => void,
+  options?: {
+    secretId: string;
+    secretKey: string;
+    bucket: string;
+    region: string;
+    dir: string;
+  },
 ) {
   const cos = new COS({
-    SecretId: "",
-    SecretKey: "",
+    SecretId: options?.secretId,
+    SecretKey: options?.secretKey,
   });
 
   const config: COS.UploadFileParams = {
-    Bucket: "gallery-1252473272",
-    Region: "ap-nanjing",
-    Key: `upload/${file.name}`,
+    Bucket: options?.bucket || "",
+    Region: options?.region || "",
+    Key: `${options?.dir || "upload"}/${file.name}`,
     Body: file,
     SliceSize: 1024 * 1024 * 5,
     onProgress: (progressData) => {
@@ -71,7 +78,7 @@ export async function uploadToCOS(
       onProgress?.(progress);
     },
     onFileFinish: (err, data) => {
-      if (onDone) onDone(data?.Location);
+      if (onDone) onDone("tencent:" + data?.Location);
     },
   };
 

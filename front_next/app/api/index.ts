@@ -6,6 +6,14 @@ export const BASE_URL =
     : "http://localhost:3000";
 
 export const genSrc = (str?: string) => {
+  const parts = str?.split(":");
+
+  if (!parts) return "#";
+
+  if (parts[0] === "tencent") {
+    return `https://${parts[1]}!compressed`;
+  }
+
   return `${BASE_URL}${str}`;
 };
 

@@ -4,8 +4,10 @@ import { Picture, TrashBin } from "@gravity-ui/icons";
 import { Button, toast } from "@heroui/react";
 import { Tags } from "exifreader";
 import React from "react";
-import { uploadPhoto, genSrc } from "../../api";
-import { convertImage, readExifs } from "../utils";
+import { genSrc, uploadPhoto } from "../../api";
+import { convertImage, readExifs, uploadToCOS } from "../utils";
+import { settingAtom } from "@/app/store";
+import { useAtomValue } from "jotai";
 
 export interface UploadOnDoneParams {
   src?: string;
@@ -25,6 +27,8 @@ export function UploadCloud({
   onProgress,
   previewSrc = null,
 }: UploadProps) {
+  const setting = useAtomValue(settingAtom);
+
   const ref = React.useRef<HTMLInputElement>(null);
   const [src, setSrc] = React.useState<string | null>();
 
@@ -45,21 +49,26 @@ export function UploadCloud({
         if (onProgress) onProgress(p);
       };
 
-      // uploadToCOS(file, handleDone, handleProgress)
       const upload = async () => {
-        try {
-          const res = await uploadPhoto(file);
-          handleDone(res.src, file);
-        } catch (err) {
-          throw err;
+        if (setting?.upload?.type === "tencent") {
+          uploadToCOS(file, handleDone, handleProgress, setting?.upload);
         }
-      }
+
+        if (setting?.upload?.type === "local") {
+          try {
+            const res = await uploadPhoto(file);
+            handleDone(`local:${res.src}`, file);
+          } catch (err) {
+            throw err;
+          }
+        }
+      };
 
       toast.promise(upload(), {
         loading: "正在上传...",
         success: "上传成功",
         error: "上传失败",
-      })
+      });
     }
   };
 

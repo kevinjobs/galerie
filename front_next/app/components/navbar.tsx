@@ -4,10 +4,12 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { verifyToken } from "../api";
-import { tokenAtom, userAtom } from "../store";
+import { tokenAtom, userAtom, settingAtom } from "../store";
 import { UserPlain } from "../typings";
 import { MobileView, BrowserView } from "react-device-detect";
 import { Bars, Xmark } from "@gravity-ui/icons";
+import { set } from "react-hook-form";
+import { Setting } from "../typings";
 
 export interface NavbarProps {
   data: {
@@ -22,17 +24,17 @@ export function Navbar({ data }: NavbarProps) {
 
   const [token, setToken] = useAtom(tokenAtom);
   const [user, setUser] = useAtom(userAtom);
+  const [setting, setSetting] = useAtom(settingAtom);
 
   useEffect(() => {
     if (token) {
       verifyToken(token)
         .then((data) => {
           setUser(data as UserPlain);
+          setSetting(data.setting as Setting);
         })
         .catch((error) => {
           toast.danger(`获取登录信息失败: ${error.message}`);
-          setUser(null);
-          setToken(null);
         });
     }
   }, []);

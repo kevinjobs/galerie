@@ -281,7 +281,7 @@ export default function EditPanel({ photo, onFinish }: EditPanelProps) {
           </section>
           <section className="p-4 flex items-center justify-center flex-wrap">
             <header className="w-full">
-              <h2 className="font-bold mb-2 text-left">编辑 EXIF 信息</h2>
+              <h2 className="font-bold mb-2 text-left pl-6">编辑 EXIF 信息</h2>
             </header>
             <Controller
               name="focalLength"
@@ -396,7 +396,11 @@ export default function EditPanel({ photo, onFinish }: EditPanelProps) {
           </section>
         </main>
         <footer className="w-full text-center">
-          <Button type="submit" className="bg-(--accent) rounded-full" style={{ width: isMobile ? "80%" : "200px" }}>
+          <Button
+            type="submit"
+            className="bg-(--accent) rounded-full"
+            style={{ width: isMobile ? "80%" : "200px" }}
+          >
             {memoizedPhoto ? "更新" : "添加"}
           </Button>
         </footer>

@@ -13,6 +13,7 @@ export const UserPlain = t.Object(
     email: t.String(),
     password: t.String(),
     permissions: __nullable__(t.Any()),
+    setting: __nullable__(t.Any()),
   },
   { additionalProperties: false },
 );
@@ -26,6 +27,7 @@ export const UserPlainInputCreate = t.Object(
     email: t.String(),
     password: t.String(),
     permissions: t.Optional(__nullable__(t.Any())),
+    setting: t.Optional(__nullable__(t.Any())),
   },
   { additionalProperties: false },
 );
@@ -37,6 +39,7 @@ export const UserPlainInputUpdate = t.Object(
     email: t.Optional(t.String()),
     password: t.Optional(t.String()),
     permissions: t.Optional(__nullable__(t.Any())),
+    setting: t.Optional(__nullable__(t.Any())),
   },
   { additionalProperties: false },
 );
@@ -65,6 +68,7 @@ export const UserWhere = t.Partial(
           email: t.String(),
           password: t.String(),
           permissions: t.Any(),
+          setting: t.Any(),
         },
         { additionalProperties: false },
       ),
@@ -121,6 +125,7 @@ export const UserWhereUnique = t.Recursive(
               email: t.String(),
               password: t.String(),
               permissions: t.Any(),
+              setting: t.Any(),
             },
             { additionalProperties: false },
           ),
@@ -141,6 +146,7 @@ export const UserSelect = t.Partial(
       email: t.Boolean(),
       password: t.Boolean(),
       permissions: t.Boolean(),
+      setting: t.Boolean(),
       _count: t.Boolean(),
     },
     { additionalProperties: false },
@@ -173,6 +179,9 @@ export const UserOrderBy = t.Partial(
         additionalProperties: false,
       }),
       permissions: t.Union([t.Literal("asc"), t.Literal("desc")], {
+        additionalProperties: false,
+      }),
+      setting: t.Union([t.Literal("asc"), t.Literal("desc")], {
         additionalProperties: false,
       }),
     },
