@@ -1,14 +1,12 @@
-import {
-  PhotoCreate,
-  PhotoUpdate,
-  UserCreate,
-  UserUpdate,
-} from "../typings";
+import { PhotoCreate, PhotoUpdate, UserCreate, UserUpdate } from "../typings";
 
-export const BASE_URL = "http://localhost:3000";
+export const BASE_URL =
+  process.env.NODE_ENV === "production"
+    ? "https://api.kevinjobs.com"
+    : "http://localhost:3000";
 
 export const genSrc = (str?: string) => {
-  return `http://localhost:3000${str}`;
+  return `${BASE_URL}${str}`;
 };
 
 const _fetch = async (url: string, options: RequestInit = {}) => {
@@ -238,7 +236,11 @@ export const createUser = async (user: UserCreate) => {
   return data;
 };
 
-export const registerUser = async (email: string, password: string, verifyCode: string) => {
+export const registerUser = async (
+  email: string,
+  password: string,
+  verifyCode: string,
+) => {
   const response = await _fetch(`${BASE_URL}/user/register`, {
     method: "POST",
     body: JSON.stringify({ email, password, verifyCode }),
@@ -250,16 +252,19 @@ export const registerUser = async (email: string, password: string, verifyCode: 
   }
 
   return await response.json();
-}
+};
 
 //
 // 以下是认证相关的 API
 //
 
 export const sendVerifyCode = async (email: string) => {
-  const response = await _fetch(`${BASE_URL}/auth/send-verify-code?email=${email}`, {
-    method: "GET",
-  });
+  const response = await _fetch(
+    `${BASE_URL}/auth/send-verify-code?email=${email}`,
+    {
+      method: "GET",
+    },
+  );
 
   if (!response.ok) {
     const error = await response.json();
@@ -267,8 +272,7 @@ export const sendVerifyCode = async (email: string) => {
   }
 
   return await response.json();
-}
-
+};
 
 export const signToken = async (email: string, password: string) => {
   const response = await _fetch(`${BASE_URL}/auth/sign-token`, {
@@ -282,7 +286,7 @@ export const signToken = async (email: string, password: string) => {
   }
 
   return await response.json();
-}
+};
 
 export const verifyToken = async (token: string) => {
   const response = await _fetch(`${BASE_URL}/auth/verify-token`, {
@@ -296,4 +300,4 @@ export const verifyToken = async (token: string) => {
   }
 
   return await response.json();
-}
+};
