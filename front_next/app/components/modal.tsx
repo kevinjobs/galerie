@@ -2,6 +2,7 @@
 
 import { Rocket } from "@gravity-ui/icons";
 import { Button, Modal, ModalContainerProps } from "@heroui/react";
+import { isMobile } from "react-device-detect";
 
 export default function Default({
   title,
@@ -18,7 +19,7 @@ export default function Default({
 }) {
   return (
     <Modal>
-      <Modal.Backdrop isOpen={isOpen} onOpenChange={onChangeAction} variant="blur" className="bg-background/25">
+      <Modal.Backdrop isOpen={isOpen} onOpenChange={onChangeAction} variant="blur" className="bg-background/25 max-w-screen">
         <Modal.Container size={size} className="border border-border">
           <Modal.Dialog className="bg-black">
             <Modal.CloseTrigger />

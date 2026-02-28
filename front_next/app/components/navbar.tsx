@@ -191,7 +191,7 @@ function MobileNav({ data }: NavbarProps) {
         </div>
       </header>
       <div
-        className="w-full text-center bg-background overflow-hidden transition-all ease-in-out absolute top-14 left-0 rounded-xl z-50"
+        className="w-full text-center bg-background overflow-hidden transition-all ease-in-out absolute top-12 left-0 rounded-xl z-50"
         style={{
           height: isOpen ? 56 * (data.length + 1) + 16 : 0,
           paddingBottom: isOpen ? 16 : 0,

@@ -82,207 +82,208 @@ export function UserEdit({
   return (
     <form
       onSubmit={handleSubmit(submit)}
-      className="flex justify-center flex-wrap"
     >
-      <h2 className="text-2xl font-bold mb-4">
+      <h2 className="text-2xl font-bold mb-4 text-center">
         {defaultUser?.uid ? "编辑" : "新增"}用户
       </h2>
-      <Controller
-        name="uid"
-        control={control}
-        defaultValue=""
-        render={({ field }) => (
-          <div className="flex flex-nowrap mb-2 items-center">
-            <label htmlFor="uid" className="w-14 inline-block">
-              UID
-            </label>
-            <Input id="uid" {...field} disabled />
-          </div>
-        )}
-      />
-      <Controller
-        name="name"
-        control={control}
-        defaultValue=""
-        render={({ field }) => (
-          <div className="flex flex-nowrap mb-2 items-center">
-            <label htmlFor="name" className="w-14 inline-block">
-              用户名
-            </label>
-            <Input id="name" {...field} />
-          </div>
-        )}
-      />
-      {!defaultUser?.uid && (
+      <div className="flex justify-center flex-wrap w-full">
         <Controller
-          name="password"
+          name="uid"
           control={control}
           defaultValue=""
           render={({ field }) => (
             <div className="flex flex-nowrap mb-2 items-center">
-              <label htmlFor="password" className="w-14 inline-block">
-                密码
+              <label htmlFor="uid" className="w-14 inline-block">
+                UID
               </label>
-              <Input id="password" {...field} />
+              <Input id="uid" {...field} disabled />
             </div>
           )}
         />
-      )}
-      <Controller
-        name="email"
-        control={control}
-        defaultValue=""
-        render={({ field }) => (
-          <div className="flex flex-nowrap mb-2 items-center">
-            <label htmlFor="email" className="w-14 inline-block">
-              Email
-            </label>
-            <Input id="email" {...field} />
-          </div>
-        )}
-      />
-      <Controller
-        name="nickname"
-        control={control}
-        defaultValue=""
-        render={({ field }) => (
-          <div className="flex flex-nowrap mb-2 items-center">
-            <label htmlFor="nickname" className="w-14 inline-block">
-              昵称
-            </label>
-            <Input id="nickname" {...field} />
-          </div>
-        )}
-      />
-      {defaultUser?.uid && (
         <Controller
-          name="password"
+          name="name"
           control={control}
           defaultValue=""
           render={({ field }) => (
             <div className="flex flex-nowrap mb-2 items-center">
-              <label htmlFor="password" className="w-14 inline-block">
-                改密码
+              <label htmlFor="name" className="w-14 inline-block">
+                用户名
               </label>
-              <Input id="password" {...field} />
+              <Input id="name" {...field} />
             </div>
           )}
         />
-      )}
-      <Controller
-        name="permissions"
-        control={control}
-        defaultValue={[]}
-        render={({ field }) => (
-          <div className="flex flex-nowrap mb-2 items-center">
-            <label htmlFor="permissions" className="w-14 inline-block">
-              权限
-            </label>
-            <CheckboxGroup {...field}>
-              <div className="flex w-60 min-w-60 flex-nowrap justify-around">
-                <div className="">
-                  <Checkbox value="photo.upload">
-                    <Checkbox.Control>
-                      <Checkbox.Indicator />
-                    </Checkbox.Control>
-                    <Checkbox.Content>
-                      <Label>照片-上传</Label>
-                    </Checkbox.Content>
-                  </Checkbox>
-                  <Checkbox value="photo.get">
-                    <Checkbox.Control>
-                      <Checkbox.Indicator />
-                    </Checkbox.Control>
-                    <Checkbox.Content>
-                      <Label>照片-读</Label>
-                    </Checkbox.Content>
-                  </Checkbox>
-                  <Checkbox value="photo.create">
-                    <Checkbox.Control>
-                      <Checkbox.Indicator />
-                    </Checkbox.Control>
-                    <Checkbox.Content>
-                      <Label>照片-写</Label>
-                    </Checkbox.Content>
-                  </Checkbox>
-                  <Checkbox value="photo.update">
-                    <Checkbox.Control>
-                      <Checkbox.Indicator />
-                    </Checkbox.Control>
-                    <Checkbox.Content>
-                      <Label>照片-更新</Label>
-                    </Checkbox.Content>
-                  </Checkbox>
-                  <Checkbox value="photo.delete">
-                    <Checkbox.Control>
-                      <Checkbox.Indicator />
-                    </Checkbox.Control>
-                    <Checkbox.Content>
-                      <Label>照片-删除</Label>
-                    </Checkbox.Content>
-                  </Checkbox>
-                </div>
-                <div className="ml-4" style={{ marginLeft: 8 }}>
-                  <Checkbox value="user.get">
-                    <Checkbox.Control>
-                      <Checkbox.Indicator />
-                    </Checkbox.Control>
-                    <Checkbox.Content>
-                      <Label>用户-读</Label>
-                    </Checkbox.Content>
-                  </Checkbox>
-                  <Checkbox value="user.create">
-                    <Checkbox.Control>
-                      <Checkbox.Indicator />
-                    </Checkbox.Control>
-                    <Checkbox.Content>
-                      <Label>用户-写</Label>
-                    </Checkbox.Content>
-                  </Checkbox>
-                  <Checkbox value="user.update">
-                    <Checkbox.Control>
-                      <Checkbox.Indicator />
-                    </Checkbox.Control>
-                    <Checkbox.Content>
-                      <Label>用户-更新</Label>
-                    </Checkbox.Content>
-                  </Checkbox>
-                  <Checkbox value="user.delete">
-                    <Checkbox.Control>
-                      <Checkbox.Indicator />
-                    </Checkbox.Control>
-                    <Checkbox.Content>
-                      <Label>用户-删除</Label>
-                    </Checkbox.Content>
-                  </Checkbox>
-                </div>
+        {!defaultUser?.uid && (
+          <Controller
+            name="password"
+            control={control}
+            defaultValue=""
+            render={({ field }) => (
+              <div className="flex flex-nowrap mb-2 items-center">
+                <label htmlFor="password" className="w-14 inline-block">
+                  密码
+                </label>
+                <Input id="password" {...field} />
               </div>
-            </CheckboxGroup>
-          </div>
+            )}
+          />
         )}
-      />
-      <Controller
-        name="setting"
-        control={control}
-        render={({ field }) => (
-          <div className="flex flex-nowrap mb-2 items-center w-74">
-            <label htmlFor="setting" className="w-14 min-w-14 inline-block">
-              设置
-            </label>
-            <TextArea
-              fullWidth
-              id="setting"
-              rows={10}
-              {...field}
-              value={JSON.stringify(field.value, null, 2)}
-              onChange={(e) => {
-                field.onChange(JSON.parse(e.target.value));
-              }}
-            />
-          </div>
+        <Controller
+          name="email"
+          control={control}
+          defaultValue=""
+          render={({ field }) => (
+            <div className="flex flex-nowrap mb-2 items-center">
+              <label htmlFor="email" className="w-14 inline-block">
+                Email
+              </label>
+              <Input id="email" {...field} />
+            </div>
+          )}
+        />
+        <Controller
+          name="nickname"
+          control={control}
+          defaultValue=""
+          render={({ field }) => (
+            <div className="flex flex-nowrap mb-2 items-center">
+              <label htmlFor="nickname" className="w-14 inline-block">
+                昵称
+              </label>
+              <Input id="nickname" {...field} />
+            </div>
+          )}
+        />
+        {defaultUser?.uid && (
+          <Controller
+            name="password"
+            control={control}
+            defaultValue=""
+            render={({ field }) => (
+              <div className="flex flex-nowrap mb-2 items-center">
+                <label htmlFor="password" className="w-14 inline-block">
+                  改密码
+                </label>
+                <Input id="password" {...field} />
+              </div>
+            )}
+          />
         )}
-      />
-      <div className="w-full text-center mt-4 items-center">
+        <Controller
+          name="permissions"
+          control={control}
+          defaultValue={[]}
+          render={({ field }) => (
+            <div className="flex flex-nowrap mb-2 items-center">
+              <label htmlFor="permissions" className="w-14 inline-block">
+                权限
+              </label>
+              <CheckboxGroup {...field}>
+                <div className="flex w-60 min-w-60 flex-nowrap justify-around">
+                  <div className="">
+                    <Checkbox value="photo.upload">
+                      <Checkbox.Control>
+                        <Checkbox.Indicator />
+                      </Checkbox.Control>
+                      <Checkbox.Content>
+                        <Label>照片-上传</Label>
+                      </Checkbox.Content>
+                    </Checkbox>
+                    <Checkbox value="photo.get">
+                      <Checkbox.Control>
+                        <Checkbox.Indicator />
+                      </Checkbox.Control>
+                      <Checkbox.Content>
+                        <Label>照片-读</Label>
+                      </Checkbox.Content>
+                    </Checkbox>
+                    <Checkbox value="photo.create">
+                      <Checkbox.Control>
+                        <Checkbox.Indicator />
+                      </Checkbox.Control>
+                      <Checkbox.Content>
+                        <Label>照片-写</Label>
+                      </Checkbox.Content>
+                    </Checkbox>
+                    <Checkbox value="photo.update">
+                      <Checkbox.Control>
+                        <Checkbox.Indicator />
+                      </Checkbox.Control>
+                      <Checkbox.Content>
+                        <Label>照片-更新</Label>
+                      </Checkbox.Content>
+                    </Checkbox>
+                    <Checkbox value="photo.delete">
+                      <Checkbox.Control>
+                        <Checkbox.Indicator />
+                      </Checkbox.Control>
+                      <Checkbox.Content>
+                        <Label>照片-删除</Label>
+                      </Checkbox.Content>
+                    </Checkbox>
+                  </div>
+                  <div className="ml-4" style={{ marginLeft: 8 }}>
+                    <Checkbox value="user.get">
+                      <Checkbox.Control>
+                        <Checkbox.Indicator />
+                      </Checkbox.Control>
+                      <Checkbox.Content>
+                        <Label>用户-读</Label>
+                      </Checkbox.Content>
+                    </Checkbox>
+                    <Checkbox value="user.create">
+                      <Checkbox.Control>
+                        <Checkbox.Indicator />
+                      </Checkbox.Control>
+                      <Checkbox.Content>
+                        <Label>用户-写</Label>
+                      </Checkbox.Content>
+                    </Checkbox>
+                    <Checkbox value="user.update">
+                      <Checkbox.Control>
+                        <Checkbox.Indicator />
+                      </Checkbox.Control>
+                      <Checkbox.Content>
+                        <Label>用户-更新</Label>
+                      </Checkbox.Content>
+                    </Checkbox>
+                    <Checkbox value="user.delete">
+                      <Checkbox.Control>
+                        <Checkbox.Indicator />
+                      </Checkbox.Control>
+                      <Checkbox.Content>
+                        <Label>用户-删除</Label>
+                      </Checkbox.Content>
+                    </Checkbox>
+                  </div>
+                </div>
+              </CheckboxGroup>
+            </div>
+          )}
+        />
+        <Controller
+          name="setting"
+          control={control}
+          render={({ field }) => (
+            <div className="flex flex-nowrap mt-4 mb-2 items-center w-74">
+              <label htmlFor="setting" className="w-14 min-w-14 inline-block">
+                设置
+              </label>
+              <TextArea
+                fullWidth
+                id="setting"
+                rows={12}
+                {...field}
+                value={JSON.stringify(field.value, null, 2)}
+                onChange={(e) => {
+                  field.onChange(JSON.parse(e.target.value));
+                }}
+              />
+            </div>
+          )}
+        />
+      </div>
+      <div className="mt-8 text-center">
         <Button type="submit">保存</Button>
         <Button
           variant="danger"
