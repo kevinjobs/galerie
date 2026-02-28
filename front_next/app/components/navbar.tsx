@@ -65,9 +65,9 @@ export function Navbar({ data }: NavbarProps) {
               <Dropdown.Trigger>
                 <Avatar>
                   <Avatar.Fallback>
-                    {user?.nickname?.slice(0, 2) ||
-                      user?.name?.slice(0, 2) ||
-                      user?.email?.slice(0, 2)}
+                    {
+                      user?.name?.toUpperCase()?.slice(0, 1) ||
+                      user?.email?.toUpperCase()?.slice(0, 2)}
                   </Avatar.Fallback>
                 </Avatar>
               </Dropdown.Trigger>
@@ -125,7 +125,59 @@ function MobileNav({ data }: NavbarProps) {
   return (
     <nav className="h-full w-full relative">
       <header className="h-full w-full flex items-center">
-        <div className="grow"></div>
+        <div className="ml-4">
+          <Dropdown>
+            <Dropdown.Trigger>
+              <Avatar>
+                <Avatar.Fallback>
+                  {
+                    user?.name?.toUpperCase()?.slice(0, 1) ||
+                    user?.email?.toUpperCase()?.slice(0, 2)}
+                </Avatar.Fallback>
+              </Avatar>
+            </Dropdown.Trigger>
+            <Dropdown.Popover>
+              <Dropdown.Menu
+                onAction={(key) => {
+                  switch (key) {
+                    case "logout":
+                      if (window.confirm("确定要注销登录吗？")) {
+                        setToken(null);
+                        setUser(null);
+                        router.push("/login");
+                      }
+                      break;
+                    default:
+                      console.log(key);
+                  }
+                }}
+              >
+                <Dropdown.Item id="user-info" textValue="user-info">
+                  <div>
+                    <div>
+                      <Label>{user?.name?.toUpperCase()}</Label>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted">
+                        {user?.email}
+                      </Label>
+                    </div>
+                  </div>
+                </Dropdown.Item>
+                <Dropdown.Item
+                  id="logout"
+                  textValue="logout"
+                  variant="danger"
+                >
+                  <Label>注销登录</Label>
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown.Popover>
+          </Dropdown>
+        </div>
+        <div className="grow">
+
+        </div>
         <div className="pr-4">
           {!isOpen ? (
             <Button isIconOnly variant="ghost" onPress={() => setIsOpen(true)}>
@@ -157,20 +209,6 @@ function MobileNav({ data }: NavbarProps) {
             </Link>
           </div>
         ))}
-        <div>
-          <Button
-            variant="ghost"
-            className="text-danger"
-            onPress={() => {
-              setToken(null);
-              setUser(null);
-              setIsOpen(false);
-              router.push("/login");
-            }}
-          >
-            退出登录
-          </Button>
-        </div>
       </div>
     </nav>
   );
