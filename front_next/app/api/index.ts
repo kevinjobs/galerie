@@ -215,8 +215,8 @@ export const getUserLists = async () => {
   return await response.json();
 };
 
-export const updateUser = async (id: string, user: UserUpdate) => {
-  const response = await _fetch(`${BASE_URL}/user?uid=${id}`, {
+export const updateUser = async (uid: string, user: UserUpdate) => {
+  const response = await _fetch(`${BASE_URL}/user?uid=${uid}`, {
     method: "PUT",
     body: JSON.stringify(user),
   });

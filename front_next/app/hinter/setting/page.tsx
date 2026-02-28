@@ -1,9 +1,10 @@
 "use client";
-import { Input, Select, ListBox, Button } from "@heroui/react";
-import { Controller, useForm } from "react-hook-form";
-import { settingAtom } from "@/app/store";
+import { Input, Select, ListBox, Button, toast } from "@heroui/react";
+import { Controller, set, useForm } from "react-hook-form";
+import { settingAtom, userAtom } from "@/app/store";
 import { useAtom } from "jotai";
 import { Setting } from "@/app/typings";
+import { updateUser } from "@/app/api";
 
 export default function Default({
   children,
@@ -11,6 +12,7 @@ export default function Default({
   children: React.ReactNode;
 }>) {
   const [setting, setSetting] = useAtom(settingAtom);
+  const [user, setUser] = useAtom(userAtom);
 
   const { control, handleSubmit } = useForm({
     values: { ...setting },
@@ -18,6 +20,15 @@ export default function Default({
 
   const submit = (data: Setting) => {
     setSetting(data);
+    if (user?.uid) {
+      updateUser(user.uid, { ...user, setting: data }).then((res) => {
+        toast.success("设置已保存");
+        setUser(res);
+        setSetting(res.setting);
+      }).catch(err => {
+        toast.danger(`保存设置失败: ${err.message}`);
+      });
+    }
   };
 
   return (
@@ -98,7 +109,7 @@ export default function Default({
                 </Select.Trigger>
                 <Select.Popover>
                   <ListBox>
-                    <ListBox.Item id="tecent" textValue="tecent">
+                    <ListBox.Item id="tencent" textValue="tencent">
                       腾讯云对象存储
                       <ListBox.ItemIndicator />
                     </ListBox.Item>
