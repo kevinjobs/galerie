@@ -3,6 +3,7 @@ import { Toast } from "@heroui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Navbar } from "./components/navbar";
 import "./globals.css";
+import { isMobile } from "react-device-detect";
 
 export default function RootLayout({
   children,
@@ -15,7 +16,10 @@ export default function RootLayout({
     <html lang="en" className="dark h-full bg-background" data-theme="dark">
       <body className="h-full">
         <Toast.Provider placement="top" />
-        <header className="w-full">
+        <header
+          className="w-full flex items-center justify-around"
+          style={{ height: isMobile ? 56 : 64 }}
+        >
           <Navbar
             data={[
               { label: "Gallery", to: "/gallery" },
