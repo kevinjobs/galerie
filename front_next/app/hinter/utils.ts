@@ -42,8 +42,8 @@ export function parseExif(tags?: ExifReader.Tags | null): Exif {
     ),
     longitude: String(
       tags?.GPSLongitude?.description +
-        "," +
-        tags?.GPSLongitudeRef?.description,
+      "," +
+      tags?.GPSLongitudeRef?.description,
     ),
   };
 }
@@ -60,9 +60,12 @@ export async function uploadToCOS(
     dir: string;
   },
 ) {
+  console.log(options)
+
   const cos = new COS({
     SecretId: options?.secretId,
     SecretKey: options?.secretKey,
+    Protocol: 'https', // 统一使用 https 协议，否则会有跨域问题
   });
 
   const config: COS.UploadFileParams = {
@@ -86,6 +89,7 @@ export async function uploadToCOS(
     const data = await cos.uploadFile(config);
     return data;
   } catch (err) {
+    console.trace("COS upload error:", err);
     return err;
   }
 }

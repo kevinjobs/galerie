@@ -25,6 +25,7 @@ export default function RootLayout({
               { label: "Gallery", to: "/gallery" },
               { label: "Photo", to: "/hinter/photo" },
               { label: "User", to: "/hinter/user" },
+              { label: "Setting", to: "/hinter/setting" },
             ]}
           />
         </header>

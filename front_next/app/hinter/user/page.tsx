@@ -15,6 +15,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { UserEdit } from "./edit";
+import { isMobile } from "react-device-detect";
 
 export default function UserPage() {
   const [isOpen, setIsOpen] = useState(false);
@@ -97,7 +98,7 @@ export default function UserPage() {
           </div>
         )
       }
-      <Modal isOpen={isOpen} onChangeAction={setIsOpen} size="sm">
+      <Modal isOpen={isOpen} onChangeAction={setIsOpen} size={isMobile ? "full" : 'md'}>
         <UserEdit
           defaultUser={user as UserPlain}
           onSubmitAction={() => {

@@ -164,8 +164,8 @@ export default function EditPanel({ photo, onFinish }: EditPanelProps) {
   return (
     <div className="rounded-2xl m-auto">
       <form onSubmit={handleSubmit(submit)} className="">
-        <main style={{ display: isMobile ? "block" : "flex" }}>
-          <section className="p-4 flex items-center justify-center flex-wrap">
+        <main style={{ display: isMobile ? "block" : "flex" }} className="w-fit m-auto items-center">
+          <section className="p-4">
             <UploadCloud
               onDone={handleUploadDone}
               previewSrc={memoizedPhoto?.src}
@@ -279,9 +279,9 @@ export default function EditPanel({ photo, onFinish }: EditPanelProps) {
               />
             </div>
           </section>
-          <section className="p-4 flex items-center justify-center flex-wrap">
+          <section className="p-4">
             <header className="w-full">
-              <h2 className="font-bold mb-2 text-left pl-6">编辑 EXIF 信息</h2>
+              <h2 className="font-bold mb-2 text-left">编辑 EXIF 信息</h2>
             </header>
             <Controller
               name="focalLength"
@@ -395,7 +395,7 @@ export default function EditPanel({ photo, onFinish }: EditPanelProps) {
             />
           </section>
         </main>
-        <footer className="w-full text-center">
+        <footer className="w-full text-center mt-4">
           <Button
             type="submit"
             className="bg-(--accent) rounded-full"
