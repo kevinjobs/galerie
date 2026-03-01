@@ -13,11 +13,11 @@ export default function RootLayout({
   modal: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark h-full bg-background" data-theme="dark">
-      <body className="h-full">
+    <html lang="en" className="dark max-w-full" data-theme="dark">
+      <body className="max-w-full">
         <Toast.Provider placement="top" />
         <header
-          className="w-full flex items-center justify-around"
+          className="w-full flex items-center justify-around absolute top-0"
           style={{ height: isMobile ? 56 : 64 }}
         >
           <Navbar
@@ -30,8 +30,10 @@ export default function RootLayout({
           />
         </header>
         <QueryClientProvider client={new QueryClient()}>
-          {children}
-          {modal}
+          <main className="absolute top-14 w-full max-w-full max-h-[calc(100vh-56px)] overflow-y-auto overflow-x-hidden pb-8">
+            {children}
+            {modal}
+          </main>
         </QueryClientProvider>
       </body>
     </html>

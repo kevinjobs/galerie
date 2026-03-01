@@ -6,10 +6,8 @@ export default function HinterLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="hinter h-[calc(100%-64px)]">
-      <div className="hinter-main h-full pt-8">
-        {children}
-      </div>
+    <div className="hinter">
+      {children}
     </div>
   );
 }

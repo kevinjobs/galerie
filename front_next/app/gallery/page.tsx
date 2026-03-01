@@ -42,7 +42,7 @@ export default function GalleryPage() {
 
   return (
     <div className="">
-      <div className="">
+      <div className="mx-2">
         {albumData?.length ? (
           <Album data={albumData} gap={4} />
         ) : (

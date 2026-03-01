@@ -41,8 +41,8 @@ function PhotoItem({
   const router = useRouter();
 
   return (
-    <div className="flex items-center gap-4 my-2">
-      <div>
+    <div className="mobile-lists-item flex items-center gap-4 my-2 overflow-hidden">
+      <div className="w-16 h-16 min-w-16">
         <img
           src={genSrc(photo.src)}
           alt={photo.title}
@@ -50,10 +50,10 @@ function PhotoItem({
         />
       </div>
       <div>
-        <h3>{photo.title}</h3>
-        <p>
+        <h3 className="text-sm">{photo.title}</h3>
+        <p className="text-sm">
           <span>{dayjs(photo.shootTime).format("YYYY-MM-DD")}</span>
-          <span>{photo.author || "未知作者"}</span>
+          <span className="ml-2">{photo.author || "未知作者"}</span>
         </p>
         <section>
           <Button

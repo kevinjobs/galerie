@@ -185,7 +185,6 @@ export default function EditPanel({ photo, onFinish }: EditPanelProps) {
             <UploadCloud
               onDone={handleUploadDone}
               previewSrc={memoizedPhoto?.src}
-              onProgress={(p) => toast.info("上传进度: " + p + "%")}
               onClear={reset}
             />
             <div className="mt-4">
