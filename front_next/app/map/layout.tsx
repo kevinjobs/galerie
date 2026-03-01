@@ -1,13 +1,13 @@
 "use client";
 
-export default function HinterLayout({
+export default function Layout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <div className="hinter pt-2">
-      {children}
+    <div className="w-full h-full">
+      <div>{children}</div>
     </div>
   );
 }

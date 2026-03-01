@@ -20,11 +20,13 @@ export default function PhotoPage() {
   return (
     <div className="">
       <header className="flex justify-center">
-        <ButtonGroup>
-          <Button onPress={() => router.push("/hinter/photo/add")} size="sm">
-            <Plus />
-            <span>上传图片</span>
-          </Button>
+      </header>
+      <main className="pt-2">
+        <BrowserView>{data?.lists && <PhotoLists lists={data.lists} onRefresh={refetch} />}</BrowserView>
+        <MobileView className="px-8">{data?.lists && <MobilePhotoLists photos={data.lists} onRefresh={refetch} />}</MobileView>
+      </main>
+      <div className="fixed bottom-16 right-8">
+        <div>
           <Button
             onPress={() => {
               refetch();
@@ -36,17 +38,19 @@ export default function PhotoPage() {
                 toast.danger("刷新失败");
               }
             }}
-            size="sm"
+            size="md"
+            variant="tertiary"
+            isIconOnly
           >
             <ArrowsRotateLeft />
-            <span>刷新列表</span>
           </Button>
-        </ButtonGroup>
-      </header>
-      <main className="pt-2">
-        <BrowserView>{data?.lists && <PhotoLists lists={data.lists} onRefresh={refetch} />}</BrowserView>
-        <MobileView className="px-8">{data?.lists && <MobilePhotoLists photos={data.lists} onRefresh={refetch} />}</MobileView>
-      </main>
+        </div>
+        <div className="mt-2">
+          <Button onPress={() => router.push("/hinter/photo/add")} size="md" isIconOnly>
+            <Plus />
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

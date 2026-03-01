@@ -14,7 +14,7 @@ export default function Default({
   const [setting, setSetting] = useAtom(settingAtom);
   const [user, setUser] = useAtom(userAtom);
 
-  const { control, handleSubmit } = useForm({
+  const { control, handleSubmit, watch } = useForm({
     values: { ...setting },
   });
 
@@ -39,7 +39,7 @@ export default function Default({
           control={control}
           rules={{ required: true }}
           render={({ field }) => (
-            <SettingItem label="系统主题">
+            <SettingItem label="系统主题" description="选择系统主题: 跟随系统、深色模式或浅色模式">
               <Select {...field} className="w-44">
                 <Select.Trigger>
                   <Select.Value />
@@ -70,7 +70,7 @@ export default function Default({
           control={control}
           rules={{ required: true }}
           render={({ field }) => (
-            <SettingItem label="显示语言">
+            <SettingItem label="显示语言" description="选择界面显示语言">
               <Select {...field} className="w-44">
                 <Select.Trigger>
                   <Select.Value />
@@ -101,7 +101,7 @@ export default function Default({
           control={control}
           rules={{ required: true }}
           render={({ field }) => (
-            <SettingItem label="照片存储库">
+            <SettingItem label="照片存储库" description="选择照片存储方式: 腾讯云对象存储或服务器端">
               <Select {...field} className="w-44">
                 <Select.Trigger>
                   <Select.Value />
@@ -128,51 +128,54 @@ export default function Default({
           control={control}
           rules={{ required: true }}
           render={({ field }) => (
-            <SettingItem label="存储目录">
+            <SettingItem label="存储目录" description="设置照片在存储库中的目录前缀，默认为 '/upload'">
               <Input {...field} />
             </SettingItem>
           )}
         />
-        <Controller
-          name="upload.secretId"
-          control={control}
-          rules={{ required: true }}
-          render={({ field }) => (
-            <SettingItem label="Secret ID">
-              <Input {...field} />
-            </SettingItem>
-          )}
-        />
-        <Controller
-          name="upload.secretKey"
-          control={control}
-          rules={{ required: true }}
-          render={({ field }) => (
-            <SettingItem label="Secret Key">
-              <Input {...field} />
-            </SettingItem>
-          )}
-        />
-        <Controller
-          name="upload.region"
-          control={control}
-          rules={{ required: true }}
-          render={({ field }) => (
-            <SettingItem label="Region">
-              <Input {...field} />
-            </SettingItem>
-          )}
-        />
-        <Controller
-          name="upload.bucket"
-          control={control}
-          rules={{ required: false }}
-          render={({ field }) => (
-            <SettingItem label="Bucket">
-              <Input {...field} />
-            </SettingItem>
-          )}
-        />
+        {
+          watch("upload.type") === "tencent" && (<>
+            <Controller
+              name="upload.secretId"
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <SettingItem label="Secret ID" description="对象存储的 Secret ID">
+                  <Input {...field} />
+                </SettingItem>
+              )}
+            />
+            <Controller
+              name="upload.secretKey"
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <SettingItem label="Secret Key" description="对象存储的 Secret Key">
+                  <Input {...field} />
+                </SettingItem>
+              )}
+            />
+            <Controller
+              name="upload.region"
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <SettingItem label="Region" description="对象存储的地域信息，例如 'ap-guangzhou'">
+                  <Input {...field} />
+                </SettingItem>
+              )}
+            />
+            <Controller
+              name="upload.bucket"
+              control={control}
+              rules={{ required: false }}
+              render={({ field }) => (
+                <SettingItem label="Bucket" description="对象存储的 Bucket 名称，如果不填则使用默认 Bucket">
+                  <Input {...field} />
+                </SettingItem>
+              )}
+            /></>)
+        }
         <div className="flex justify-center mt-4">
           <Button type="submit">保存设置</Button>
         </div>
@@ -184,14 +187,19 @@ export default function Default({
 function SettingItem({
   label,
   children,
+  description
 }: {
   label: string;
   children: React.ReactNode;
+  description?: string;
 }) {
   return (
-    <div className="flex items-center my-2">
-      <span className="inline-block w-24 min-w-24">{label}</span>
+    <div className="my-2 mb-4">
+      <div className="flex items-center">
+        <span className="inline-block w-24 min-w-24">{label}</span>
       <span className="ml-4">{children}</span>
+      </div>
+      <div className="text-xs font-light text-muted">{description}</div>
     </div>
   );
 }

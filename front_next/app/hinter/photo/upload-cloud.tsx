@@ -67,7 +67,7 @@ export function UploadCloud({
           }, handleProgress, setting?.upload);
         }
 
-        if (setting?.upload?.type === "local") {
+        if (setting?.upload?.type === "local" || !setting?.upload?.type) {
           try {
             const res = await uploadPhoto(convertedFile);
             handleDone(`local:${res.src}`, file);

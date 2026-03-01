@@ -17,6 +17,10 @@ export const genSrc = (str?: string) => {
     return url + attch;
   }
 
+  if (parts[0] === "local") {
+    return `${BASE_URL}${parts[1]}`;
+  }
+
   return `${BASE_URL}${str}`;
 };
 
