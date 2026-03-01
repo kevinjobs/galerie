@@ -3,10 +3,10 @@ import * as ExifReader from "exifreader";
 import { heicTo, isHeic } from "heic-to";
 import { Exif } from "../typings";
 
-export async function convertImage(file: File) {
-  const blob = await heicToJpg(file);
-  const nfile = new File([blob as Blob], `${file.name.split(".")[0]}.jpg`, { type: "image/jpeg" });
-  return nfile;
+export async function convertImgFormat(file: File) {
+  const convertedFile = await heicToJpg(file);
+  // 下面还可以转换其他格式照片，如png等，根据需要添加
+  return convertedFile;
 }
 
 export async function readExifs(file: File) {
@@ -101,7 +101,7 @@ export const heicToJpg = async (file: File) => {
       quality: 1,
     });
 
-    return jpeg;
+    return new File([jpeg as Blob], `${file.name.split(".")[0]}.jpg`, { type: "image/jpeg" });
   } else {
     return file;
   }

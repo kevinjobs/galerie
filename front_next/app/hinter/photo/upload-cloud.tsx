@@ -7,7 +7,8 @@ import { Tags } from "exifreader";
 import { useAtomValue } from "jotai";
 import React from "react";
 import { genSrc, uploadPhoto } from "../../api";
-import { convertImage, readExifs, uploadToCOS } from "../utils";
+import { convertImgFormat, readExifs, uploadToCOS } from "../utils";
+import md5 from "md5";
 
 export interface UploadOnDoneParams {
   src?: string;
@@ -33,10 +34,15 @@ export function UploadCloud({
   const [src, setSrc] = React.useState<string | null>();
 
   const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const oldFile = e.target.files?.[0];
 
-    if (file) {
-      const convertedFile = await convertImage(file);
+    if (oldFile) {
+      // 生成新的文件名
+      const filename = `${md5(oldFile.name.split(".")[0])}.${oldFile.type.split("/")[1]}`;
+      const file = new File([oldFile], filename, { type: oldFile.type });
+
+      const convertedFile = await convertImgFormat(file);
+
       setSrc(URL.createObjectURL(convertedFile));
 
       const exifs = await readExifs(file);
@@ -50,6 +56,7 @@ export function UploadCloud({
         if (onProgress) onProgress(p);
       };
 
+      // 上传图片
       const upload = async () => {
         if (setting?.upload?.type === "tencent") {
           uploadToCOS(convertedFile, handleDone, handleProgress, setting?.upload);
