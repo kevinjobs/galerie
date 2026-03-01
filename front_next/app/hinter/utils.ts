@@ -1,18 +1,17 @@
-import { isHeic, heicTo } from "heic-to";
 import COS from "cos-js-sdk-v5";
 import * as ExifReader from "exifreader";
+import { heicTo, isHeic } from "heic-to";
 import { Exif } from "../typings";
 
 export async function convertImage(file: File) {
   const blob = await heicToJpg(file);
-  const nfile = new File([blob as Blob], "hello.jpg", { type: "image/jpeg" });
+  const nfile = new File([blob as Blob], `${file.name.split(".")[0]}.jpg`, { type: "image/jpeg" });
   return nfile;
 }
 
 export async function readExifs(file: File) {
   try {
     const tags = await ExifReader.load(file);
-    console.log(tags);
     return tags;
   } catch (err) {
     console.error("EXIF parse error:", err);
@@ -22,7 +21,7 @@ export async function readExifs(file: File) {
 export function parseExif(tags?: ExifReader.Tags | null): Exif {
   if (!tags) return {};
 
-  return {
+  const exifs = {
     focalLength: String(tags?.FocalLength35efl?.description),
     createTime: String(
       tags?.["DateCreated"]?.description || tags?.DateTime?.description,
@@ -30,8 +29,8 @@ export function parseExif(tags?: ExifReader.Tags | null): Exif {
     exposureTime: String(tags?.ExposureTime?.description),
     fNumber: String(tags?.FNumber?.description),
     iso: Number(tags?.ISOSpeedRatings?.description),
-    width: String(tags?.["Image Width"]?.description),
-    height: String(tags?.["Image Height"]?.description),
+    width: tags?.["Image Width"]?.description || undefined,
+    height: tags?.["Image Height"]?.description || undefined,
     lens: String(tags?.Lens?.description || tags?.LensModel?.description),
     model: String(tags?.Model?.description),
     altitude: String(
@@ -46,11 +45,13 @@ export function parseExif(tags?: ExifReader.Tags | null): Exif {
       tags?.GPSLongitudeRef?.description,
     ),
   };
+
+  return exifs;
 }
 
 export async function uploadToCOS(
   file: File,
-  onDone?: (src: string) => void,
+  onDone?: (src: string, file: File) => void,
   onProgress?: (progress: number) => void,
   options?: {
     secretId: string;
@@ -60,8 +61,6 @@ export async function uploadToCOS(
     dir: string;
   },
 ) {
-  console.log(options)
-
   const cos = new COS({
     SecretId: options?.secretId,
     SecretKey: options?.secretKey,
@@ -81,7 +80,7 @@ export async function uploadToCOS(
       onProgress?.(progress);
     },
     onFileFinish: (err, data) => {
-      if (onDone) onDone("tencent:" + data?.Location);
+      if (onDone) onDone("tencent:" + data?.Location, file);
     },
   };
 
@@ -89,7 +88,6 @@ export async function uploadToCOS(
     const data = await cos.uploadFile(config);
     return data;
   } catch (err) {
-    console.trace("COS upload error:", err);
     return err;
   }
 }
@@ -138,3 +136,16 @@ export const genFileSrc = async (file: File): Promise<string> => {
 export const arrayBufferToFile = (buffer: ArrayBuffer, filename: string) => {
   return new File([buffer], filename);
 };
+
+export async function getImageSize(file: File): Promise<{ width: number, height: number }> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.src = URL.createObjectURL(file);
+    image.onload = () => {
+      resolve({ width: image.width, height: image.height });
+    };
+    image.onerror = (err) => {
+      reject(err);
+    };
+  });
+}

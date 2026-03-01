@@ -1,13 +1,13 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
+import { settingAtom } from "@/app/store";
 import { Picture, TrashBin } from "@gravity-ui/icons";
 import { Button, toast } from "@heroui/react";
 import { Tags } from "exifreader";
+import { useAtomValue } from "jotai";
 import React from "react";
 import { genSrc, uploadPhoto } from "../../api";
 import { convertImage, readExifs, uploadToCOS } from "../utils";
-import { settingAtom } from "@/app/store";
-import { useAtomValue } from "jotai";
 
 export interface UploadOnDoneParams {
   src?: string;
@@ -36,11 +36,12 @@ export function UploadCloud({
     const file = e.target.files?.[0];
 
     if (file) {
-      const nfile = await convertImage(file);
-      setSrc(URL.createObjectURL(nfile));
-      const exifs = await readExifs(nfile);
+      const convertedFile = await convertImage(file);
+      setSrc(URL.createObjectURL(convertedFile));
 
-      const handleDone = (src: string, file?: File) => {
+      const exifs = await readExifs(file);
+
+      const handleDone = (src: string, file: File) => {
         e.target.files = null;
         if (onDone) onDone({ src, tags: exifs, file });
       };
@@ -51,12 +52,12 @@ export function UploadCloud({
 
       const upload = async () => {
         if (setting?.upload?.type === "tencent") {
-          uploadToCOS(file, handleDone, handleProgress, setting?.upload);
+          uploadToCOS(convertedFile, handleDone, handleProgress, setting?.upload);
         }
 
         if (setting?.upload?.type === "local") {
           try {
-            const res = await uploadPhoto(file);
+            const res = await uploadPhoto(convertedFile);
             handleDone(`local:${res.src}`, file);
           } catch (err) {
             throw err;
@@ -80,7 +81,7 @@ export function UploadCloud({
         type="file"
         onChange={handleChange}
         ref={ref}
-        accept="image/jpeg"
+        accept="image/*, image/heic"
       />
 
       <div className="w-full h-full absolute top-0 left-0 flex items-center justify-center">

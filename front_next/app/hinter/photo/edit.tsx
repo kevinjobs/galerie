@@ -1,16 +1,15 @@
 "use client";
 
-import { Input as I, Label, Switch, toast } from "@heroui/react";
+import { Button, Input as I, Label, Switch, toast } from "@heroui/react";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import { useEffect, useMemo, useState } from "react";
+import { isMobile } from "react-device-detect";
 import { Controller, FieldErrors, useForm } from "react-hook-form";
 import { createPhoto, getAddress, updatePhoto } from "../../api";
 import { Exif, Photo } from "../../typings";
-import { parseExif } from "../utils";
+import { getImageSize, parseExif } from "../utils";
 import { UploadCloud, UploadOnDoneParams } from "./upload-cloud";
-import { Button } from "@heroui/react";
-import { isMobile } from "react-device-detect";
 
 dayjs.extend(customParseFormat);
 
@@ -143,10 +142,27 @@ export default function EditPanel({ photo, onFinish }: EditPanelProps) {
     onFinish?.();
   };
 
-  const handleUploadDone = ({ src, tags, file }: UploadOnDoneParams) => {
-    if (tags) setExifs(parseExif(tags));
+  const handleUploadDone = async ({ src, tags, file }: UploadOnDoneParams) => {
     if (src) setUploadResult(src);
     if (file) setFile(file);
+
+    if (tags) {
+      const es = parseExif(tags);
+
+      if (!es.width || !es.height) {
+        if (!file) return;
+
+        getImageSize(file).then(({ width, height }) => {
+          es.width = width + 'px';
+          es.height = height + 'px';
+          setExifs(es);
+        });
+
+        return;
+      }
+
+      setExifs(es);
+    }
   };
 
   useEffect(() => {
