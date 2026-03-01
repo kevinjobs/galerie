@@ -89,7 +89,7 @@ export default function PhotoInfo({ photo }: { photo: Photo }) {
 
   return (
     <Context.Provider value={photo}>
-      <div className="photo-info">
+      <div className="photo-info mb-4 max-h-120 overflow-y-auto">
         <section>
           <h2 className="mb-4">基本信息</h2>
           {Object.entries(baseInfos).map(([key, value]) => {
