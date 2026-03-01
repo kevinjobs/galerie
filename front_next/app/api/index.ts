@@ -12,7 +12,7 @@ export const genSrc = (str?: string) => {
 
   if (parts[0] === "tencent") {
     const url = `https://${parts[1]}`;
-    let attch = '!compressed';
+    const attch = '!compressed';
 
     return url + attch;
   }
@@ -60,7 +60,7 @@ export const getPhotoLists = async (params?: {
 }) => {
   const p: Record<string, string> = {
     offset: params?.offset?.toString() || "0",
-    limit: params?.limit?.toString() || "10",
+    limit: params?.limit?.toString() || "100",
     orderBy: params?.orderBy || "shootTime",
     order: params?.order || "desc",
   };
