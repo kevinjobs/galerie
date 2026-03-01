@@ -30,11 +30,11 @@ export default function GalleryModal({
   return (
     <div className="fixed top-0 left-0 w-screen h-screen bg-background overflow-hidden">
       <main className="h-full w-full flex">
-        <section className="photo-preview-left relative py-4" style={{width: isMobile ? "100%" : "80%"}}>
+        <section className="photo-preview-left relative py-4" style={{ width: isMobile ? "100%" : "80%" }}>
           <header className="w-full absolute top-2 left-0 text-right">
-            <Button isIconOnly onClick={() => setIsPanelOpen((prev) => !prev)} variant="ghost">
+            {isMobile && <Button isIconOnly onClick={() => setIsPanelOpen((prev) => !prev)} variant="ghost">
               <CircleInfo />
-            </Button>
+            </Button>}
             <Button isIconOnly onClick={() => router.back()} variant="ghost">
               <Xmark />
             </Button>
@@ -45,8 +45,8 @@ export default function GalleryModal({
             alt={photo?.title}
           />
         </section>
-        <BrowserView>
-          <section className="photo-preview-right w-5/24 h-full p-1">
+        <BrowserView className="w-1/5">
+          <section className="photo-preview-right h-full p-1">
             <div className="border boder-border h-full rounded-2xl p-4 overflow-auto">
               {photo && <PhotoInfo photo={photo} />}
             </div>
