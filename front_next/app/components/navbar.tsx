@@ -1,15 +1,14 @@
+"use client";
+import { Bars, Xmark } from "@gravity-ui/icons";
 import { Avatar, Button, Dropdown, Label, toast } from "@heroui/react";
 import { useAtom } from "jotai";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { isMobile } from "react-device-detect";
 import { verifyToken } from "../api";
-import { tokenAtom, userAtom, settingAtom } from "../store";
-import { UserPlain } from "../typings";
-import { MobileView, BrowserView } from "react-device-detect";
-import { Bars, Xmark } from "@gravity-ui/icons";
-import { set } from "react-hook-form";
-import { Setting } from "../typings";
+import { settingAtom, tokenAtom, userAtom } from "../store";
+import { Setting, UserPlain } from "../typings";
 
 export interface NavbarProps {
   data: {
@@ -41,80 +40,86 @@ export function Navbar({ data }: NavbarProps) {
 
   return (
     <>
-      <MobileView className="w-full h-full">
-        <MobileNav data={data} />
-      </MobileView>
-      <BrowserView>
-        <nav className="flex h-full w-200 items-center mx-auto">
-          <div className="hinter-logo">
-            <h1 className="text-2xl font-bold">
-              <Link href="/" className="text-black dark:text-white">
-                Hinter
-              </Link>
-            </h1>
-          </div>
-          <div className="hinter-navbar-center mx-8 grow">
-            {data?.map((item) => (
-              <Link key={item.label} href={item.to} className="mx-8">
-                {item.label}
-              </Link>
-            ))}
-          </div>
-          <div className="hinter-navbar-right">
-            <Dropdown>
-              <Dropdown.Trigger>
-                <Avatar>
-                  <Avatar.Fallback>
-                    {
-                      user?.name?.toUpperCase()?.slice(0, 1) ||
-                      user?.email?.toUpperCase()?.slice(0, 2)}
-                  </Avatar.Fallback>
-                </Avatar>
-              </Dropdown.Trigger>
-              <Dropdown.Popover>
-                <Dropdown.Menu
-                  onAction={(key) => {
-                    switch (key) {
-                      case "logout":
-                        if (window.confirm("确定要注销登录吗？")) {
-                          setToken(null);
-                          setUser(null);
-                          router.push("/login");
-                        }
-                        break;
-                      default:
-                        console.log(key);
-                    }
-                  }}
-                >
-                  <Dropdown.Item id="user-info" textValue="user-info">
-                    <div>
-                      <div>
-                        <Label>{user?.name?.toUpperCase()}</Label>
-                      </div>
-                      <div>
-                        <Label className="text-xs text-muted">
-                          {user?.email}
-                        </Label>
-                      </div>
-                    </div>
-                  </Dropdown.Item>
-                  <Dropdown.Item
-                    id="logout"
-                    textValue="logout"
-                    variant="danger"
-                  >
-                    <Label>注销登录</Label>
-                  </Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown.Popover>
-            </Dropdown>
-          </div>
-        </nav>
-      </BrowserView>
+      {isMobile ? <MobileNav data={data} /> : <BrowserNav data={data} />}
     </>
   );
 }
+
+function BrowserNav({ data }: NavbarProps) {
+  const [user, setUser] = useAtom(userAtom);
+  const [token, setToken] = useAtom(tokenAtom);
+  const router = useRouter();
+
+  return (
+    <nav className="flex h-full w-200 items-center mx-auto">
+      <div className="hinter-logo">
+        <h1 className="text-2xl font-bold">
+          <Link href="/" className="text-black dark:text-white">
+            Hinter
+          </Link>
+        </h1>
+      </div>
+      <div className="hinter-navbar-center mx-8 grow">
+        {data?.map((item) => (
+          <Link key={item.label} href={item.to} className="mx-8">
+            {item.label}
+          </Link>
+        ))}
+      </div>
+      <div className="hinter-navbar-right">
+        <Dropdown>
+          <Dropdown.Trigger>
+            <Avatar>
+              <Avatar.Fallback>
+                {
+                  user?.name?.toUpperCase()?.slice(0, 1) ||
+                  user?.email?.toUpperCase()?.slice(0, 2)}
+              </Avatar.Fallback>
+            </Avatar>
+          </Dropdown.Trigger>
+          <Dropdown.Popover>
+            <Dropdown.Menu
+              onAction={(key) => {
+                switch (key) {
+                  case "logout":
+                    if (window.confirm("确定要注销登录吗？")) {
+                      setToken(null);
+                      setUser(null);
+                      router.push("/login");
+                    }
+                    break;
+                  default:
+                    console.log(key);
+                }
+              }}
+            >
+              <Dropdown.Item id="user-info" textValue="user-info">
+                <div>
+                  <div>
+                    <Label>{user?.name?.toUpperCase()}</Label>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted">
+                      {user?.email}
+                    </Label>
+                  </div>
+                </div>
+              </Dropdown.Item>
+              <Dropdown.Item
+                id="logout"
+                textValue="logout"
+                variant="danger"
+              >
+                <Label>注销登录</Label>
+              </Dropdown.Item>
+            </Dropdown.Menu>
+          </Dropdown.Popover>
+        </Dropdown>
+      </div>
+    </nav>
+  )
+}
+
 
 function MobileNav({ data }: NavbarProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -125,56 +130,62 @@ function MobileNav({ data }: NavbarProps) {
   return (
     <nav className="h-full w-full relative">
       <header className="h-full w-full flex items-center">
-        <div className="ml-4">
-          <Dropdown>
-            <Dropdown.Trigger>
-              <Avatar>
-                <Avatar.Fallback>
-                  {
-                    user?.name?.toUpperCase()?.slice(0, 1) ||
-                    user?.email?.toUpperCase()?.slice(0, 2)}
-                </Avatar.Fallback>
-              </Avatar>
-            </Dropdown.Trigger>
-            <Dropdown.Popover>
-              <Dropdown.Menu
-                onAction={(key) => {
-                  switch (key) {
-                    case "logout":
-                      if (window.confirm("确定要注销登录吗？")) {
-                        setToken(null);
-                        setUser(null);
-                        router.push("/login");
+        <div className="ml-4 inline-block h-10">
+          {user ?
+            (
+              <Dropdown>
+                <Dropdown.Trigger>
+                  <Avatar>
+                    <Avatar.Fallback>
+                      {user?.name?.toUpperCase()?.slice(0, 1) || user?.email?.toUpperCase()?.slice(0, 2)}
+                    </Avatar.Fallback>
+                  </Avatar>
+                </Dropdown.Trigger>
+                <Dropdown.Popover>
+                  <Dropdown.Menu
+                    onAction={(key) => {
+                      switch (key) {
+                        case "logout":
+                          if (window.confirm("确定要注销登录吗？")) {
+                            setToken(null);
+                            setUser(null);
+                            router.push("/login");
+                          }
+                          break;
+                        default:
+                          console.log(key);
                       }
-                      break;
-                    default:
-                      console.log(key);
-                  }
-                }}
-              >
-                <Dropdown.Item id="user-info" textValue="user-info">
-                  <div>
-                    <div>
-                      <Label>{user?.name?.toUpperCase()}</Label>
-                    </div>
-                    <div>
-                      <Label className="text-xs text-muted">
-                        {user?.email}
-                      </Label>
-                    </div>
-                  </div>
-                </Dropdown.Item>
-                <Dropdown.Item
-                  id="logout"
-                  textValue="logout"
-                  variant="danger"
-                >
-                  <Label>注销登录</Label>
-                </Dropdown.Item>
-              </Dropdown.Menu>
-            </Dropdown.Popover>
-          </Dropdown>
+                    }}
+                  >
+                    <Dropdown.Item id="user-info" textValue="user-info">
+                      <div>
+                        <div>
+                          <Label>{user?.name?.toUpperCase()}</Label>
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted">
+                            {user?.email}
+                          </Label>
+                        </div>
+                      </div>
+                    </Dropdown.Item>
+                    <Dropdown.Item
+                      id="logout"
+                      textValue="logout"
+                      variant="danger"
+                    >
+                      <Label>注销登录</Label>
+                    </Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown.Popover>
+              </Dropdown>
+            ) : (<Avatar>
+              <Avatar.Fallback>
+                <Link href="/login">登录</Link>
+              </Avatar.Fallback>
+            </Avatar>)}
         </div>
+
         <div className="grow">
 
         </div>
