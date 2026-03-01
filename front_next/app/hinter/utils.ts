@@ -4,9 +4,10 @@ import { heicTo, isHeic } from "heic-to";
 import { Exif } from "../typings";
 
 export async function convertImgFormat(file: File) {
-  const convertedFile = await heicToJpg(file);
+  // 因为腾讯云可以上传heic文件，所以这里不需要转换
+  // const convertedFile = await heicToJpg(file);
   // 下面还可以转换其他格式照片，如png等，根据需要添加
-  return convertedFile;
+  return file;
 }
 
 export async function readExifs(file: File) {

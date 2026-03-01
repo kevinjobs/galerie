@@ -20,12 +20,14 @@ export interface UploadProps {
   onDone?: ({ src, tags, file }: UploadOnDoneParams) => void;
   onProgress?: (progress: number) => void;
   onStart?: () => void;
+  onClear?: () => void;
   previewSrc?: string | null;
 }
 
 export function UploadCloud({
   onDone,
   onProgress,
+  onClear,
   previewSrc = null,
 }: UploadProps) {
   const setting = useAtomValue(settingAtom);
@@ -38,7 +40,7 @@ export function UploadCloud({
 
     if (oldFile) {
       // 生成新的文件名
-      const filename = `${md5(oldFile.name.split(".")[0])}.${oldFile.type.split("/")[1]}`;
+      const filename = `${md5(oldFile.name.split(".")[0])}.${oldFile.name.split(".")[1]}`;
       const file = new File([oldFile], filename, { type: oldFile.type });
 
       const convertedFile = await convertImgFormat(file);
@@ -59,7 +61,10 @@ export function UploadCloud({
       // 上传图片
       const upload = async () => {
         if (setting?.upload?.type === "tencent") {
-          uploadToCOS(convertedFile, handleDone, handleProgress, setting?.upload);
+          return uploadToCOS(convertedFile, (src, file) => {
+            setSrc(genSrc(src));
+            handleDone(src, file);
+          }, handleProgress, setting?.upload);
         }
 
         if (setting?.upload?.type === "local") {
@@ -88,7 +93,7 @@ export function UploadCloud({
         type="file"
         onChange={handleChange}
         ref={ref}
-        accept="image/*, image/heic"
+        accept="image/*, image/heic, .dng"
       />
 
       <div className="w-full h-full absolute top-0 left-0 flex items-center justify-center">
@@ -120,6 +125,7 @@ export function UploadCloud({
             if (ref.current?.files) {
               ref.current.files = null;
             }
+            if (onClear) onClear();
           }}
         >
           <TrashBin />
