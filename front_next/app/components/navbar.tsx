@@ -130,12 +130,12 @@ function MobileNav({ data }: NavbarProps) {
   return (
     <nav className="h-full w-full relative">
       <header className="h-full w-full flex items-center">
-        <div className="ml-4 inline-block h-10">
+        <div className="ml-4 inline-block h-8">
           {user ?
             (
               <Dropdown>
                 <Dropdown.Trigger>
-                  <Avatar>
+                  <Avatar size="sm">
                     <Avatar.Fallback>
                       {user?.name?.toUpperCase()?.slice(0, 1) || user?.email?.toUpperCase()?.slice(0, 2)}
                     </Avatar.Fallback>
@@ -179,33 +179,31 @@ function MobileNav({ data }: NavbarProps) {
                   </Dropdown.Menu>
                 </Dropdown.Popover>
               </Dropdown>
-            ) : (<Avatar>
+            ) : (<Avatar size="sm">
               <Avatar.Fallback>
                 <Link href="/login">登录</Link>
               </Avatar.Fallback>
             </Avatar>)}
         </div>
 
-        <div className="grow">
-
-        </div>
+        <div className="grow"></div>
         <div className="pr-4">
           {!isOpen ? (
-            <Button isIconOnly variant="ghost" onPress={() => setIsOpen(true)}>
+            <Button className="w-8 h-8" isIconOnly variant="ghost" onPress={() => setIsOpen(true)}>
               <Bars width={32} height={32} />
             </Button>
           ) : (
-            <Button isIconOnly variant="ghost" onPress={() => setIsOpen(false)}>
+            <Button className="w-8 h-8" isIconOnly variant="ghost" onPress={() => setIsOpen(false)}>
               <Xmark width={32} height={32} />
             </Button>
           )}
         </div>
       </header>
       <div
-        className="w-full text-center bg-background overflow-hidden transition-all ease-in-out absolute top-12 left-0 rounded-xl z-50"
+        className="w-full text-center bg-background overflow-hidden transition-all ease-in-out absolute top-14 left-0 rounded-bottom-2xl z-50"
         style={{
-          height: isOpen ? 56 * (data.length + 1) + 16 : 0,
-          paddingBottom: isOpen ? 16 : 0,
+          height: isOpen ? 56 * data.length + 16 : 0,
+          paddingBottom: isOpen ? 0 : 0,
         }}
       >
         {data?.map((item) => (

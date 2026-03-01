@@ -6,7 +6,7 @@ export default function HinterLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="hinter">
+    <div className="hinter pt-2">
       {children}
     </div>
   );
