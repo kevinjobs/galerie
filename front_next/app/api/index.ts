@@ -11,7 +11,10 @@ export const genSrc = (str?: string) => {
   if (!parts) return "#";
 
   if (parts[0] === "tencent") {
-    return `https://${parts[1]}!compressed`;
+    const url = `https://${parts[1]}`;
+    let attch = '!compressed';
+
+    return url + attch;
   }
 
   return `${BASE_URL}${str}`;

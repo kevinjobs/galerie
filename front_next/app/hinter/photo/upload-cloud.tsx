@@ -1,13 +1,14 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
+import { settingAtom } from "@/app/store";
 import { Picture, TrashBin } from "@gravity-ui/icons";
 import { Button, toast } from "@heroui/react";
 import { Tags } from "exifreader";
+import { useAtomValue } from "jotai";
 import React from "react";
 import { genSrc, uploadPhoto } from "../../api";
-import { convertImage, readExifs, uploadToCOS } from "../utils";
-import { settingAtom } from "@/app/store";
-import { useAtomValue } from "jotai";
+import { convertImgFormat, readExifs, uploadToCOS } from "../utils";
+import md5 from "md5";
 
 export interface UploadOnDoneParams {
   src?: string;
@@ -19,12 +20,14 @@ export interface UploadProps {
   onDone?: ({ src, tags, file }: UploadOnDoneParams) => void;
   onProgress?: (progress: number) => void;
   onStart?: () => void;
+  onClear?: () => void;
   previewSrc?: string | null;
 }
 
 export function UploadCloud({
   onDone,
   onProgress,
+  onClear,
   previewSrc = null,
 }: UploadProps) {
   const setting = useAtomValue(settingAtom);
@@ -33,14 +36,20 @@ export function UploadCloud({
   const [src, setSrc] = React.useState<string | null>();
 
   const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const oldFile = e.target.files?.[0];
 
-    if (file) {
-      const nfile = await convertImage(file);
-      setSrc(URL.createObjectURL(nfile));
-      const exifs = await readExifs(nfile);
+    if (oldFile) {
+      // 生成新的文件名
+      const filename = `${md5(oldFile.name.split(".")[0])}.${oldFile.name.split(".")[1]}`;
+      const file = new File([oldFile], filename, { type: oldFile.type });
 
-      const handleDone = (src: string, file?: File) => {
+      const convertedFile = await convertImgFormat(file);
+
+      setSrc(URL.createObjectURL(convertedFile));
+
+      const exifs = await readExifs(file);
+
+      const handleDone = (src: string, file: File) => {
         e.target.files = null;
         if (onDone) onDone({ src, tags: exifs, file });
       };
@@ -49,14 +58,18 @@ export function UploadCloud({
         if (onProgress) onProgress(p);
       };
 
+      // 上传图片
       const upload = async () => {
         if (setting?.upload?.type === "tencent") {
-          uploadToCOS(file, handleDone, handleProgress, setting?.upload);
+          return uploadToCOS(convertedFile, (src, file) => {
+            setSrc(genSrc(src));
+            handleDone(src, file);
+          }, handleProgress, setting?.upload);
         }
 
         if (setting?.upload?.type === "local") {
           try {
-            const res = await uploadPhoto(file);
+            const res = await uploadPhoto(convertedFile);
             handleDone(`local:${res.src}`, file);
           } catch (err) {
             throw err;
@@ -80,7 +93,7 @@ export function UploadCloud({
         type="file"
         onChange={handleChange}
         ref={ref}
-        accept="image/jpeg"
+        accept="image/*, image/heic, .dng"
       />
 
       <div className="w-full h-full absolute top-0 left-0 flex items-center justify-center">
@@ -112,6 +125,7 @@ export function UploadCloud({
             if (ref.current?.files) {
               ref.current.files = null;
             }
+            if (onClear) onClear();
           }}
         >
           <TrashBin />
