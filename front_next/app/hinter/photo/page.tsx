@@ -19,9 +19,9 @@ export default function PhotoPage() {
 
   return (
     <div className="">
-      <header className="flex justify-center py-4">
+      <header className="flex justify-center">
         <ButtonGroup>
-          <Button onPress={() => router.push("/hinter/photo/add")}>
+          <Button onPress={() => router.push("/hinter/photo/add")} size="sm">
             <Plus />
             <span>上传图片</span>
           </Button>
@@ -36,13 +36,14 @@ export default function PhotoPage() {
                 toast.danger("刷新失败");
               }
             }}
+            size="sm"
           >
             <ArrowsRotateLeft />
             <span>刷新列表</span>
           </Button>
         </ButtonGroup>
       </header>
-      <main>
+      <main className="pt-2">
         <BrowserView>{data?.lists && <PhotoLists lists={data.lists} onRefresh={refetch} />}</BrowserView>
         <MobileView className="px-8">{data?.lists && <MobilePhotoLists photos={data.lists} onRefresh={refetch} />}</MobileView>
       </main>

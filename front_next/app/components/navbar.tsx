@@ -41,7 +41,7 @@ export function Navbar({ data }: NavbarProps) {
 
   return (
     <>
-      <MobileView className="w-full">
+      <MobileView className="w-full h-full">
         <MobileNav data={data} />
       </MobileView>
       <BrowserView>

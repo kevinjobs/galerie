@@ -30,7 +30,7 @@ export default function GalleryModal({
   return (
     <div className="fixed top-0 left-0 w-screen h-screen bg-background overflow-hidden">
       <main className="h-full w-full flex">
-        <section className="photo-preview-left relative py-4" style={{ width: isMobile ? "100%" : "80%" }}>
+        <section className="photo-preview-left relative" style={{ width: isMobile ? "100%" : "80%" }}>
           <header className="w-full absolute top-2 left-0 text-right">
             {isMobile && <Button isIconOnly onClick={() => setIsPanelOpen((prev) => !prev)} variant="ghost">
               <CircleInfo />
@@ -39,11 +39,13 @@ export default function GalleryModal({
               <Xmark />
             </Button>
           </header>
-          <img
-            className="h-full object-contain m-auto"
-            src={genSrc(photo?.src)}
-            alt={photo?.title}
-          />
+          <div className="h-[calc(100vh-80px)]">
+            <img
+              className="h-full object-contain m-auto"
+              src={genSrc(photo?.src)}
+              alt={photo?.title}
+            />
+          </div>
         </section>
         <BrowserView className="w-1/5">
           <section className="photo-preview-right h-full p-1">
@@ -55,7 +57,7 @@ export default function GalleryModal({
         {
           isPanelOpen && (
             <MobileView>
-              <section className="opacity-70 fixed bottom-2 left-1/2 -translate-x-1/2 w-full px-4 bg-background">
+              <section className="opacity-70 fixed bottom-8 left-1/2 -translate-x-1/2 w-full px-4 bg-background">
                 <div className="border border-border rounded-2xl p-4 overflow-auto">
                   {photo && <PhotoInfo photo={photo} />}
                 </div>
