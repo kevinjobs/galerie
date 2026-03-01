@@ -237,32 +237,34 @@ function Location() {
     const lg = longitude.split(",")[0];
     const lt = latitude.split(",")[0];
 
-    if (!location && longitude && latitude) {
-      getAddress(lg as string, lt as string).then((res) => {
-        const adds = res.regeocode.formatted_address;
-        setAddress(adds);
-        //
-        if (uid) {
-          toast.promise(
-            updatePhoto(uid, { location: adds || "", exif, ...rest }),
-            {
-              loading: "正在更新位置信息...",
-              success: "位置信息已更新",
-              error: "更新位置信息失败",
-            },
-          );
-        }
-      });
+    if (!longitude || !latitude) {
+      toast.warning("照片中没有位置信息");
+      return;
     }
+
+    getAddress(lg as string, lt as string).then((res) => {
+      const adds = res.regeocode.formatted_address;
+      setAddress(adds);
+      //
+      if (uid) {
+        toast.promise(
+          updatePhoto(uid, { location: adds || "", exif, ...rest }),
+          {
+            loading: "正在更新位置信息...",
+            success: "位置信息已更新",
+            error: "更新位置信息失败",
+          },
+        );
+      }
+    });
   };
 
   return (
     <span className="inline-block text-right grow text-sm">
-      {address || (
-        <Button variant="tertiary" onPress={handleGet} size="sm">
-          点击获取详细地址信息
-        </Button>
-      )}
+      <span>{address || "暂无位置信息"}</span>
+      <Button variant="tertiary" onPress={handleGet} size="sm" className="ml-2">
+        {address ? "更新" : "获取"}
+      </Button>
     </span>
   );
 }
