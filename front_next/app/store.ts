@@ -14,4 +14,8 @@ export const settingAtom = atomWithStorage<Setting | null>("setting", {
     region: "ap-nanjing",
     dir: "",
   },
+  map: {
+    code: '',
+    key: '',
+  }
 });

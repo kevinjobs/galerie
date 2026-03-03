@@ -50,6 +50,10 @@ export interface Setting {
     region: string;
     dir: string;
   };
+  map?: {
+    key: string;
+    code: string;
+  }
 }
 
 export interface UserPlain {
