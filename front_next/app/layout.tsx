@@ -14,6 +14,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark max-w-full" data-theme="dark">
+      <head>
+        <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+        <meta
+          name="viewport"
+          content="initial-scale=1.0, user-scalable=no, width=device-width"
+        />
+        <script src="https://webapi.amap.com/loader.js"></script>
+      </head>
       <body className="max-w-full">
         <Toast.Provider placement="top" />
         <header
@@ -30,7 +38,7 @@ export default function RootLayout({
           />
         </header>
         <QueryClientProvider client={new QueryClient()}>
-          <main className="absolute top-14 w-full max-w-full max-h-[calc(100vh-56px)] overflow-y-auto overflow-x-hidden pb-8">
+          <main className="absolute top-16 w-full max-w-full max-h-[calc(100vh-56px)] overflow-y-auto overflow-x-hidden">
             {children}
             {modal}
           </main>

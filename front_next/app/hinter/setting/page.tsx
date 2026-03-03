@@ -176,6 +176,26 @@ export default function Default({
               )}
             /></>)
         }
+        <Controller
+          name="map.key"
+          control={control}
+          rules={{ required: true }}
+          render={({ field }) => (
+            <SettingItem label="MapKey" description="地图API的密钥">
+              <Input {...field} />
+            </SettingItem>
+          )}
+        />
+        <Controller
+          name="map.code"
+          control={control}
+          rules={{ required: true }}
+          render={({ field }) => (
+            <SettingItem label="MapCode" description="地图API的Code">
+              <Input {...field} />
+            </SettingItem>
+          )}
+        />
         <div className="flex justify-center mt-4">
           <Button type="submit">保存设置</Button>
         </div>
@@ -197,7 +217,7 @@ function SettingItem({
     <div className="my-2 mb-4">
       <div className="flex items-center">
         <span className="inline-block w-24 min-w-24">{label}</span>
-      <span className="ml-4">{children}</span>
+        <span className="ml-4">{children}</span>
       </div>
       <div className="text-xs font-light text-muted">{description}</div>
     </div>
