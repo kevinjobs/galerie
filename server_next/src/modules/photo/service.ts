@@ -7,7 +7,7 @@ import {
 } from "../../generated/prismabox/Photo";
 import { ensureDirs } from "../../utils";
 
-const uploadDirs = path.join(__dirname, "../public/upload");
+const uploadDirs = path.join(__dirname, "../../../public/upload");
 
 export abstract class PhotoService {
   static async add(
