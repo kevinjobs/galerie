@@ -3,7 +3,7 @@ import { Toast } from "@heroui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Navbar } from "./components/navbar";
 import "./globals.css";
-import { isMobile } from "react-device-detect";
+import { isMobile, MobileView, BrowserView } from "react-device-detect";
 
 export default function RootLayout({
   children,
@@ -31,6 +31,7 @@ export default function RootLayout({
           <Navbar
             data={[
               { label: "Gallery", to: "/gallery" },
+              { label: "Map", to: "/map" },
               { label: "Photo", to: "/hinter/photo" },
               { label: "User", to: "/hinter/user" },
               { label: "Setting", to: "/hinter/setting" },
@@ -38,10 +39,18 @@ export default function RootLayout({
           />
         </header>
         <QueryClientProvider client={new QueryClient()}>
-          <main className="absolute top-16 w-full max-w-full max-h-[calc(100vh-56px)] overflow-y-auto overflow-x-hidden">
-            {children}
-            {modal}
-          </main>
+          <BrowserView>
+            <main className="absolute top-16 w-full max-w-full max-h-[calc(100vh-64px)] overflow-y-auto overflow-x-hidden">
+              {children}
+              {modal}
+            </main>
+          </BrowserView>
+          <MobileView>
+            <main className="absolute top-14 w-full max-w-full max-h-[calc(100vh-56px)] overflow-y-auto overflow-x-hidden">
+              {children}
+              {modal}
+            </main>
+          </MobileView>
         </QueryClientProvider>
       </body>
     </html>

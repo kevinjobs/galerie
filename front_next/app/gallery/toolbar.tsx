@@ -20,7 +20,7 @@ export default function Toolbar({ items }: ToolbarProps) {
   };
 
   return (
-    <div className="inline-block border border-border rounded-full relative p-1">
+    <div className="inline-block rounded-full relative p-1">
       {items.map((item, i) => {
         return (
           <span

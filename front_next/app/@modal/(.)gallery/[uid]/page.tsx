@@ -49,7 +49,7 @@ export default function GalleryModal({
             </Button>
           </header>
           <MobileView>
-            <div className="h-[calc(100vh-80px)]">
+            <div className="h-screen">
               <img
                 className="h-full object-contain m-auto"
                 src={genSrc(photo?.src)}
