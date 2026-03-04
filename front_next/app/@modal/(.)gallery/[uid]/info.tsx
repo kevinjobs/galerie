@@ -13,6 +13,7 @@ import {
 } from "@gravity-ui/icons";
 import { getAddress, updatePhoto } from "@/app/api";
 import { Button, toast } from "@heroui/react";
+import { isMobile } from "react-device-detect";
 
 const Context = createContext<Partial<Photo>>({});
 
@@ -89,7 +90,10 @@ export default function PhotoInfo({ photo }: { photo: Photo }) {
 
   return (
     <Context.Provider value={photo}>
-      <div className="photo-info mb-4 max-h-120 overflow-y-auto">
+      <div
+        className="photo-info h-full py-8 px-8 overflow-y-auto"
+        style={{ maxHeight: isMobile ? "480px" : "100vh" }}
+      >
         <section>
           <h2 className="mb-4">基本信息</h2>
           {Object.entries(baseInfos).map(([key, value]) => {
