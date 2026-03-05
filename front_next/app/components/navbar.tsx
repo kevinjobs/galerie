@@ -1,5 +1,5 @@
 "use client";
-import { Bars, Xmark } from "@gravity-ui/icons";
+import { Bars } from "@gravity-ui/icons";
 import { Avatar, Button, Dropdown, Label, toast } from "@heroui/react";
 import { useAtom } from "jotai";
 import Link from "next/link";
@@ -188,16 +188,10 @@ function MobileNav({ data }: NavbarProps) {
         <div className="grow"></div>
         <div className="pr-4">
           <Dropdown>
-            <Dropdown.Trigger>
-              {!isOpen ? (
-                <Button className="w-8 h-8" isIconOnly variant="ghost" onPress={() => setIsOpen(true)}>
-                  <Bars width={32} height={32} />
-                </Button>
-              ) : (
-                <Button className="w-8 h-8" isIconOnly variant="ghost" onPress={() => setIsOpen(false)}>
-                  <Xmark width={32} height={32} />
-                </Button>
-              )}
+            <Dropdown.Trigger onPress={() => setIsOpen(!isOpen)}>
+              <Button className="w-8 h-8" isIconOnly variant="ghost">
+                <Bars width={32} height={32} />
+              </Button>
             </Dropdown.Trigger>
             <Dropdown.Popover>
               <Dropdown.Menu
@@ -215,7 +209,7 @@ function MobileNav({ data }: NavbarProps) {
                     default:
                       console.log(key);
                   }
-                  setIsOpen(!isOpen);
+
                 }}
               >
                 <Dropdown.Item id="gallery" textValue="gallery">
