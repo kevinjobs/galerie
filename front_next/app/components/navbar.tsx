@@ -55,7 +55,7 @@ function BrowserNav({ data }: NavbarProps) {
       <div className="hinter-logo">
         <h1 className="text-2xl font-bold">
           <Link href="/" className="text-black dark:text-white">
-            Hinter
+            Gelerie
           </Link>
         </h1>
       </div>
@@ -128,7 +128,7 @@ function MobileNav({ data }: NavbarProps) {
   const router = useRouter();
 
   return (
-    <nav className="h-full w-full relative">
+    <nav className="h-full w-full">
       <header className="h-full w-full flex items-center">
         <div className="ml-4 inline-block h-8">
           {user ?
@@ -185,40 +185,56 @@ function MobileNav({ data }: NavbarProps) {
               </Avatar.Fallback>
             </Avatar>)}
         </div>
-
         <div className="grow"></div>
         <div className="pr-4">
-          {!isOpen ? (
-            <Button className="w-8 h-8" isIconOnly variant="ghost" onPress={() => setIsOpen(true)}>
-              <Bars width={32} height={32} />
-            </Button>
-          ) : (
-            <Button className="w-8 h-8" isIconOnly variant="ghost" onPress={() => setIsOpen(false)}>
-              <Xmark width={32} height={32} />
-            </Button>
-          )}
+          <Dropdown>
+            <Dropdown.Trigger>
+              {!isOpen ? (
+                <Button className="w-8 h-8" isIconOnly variant="ghost" onPress={() => setIsOpen(true)}>
+                  <Bars width={32} height={32} />
+                </Button>
+              ) : (
+                <Button className="w-8 h-8" isIconOnly variant="ghost" onPress={() => setIsOpen(false)}>
+                  <Xmark width={32} height={32} />
+                </Button>
+              )}
+            </Dropdown.Trigger>
+            <Dropdown.Popover>
+              <Dropdown.Menu
+                onAction={(key) => {
+                  switch (key) {
+                    case "gallery":
+                      router.push("/gallery")
+                      break;
+                    case "map":
+                      router.push("/map")
+                      break;
+                    case "hinter":
+                      router.push("/hinter")
+                      break;
+                    default:
+                      console.log(key);
+                  }
+                  setIsOpen(!isOpen);
+                }}
+              >
+                <Dropdown.Item id="gallery" textValue="gallery">
+                  <Label className="px-4">
+                    相册
+                  </Label>
+                </Dropdown.Item>
+                <Dropdown.Item id="map" textValue="map">
+                  <Label className="px-4">地图</Label>
+                </Dropdown.Item>
+                <Dropdown.Item id="hinter" textValue="hinter">
+                  <Label className="px-4">管理</Label>
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown.Popover>
+          </Dropdown>
         </div>
       </header>
-      <div
-        className="w-full text-center bg-background overflow-hidden transition-all ease-in-out absolute top-14 left-0 rounded-bottom-2xl z-50"
-        style={{
-          height: isOpen ? 56 * data.length + 16 : 0,
-          paddingBottom: isOpen ? 0 : 0,
-        }}
-      >
-        {data?.map((item) => (
-          <div key={item.to} className="h-14 flex items-center justify-center">
-            <Link
-              key={item.label}
-              href={item.to}
-              className="mx-8"
-              onClick={() => setIsOpen(false)}
-            >
-              {item.label}
-            </Link>
-          </div>
-        ))}
-      </div>
+
     </nav>
   );
 }

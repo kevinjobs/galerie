@@ -19,8 +19,6 @@ export default function PhotoPage() {
 
   return (
     <div className="">
-      <header className="flex justify-center">
-      </header>
       <main className="pt-2">
         <BrowserView>{data?.lists && <PhotoLists lists={data.lists} onRefresh={refetch} />}</BrowserView>
         <MobileView className="px-8">{data?.lists && <MobilePhotoLists photos={data.lists} onRefresh={refetch} />}</MobileView>

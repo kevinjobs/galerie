@@ -32,7 +32,7 @@ export default function Default({
   };
 
   return (
-    <div className="flex justify-center">
+    <div className="flex justify-center pb-8">
       <form onSubmit={handleSubmit(submit)}>
         <Controller
           name="theme"
