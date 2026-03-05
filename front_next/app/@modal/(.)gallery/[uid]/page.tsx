@@ -28,7 +28,9 @@ export default function GalleryModal({
 
   const router = useRouter();
   return (
-    <div className="fixed top-0 left-0 w-screen h-screen bg-background overflow-hidden">
+    <div
+      className="fixed top-0 left-0 w-screen h-screen bg-background overflow-hidden z-999"
+    >
       <main className="h-full w-full flex">
         <section
           className="photo-preview-left relative"
@@ -51,7 +53,7 @@ export default function GalleryModal({
           <MobileView>
             <div className="h-screen">
               <img
-                className="h-full object-contain m-auto"
+                className="h-full object-contain m-auto bg-background"
                 src={genSrc(photo?.src)}
                 alt={photo?.title}
               />
