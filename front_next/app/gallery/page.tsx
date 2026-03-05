@@ -14,7 +14,7 @@ export default function GalleryPage() {
 
   const [filter, setFilter] = useState<FilterType>(defaultFilter);
 
-  const { data } = useQuery({
+  const { data, isPending, isFetching } = useQuery({
     queryKey: ["data", filter],
     queryFn: () =>
       getPhotoLists({
@@ -45,11 +45,13 @@ export default function GalleryPage() {
       <div className="mx-2">
         {albumData?.length ? (
           <Album data={albumData} gap={4} />
+        ) : isPending || isFetching ? (
+          <div className="text-center">正在加载照片...</div>
         ) : (
           <div className="text-center">暂无照片 换个栏目看看</div>
         )}
       </div>
-      <footer className="fixed bottom-8 left-1/2 -translate-x-1/2">
+      <footer className="fixed bottom-4 left-1/2 -translate-x-1/2">
         <Toolbar
           items={[
             {
