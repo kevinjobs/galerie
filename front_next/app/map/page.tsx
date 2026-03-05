@@ -1,12 +1,13 @@
 "use client";
 
+import { toast } from "@heroui/react";
 import { useAtomValue } from "jotai";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { BrowserView, MobileView } from "react-device-detect";
-import { toast } from "@heroui/react";
 import { getPhotoLists } from "../api";
 import { settingAtom } from "../store";
+import { Photo } from "../typings";
 
 export default function Map() {
   const router = useRouter();
@@ -35,6 +36,34 @@ export default function Map() {
               mapStyle: "amap://styles/grey",
             });
 
+            const drawPoints = (status: any, result: any, item: Photo) => {
+              if (status !== "complete" && result.info !== "ok") return;
+              //设置圆形位置
+              const center = result.locations[0]; //圆心坐标位置对象，格式为 {lng:xxx, lat:xxx}
+              console.log(center);
+              //设置圆的半径大小
+              var radius = 10; //单位:px
+              //创建圆形点标记 CircleMarker 实例
+              const circleMarker = new AMap.CircleMarker({
+                center: center, //圆心
+                radius: radius, //半径
+                strokeColor: "white", //轮廓线颜色
+                strokeWeight: 2, //轮廓线宽度
+                strokeOpacity: 0.5, //轮廓线透明度
+                fillColor: "rgba(0,0,255,1)", //圆点填充颜色
+                fillOpacity: 0.5, //圆点填充透明度
+                zIndex: 10, //圆点覆盖物的叠加顺序
+                cursor: "pointer", //鼠标悬停时的鼠标样式
+              });
+
+              circleMarker.on("click", () => {
+                router.push(`/gallery/${item.uid}`);
+              });
+
+              //圆形 circleMarker 对象添加到 Map
+              map.add(circleMarker);
+            };
+
             const addLayer = (lists: any[]) => {
               for (const item of lists) {
                 const exif = JSON.parse(item.exif);
@@ -48,37 +77,12 @@ export default function Map() {
                   longitude !== "undefined" &&
                   latitude !== "undefined"
                 ) {
-                  AMap.convertFrom(
-                    [longitude, latitude],
-                    "gps",
-                    (status: any, result: any) => {
-                      if (status === "complete" && result.info === "ok") {
-                        //设置圆形位置
-                        var center = result.locations[0]; //圆心坐标位置对象，格式为 {lng:xxx, lat:xxx}
-                        //设置圆的半径大小
-                        var radius = 10; //单位:px
-                        //创建圆形点标记 CircleMarker 实例
-                        const circleMarker = new AMap.CircleMarker({
-                          center: center, //圆心
-                          radius: radius, //半径
-                          strokeColor: "white", //轮廓线颜色
-                          strokeWeight: 2, //轮廓线宽度
-                          strokeOpacity: 0.5, //轮廓线透明度
-                          fillColor: "rgba(0,0,255,1)", //圆点填充颜色
-                          fillOpacity: 0.5, //圆点填充透明度
-                          zIndex: 10, //圆点覆盖物的叠加顺序
-                          cursor: "pointer", //鼠标悬停时的鼠标样式
-                        });
-
-                        circleMarker.on("click", () => {
-                          router.push(`/gallery/${item.uid}`);
-                        });
-
-                        //圆形 circleMarker 对象添加到 Map
-                        map.add(circleMarker);
-                      }
-                    },
+                  const lngLat = [longitude, latitude];
+                  AMap.convertFrom(lngLat, "gps", (status: any, result: any) =>
+                    drawPoints(status, result, item),
                   );
+                } else {
+                  console.warn("no gps, cannot draw.");
                 }
               }
             };
@@ -89,6 +93,8 @@ export default function Map() {
 
                 if (lists?.length > 0) {
                   callback(lists);
+                } else {
+                  toast.danger("no photo.");
                 }
               });
             };
