@@ -20,7 +20,7 @@ export default function Toolbar({ items }: ToolbarProps) {
   };
 
   return (
-    <div className="inline-block rounded-full relative p-1">
+    <div className="inline-block rounded-full relative p-1 bg-transparent backdrop-blur-lg opacity-70">
       {items.map((item, i) => {
         return (
           <span
@@ -37,7 +37,7 @@ export default function Toolbar({ items }: ToolbarProps) {
         );
       })}
       <span
-        className="absolute toolbar-thumb block w-14 h-10 top-1 text-center py-2 bg-foreground rounded-full transition-all transition-duration-300 backdrop-sm opacity-10"
+        className="absolute toolbar-thumb block w-14 h-10 top-1 text-center py-2 bg-foreground rounded-full transition-all transition-duration-300 opacity-15"
         style={{ translate: `${offset * 56}px` }}
       ></span>
     </div>

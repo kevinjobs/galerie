@@ -51,7 +51,7 @@ export default function GalleryPage() {
           <div className="text-center">暂无照片 换个栏目看看</div>
         )}
       </div>
-      <footer className="fixed bottom-8 left-1/2 -translate-x-1/2">
+      <footer className="fixed bottom-4 left-1/2 -translate-x-1/2">
         <Toolbar
           items={[
             {
