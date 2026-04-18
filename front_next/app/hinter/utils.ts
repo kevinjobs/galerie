@@ -2,6 +2,7 @@ import COS from "cos-js-sdk-v5";
 import * as ExifReader from "exifreader";
 import { heicTo, isHeic } from "heic-to";
 import { Exif } from "../typings";
+import { getCosUploadInfo } from "../api";
 
 export async function convertImgFormat(file: File) {
   // 因为腾讯云可以上传heic文件，所以这里不需要转换
@@ -55,23 +56,23 @@ export async function uploadToCOS(
   onDone?: (src: string, file: File) => void,
   onProgress?: (progress: number) => void,
   options?: {
-    secretId: string;
-    secretKey: string;
-    bucket: string;
-    region: string;
     dir: string;
   },
 ) {
+  // 获取上传信息（临时密钥和 COS 文件路径）
+  const uploadInfo = await getCosUploadInfo(file.name);
+
   const cos = new COS({
-    SecretId: options?.secretId,
-    SecretKey: options?.secretKey,
+    SecretId: uploadInfo.credentials.tmpSecretId,
+    SecretKey: uploadInfo.credentials.tmpSecretKey,
+    SecurityToken: uploadInfo.credentials.sessionToken,
     Protocol: 'https', // 统一使用 https 协议，否则会有跨域问题
   });
 
   const config: COS.UploadFileParams = {
-    Bucket: options?.bucket || "",
-    Region: options?.region || "",
-    Key: `${options?.dir || "upload"}/${file.name}`,
+    Bucket: uploadInfo.bucket,
+    Region: uploadInfo.region,
+    Key: uploadInfo.key,
     Body: file,
     SliceSize: 1024 * 1024 * 5,
     onProgress: (progressData) => {
@@ -89,7 +90,8 @@ export async function uploadToCOS(
     const data = await cos.uploadFile(config);
     return data;
   } catch (err) {
-    return err;
+    console.error("上传失败:", err);
+    throw err;
   }
 }
 

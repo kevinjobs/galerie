@@ -207,6 +207,23 @@ export const getAddress = async (
   return response.json();
 };
 
+// 获取腾讯云上传信息（临时密钥和 COS 文件路径）
+export const getCosUploadInfo = async (filename: string) => {
+  const token = localStorage.getItem("token")?.replaceAll('"', "");
+  const response = await fetch(`${BASE_URL}/cos/upload?filename=${encodeURIComponent(filename)}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(`获取上传信息失败: [ ${error.error} ]`);
+  }
+
+  return await response.json();
+};
+
 //
 // 以下是用户相关的 API
 //
