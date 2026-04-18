@@ -1,5 +1,7 @@
 import { db } from "./db";
 import { Photo, Prisma } from "@prisma/client";
+import path from "path";
+import fs from "fs/promises";
 
 export interface PhotoCreateInput {
   title: string;
@@ -20,6 +22,16 @@ export interface PhotoListParams {
   order?: string;
   isSelected?: boolean;
   isPublic?: boolean;
+}
+
+const uploadDir = path.join(process.cwd(), "public/upload");
+
+async function ensureUploadDir() {
+  try {
+    await fs.access(uploadDir);
+  } catch {
+    await fs.mkdir(uploadDir, { recursive: true });
+  }
 }
 
 export abstract class PhotoService {
@@ -104,5 +116,27 @@ export abstract class PhotoService {
     await db.photo.delete({
       where: { uid: photoUid },
     });
+  }
+
+  static async upload(file: File): Promise<string> {
+    await ensureUploadDir();
+    const filepath = path.join(uploadDir, file.name);
+
+    try {
+      const buffer = Buffer.from(await file.arrayBuffer());
+      await fs.writeFile(filepath, buffer);
+      return `/photo/file/${file.name}`;
+    } catch {
+      throw new Error("Failed to upload photo");
+    }
+  }
+
+  static async getFile(filename: string): Promise<Buffer | null> {
+    const filepath = path.join(uploadDir, filename);
+    try {
+      return await fs.readFile(filepath);
+    } catch {
+      return null;
+    }
   }
 }
