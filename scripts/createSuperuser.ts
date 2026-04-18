@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { db } from "../src/lib/db";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
@@ -37,20 +38,40 @@ async function createSuperuser() {
   try {
     const hashedPassword = await hashPassword(password);
 
-    const user = await db.user.create({
-      data: {
-        name: "admin",
-        email,
-        password: hashedPassword,
-        nickname: "Super Admin",
-        permissions: ALL_PERMISSIONS,
-      },
+    // 检查是否已存在用户
+    const existingUser = await db.user.findUnique({
+      where: { email },
     });
+
+    let user;
+    if (existingUser) {
+      // 更新现有用户
+      user = await db.user.update({
+        where: { email },
+        data: {
+          password: hashedPassword,
+          nickname: "Super Admin",
+          permissions: ALL_PERMISSIONS,
+        },
+      });
+      console.log("✅ User updated successfully!");
+    } else {
+      // 创建新用户
+      user = await db.user.create({
+        data: {
+          name: "admin",
+          email,
+          password: hashedPassword,
+          nickname: "Super Admin",
+          permissions: ALL_PERMISSIONS,
+        },
+      });
+      console.log("✅ Superuser created successfully!");
+    }
 
     const { password: _, ...userWithoutPassword } = user;
     const token = jwt.sign(userWithoutPassword, process.env.JWT_SECRET || "default-secret-key", { expiresIn: "7d" });
 
-    console.log("✅ Superuser created successfully!");
     console.log("\nUser info:");
     console.log(JSON.stringify(userWithoutPassword, null, 2));
     console.log("\nJWT Token:");
