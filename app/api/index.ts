@@ -1,10 +1,7 @@
 import { PhotoCreate, PhotoUpdate, UserCreate, UserUpdate } from "../typings";
 import { wgs84ToGcj02 } from "../hinter/utils";
 
-export const BASE_URL =
-  process.env.NODE_ENV === "production"
-    ? "https://api.kevinjobs.com"
-    : "/api";
+export const BASE_URL = "/api";
 
 export const genSrc = (str?: string) => {
   const parts = str?.split(":");
