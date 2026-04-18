@@ -3,7 +3,8 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 
 function parseDatabaseUrl(url: string) {
-  const match = url.match(/postgresql:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)/);
+  // 支持 postgres:// 和 postgresql:// 前缀
+  const match = url.match(/postgres(?:ql)?:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/([^?]+)(?:\?(.*))?/);
   if (!match) {
     throw new Error("Invalid DATABASE_URL format");
   }
