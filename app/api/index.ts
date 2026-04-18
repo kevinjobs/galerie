@@ -1,4 +1,5 @@
 import { PhotoCreate, PhotoUpdate, UserCreate, UserUpdate } from "../typings";
+import { wgs84ToGcj02 } from "../hinter/utils";
 
 export const BASE_URL =
   process.env.NODE_ENV === "production"
@@ -194,10 +195,14 @@ export const getAddress = async (
   longitude: string,
   latitude: string,
 ): Promise<AddressResponse> => {
+  const lng = parseFloat(longitude);
+  const lat = parseFloat(latitude);
+
+  const [gcjLng, gcjLat] = wgs84ToGcj02(lng, lat);
+
   const baseUrl = "https://restapi.amap.com/v3/geocode/regeo";
-  // 这是一个免费的无限制的key
   const key = "be262c006216c542747fce766130cee3";
-  const url = `${baseUrl}?location=${longitude},${latitude}&key=${key}`;
+  const url = `${baseUrl}?location=${gcjLng},${gcjLat}&key=${key}`;
   const response = await fetch(url);
 
   if (!response.ok) {

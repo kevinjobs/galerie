@@ -8,6 +8,7 @@ import { isMobile } from "react-device-detect";
 import { useQuery } from "@tanstack/react-query";
 import { getPhotoLists } from "../api";
 import { Photo } from "../typings";
+import { wgs84ToGcj02 } from "../hinter/utils";
 
 const MapContainer = dynamic(
   () => import("react-leaflet").then((m) => m.MapContainer),
@@ -57,7 +58,8 @@ function MapContent() {
     if (isNaN(lng) || isNaN(lat)) return null;
     if (lng < -180 || lng > 180 || lat < -90 || lat > 90) return null;
 
-    return [lat, lng];
+    const [gcjLng, gcjLat] = wgs84ToGcj02(lng, lat);
+    return [gcjLat, gcjLng];
   };
 
   const markers: Photo[] = data?.lists?.filter((item: Photo) => getPosition(item) !== null) || [];
