@@ -21,7 +21,7 @@ export default function RootLayout({
           name="viewport"
           content="initial-scale=1.0, user-scalable=no, width=device-width"
         />
-        <script src="https://webapi.amap.com/loader.js"></script>
+        
       </head>
       <body className="">
         <Toast.Provider placement="top" />
