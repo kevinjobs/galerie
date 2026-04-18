@@ -133,69 +133,7 @@ export default function Default({
             </SettingItem>
           )}
         />
-        {
-          watch("upload.type") === "tencent" && (<>
-            <Controller
-              name="upload.secretId"
-              control={control}
-              rules={{ required: true }}
-              render={({ field }) => (
-                <SettingItem label="Secret ID" description="对象存储的 Secret ID">
-                  <Input {...field} />
-                </SettingItem>
-              )}
-            />
-            <Controller
-              name="upload.secretKey"
-              control={control}
-              rules={{ required: true }}
-              render={({ field }) => (
-                <SettingItem label="Secret Key" description="对象存储的 Secret Key">
-                  <Input {...field} />
-                </SettingItem>
-              )}
-            />
-            <Controller
-              name="upload.region"
-              control={control}
-              rules={{ required: true }}
-              render={({ field }) => (
-                <SettingItem label="Region" description="对象存储的地域信息，例如 'ap-guangzhou'">
-                  <Input {...field} />
-                </SettingItem>
-              )}
-            />
-            <Controller
-              name="upload.bucket"
-              control={control}
-              rules={{ required: false }}
-              render={({ field }) => (
-                <SettingItem label="Bucket" description="对象存储的 Bucket 名称，如果不填则使用默认 Bucket">
-                  <Input {...field} />
-                </SettingItem>
-              )}
-            /></>)
-        }
-        <Controller
-          name="map.key"
-          control={control}
-          rules={{ required: true }}
-          render={({ field }) => (
-            <SettingItem label="MapKey" description="地图API的密钥">
-              <Input {...field} />
-            </SettingItem>
-          )}
-        />
-        <Controller
-          name="map.code"
-          control={control}
-          rules={{ required: true }}
-          render={({ field }) => (
-            <SettingItem label="MapCode" description="地图API的Code">
-              <Input {...field} />
-            </SettingItem>
-          )}
-        />
+
         <div className="flex justify-center mt-4">
           <Button type="submit">保存设置</Button>
         </div>
