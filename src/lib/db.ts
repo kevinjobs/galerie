@@ -8,12 +8,22 @@ function parseDatabaseUrl(url: string) {
   if (!match) {
     throw new Error("Invalid DATABASE_URL format");
   }
+  
+  // 解析查询参数
+  const queryParams = match[6] ? Object.fromEntries(
+    match[6].split('&').map(param => {
+      const [key, value] = param.split('=');
+      return [key, decodeURIComponent(value)];
+    })
+  ) : {};
+  
   return {
     user: match[1],
     password: match[2],
     host: match[3],
     port: parseInt(match[4]),
     database: match[5],
+    ssl: queryParams.sslmode === 'require'
   };
 }
 
@@ -25,6 +35,9 @@ const pool = new Pool({
   user: dbConfig.user,
   password: dbConfig.password,
   database: dbConfig.database,
+  ssl: dbConfig.ssl ? {
+    rejectUnauthorized: false
+  } : false
 });
 
 const adapter = new PrismaPg(pool);
