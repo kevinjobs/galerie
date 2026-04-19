@@ -3,5 +3,5 @@ export default function GalleryLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <div className="">{children}</div>;
+  return <div className="pt-16">{children}</div>;
 }
