@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { UserService } from "@/src/lib/userService";
-import { AuthTool } from "@/src/lib/auth";
-import { NotFoundError, WrongPasswordError } from "@/src/lib/errors";
+import { UserService } from "@/prisma/lib/userService";
+import { AuthTool } from "@/prisma/lib/auth";
+import { NotFoundError, WrongPasswordError } from "@/prisma/lib/errors";
 
 export async function POST(request: NextRequest) {
   try {

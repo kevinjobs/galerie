@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { AuthTool } from "@/src/lib/auth";
-import { sendVerificationEmail } from "@/src/lib/email";
-import { db } from "@/src/lib/db";
+import { AuthTool } from "@/prisma/lib/auth";
+import { sendVerificationEmail } from "@/prisma/lib/email";
+import { db } from "@/prisma/lib/db";
 
 export async function GET(request: NextRequest) {
   try {

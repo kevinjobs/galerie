@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { UserService } from "@/src/lib/userService";
+import { UserService } from "@/prisma/lib/userService";
 
 const DEFAULT_PERMISSIONS = [
   "photo.create",

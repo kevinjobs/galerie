@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { db } from "../src/lib/db";
+import { db } from "../prisma/lib/db";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 

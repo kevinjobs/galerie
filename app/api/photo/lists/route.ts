@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PhotoService } from "@/src/lib/photoService";
+import { PhotoService } from "@/prisma/lib/photoService";
 
 export async function GET(request: NextRequest) {
   try {

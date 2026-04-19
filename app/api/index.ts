@@ -3,14 +3,14 @@ import { wgs84ToGcj02 } from "../hinter/utils";
 
 export const BASE_URL = "/api";
 
-export const genSrc = (str?: string) => {
+export const genSrc = (str?: string, compressed?: boolean) => {
   const parts = str?.split(":");
 
   if (!parts) return "#";
 
   if (parts[0] === "tencent") {
     const url = `https://${parts[1]}`;
-    const attch = '!compressed';
+    const attch = compressed ? '!compressed' : '';
 
     return url + attch;
   }
