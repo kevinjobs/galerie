@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PhotoService } from "@/src/lib/photoService";
-import { AuthTool } from "@/src/lib/auth";
+import { PhotoService } from "@/prisma/lib/photoService";
+import { AuthTool } from "@/prisma/lib/auth";
 
 export async function POST(request: NextRequest) {
   try {

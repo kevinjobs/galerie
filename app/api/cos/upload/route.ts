@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { AuthTool } from "@/src/lib/auth";
+import { AuthTool } from "@/prisma/lib/auth";
 import STS from "qcloud-cos-sts";
 import path from "path";
 

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PhotoService } from "@/src/lib/photoService";
-import { AuthTool } from "@/src/lib/auth";
-import { PermissionError } from "@/src/lib/errors";
+import { PhotoService } from "@/prisma/lib/photoService";
+import { AuthTool } from "@/prisma/lib/auth";
+import { PermissionError } from "@/prisma/lib/errors";
 
 export async function GET(request: NextRequest) {
   try {

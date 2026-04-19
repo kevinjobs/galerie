@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { AuthTool } from "@/src/lib/auth";
-import { PermissionError } from "@/src/lib/errors";
+import { AuthTool } from "@/prisma/lib/auth";
+import { PermissionError } from "@/prisma/lib/errors";
 
 export async function POST(request: NextRequest) {
   try {
