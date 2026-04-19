@@ -10,7 +10,7 @@ export const genSrc = (str?: string, compressed?: boolean) => {
 
   if (parts[0] === "tencent") {
     const url = `https://${parts[1]}`;
-    const attch = compressed ? '!compressed' : '';
+    const attch = compressed ? '!compressed' : '!origin';
 
     return url + attch;
   }

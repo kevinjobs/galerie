@@ -6,7 +6,7 @@ export default function Layout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="galerie-map-main w-full h-full">
+    <div className="galerie-map-main w-full h-screen">
       {children}
     </div>
   );
