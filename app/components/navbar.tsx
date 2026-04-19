@@ -197,6 +197,9 @@ function MobileNav({ data }: NavbarProps) {
               <Dropdown.Menu
                 onAction={(key) => {
                   switch (key) {
+                    case "home":
+                      router.push("/")
+                      break;
                     case "gallery":
                       router.push("/gallery")
                       break;
@@ -212,6 +215,11 @@ function MobileNav({ data }: NavbarProps) {
 
                 }}
               >
+                <Dropdown.Item id="home" textValue="home">
+                  <Label className="px-4">
+                    首页
+                  </Label>
+                </Dropdown.Item>
                 <Dropdown.Item id="gallery" textValue="gallery">
                   <Label className="px-4">
                     相册

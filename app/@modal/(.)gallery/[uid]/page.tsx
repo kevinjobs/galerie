@@ -63,7 +63,7 @@ export default function GalleryModal({
             <div className="h-screen">
               <img
                 className="h-full object-contain m-auto"
-                src={genSrc(photo?.src)}
+                src={genSrc(photo?.src, false)}
                 alt={photo?.title}
               />
             </div>

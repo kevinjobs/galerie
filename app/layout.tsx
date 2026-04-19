@@ -31,6 +31,7 @@ export default function RootLayout({
         >
           <Navbar
             data={[
+              { label: "Home", to: "/" },
               { label: "Gallery", to: "/gallery" },
               { label: "Map", to: "/map" },
               { label: "Hinter", to: "/hinter" },

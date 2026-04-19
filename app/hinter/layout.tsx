@@ -9,7 +9,7 @@ export default function HinterLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="hinter pt-2">
+    <div className="hinter pt-16">
       {children}
     </div>
   );

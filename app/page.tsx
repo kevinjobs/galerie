@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getPhotoLists, genSrc } from "./api";
 import { Photo } from "./typings";
 import { LocationArrowFill } from "@gravity-ui/icons";
+import { isMobile } from "react-device-detect";
 
 export default function Home() {
   const { data, isLoading } = useQuery({
@@ -35,6 +36,7 @@ export default function Home() {
         const width = getNumber(exif.width);
         const height = getNumber(exif.height);
 
+        if (isMobile) return height > width;
         return width > height;
       } catch (error) {
         return false;
@@ -102,7 +104,7 @@ export default function Home() {
         coverPhoto?.location && (
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex items-center justify-center opacity-50">
             <LocationArrowFill className="w-3 h-3 text-white/80" />
-            <span className="text-white/80 text-sm font-light tracking-wide text-center ml-2">
+            <span className="text-white/80 text-sm font-light tracking-wide ml-2">
               {coverPhoto.location}
             </span>
           </div>
