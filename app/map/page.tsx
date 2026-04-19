@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import dynamic from "next/dynamic";
 import { toast } from "@heroui/react";
 import { useRouter } from "next/navigation";
@@ -29,10 +30,39 @@ const Popup = dynamic(
 
 import "leaflet/dist/leaflet.css";
 
+// 暗色地图样式
+const darkMapStyle = `
+  #map-container .leaflet-container {
+    filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
+  }
+  
+  #map-container .leaflet-popup-content-wrapper {
+    background: rgba(20, 20, 30, 0.9);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+  }
+  
+  #map-container .leaflet-popup-tip {
+    background: rgba(20, 20, 30, 0.9);
+  }
+`;
+
 const gaodeImgUrl = "http://wprd04.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scl=1&style=9&x={x}&y={y}&z={z}";
 
 function MapContent() {
   const router = useRouter();
+
+  // 应用暗色地图样式
+  React.useEffect(() => {
+    const styleElement = document.createElement('style');
+    styleElement.innerHTML = darkMapStyle;
+    document.head.appendChild(styleElement);
+
+    return () => {
+      document.head.removeChild(styleElement);
+    };
+  }, []);
 
   const { data } = useQuery({
     queryKey: ["data"],
@@ -93,11 +123,11 @@ function MapContent() {
                   center={pos}
                   radius={8}
                   pathOptions={{
-                    color: "white",
+                    color: "red",
                     weight: 2,
-                    opacity: 0.5,
-                    fillColor: "blue",
-                    fillOpacity: 0.5,
+                    opacity: 1,
+                    fillColor: "#eb4034ff",
+                    fillOpacity: 0.8,
                   }}
                   eventHandlers={{
                     click: () => {
@@ -105,14 +135,14 @@ function MapContent() {
                     },
                   }}
                 >
-                  <Popup>{item.title}</Popup>
+
                 </CircleMarker>
               );
             })}
           </MapContainer>
         </div>
       ) : (
-        <div id="map-container" className="w-full h-[calc(100vh-64px)]">
+        <div id="map-container" className="w-full h-screen">
           <MapContainer
             center={[31, 118]}
             zoom={5}
@@ -132,11 +162,11 @@ function MapContent() {
                   center={pos}
                   radius={10}
                   pathOptions={{
-                    color: "white",
+                    color: "red",
                     weight: 2,
-                    opacity: 0.5,
-                    fillColor: "blue",
-                    fillOpacity: 0.5,
+                    opacity: 1,
+                    fillColor: "#f12929ff",
+                    fillOpacity: 0.8,
                   }}
                   eventHandlers={{
                     click: () => {
@@ -144,7 +174,7 @@ function MapContent() {
                     },
                   }}
                 >
-                  <Popup>{item.title}</Popup>
+
                 </CircleMarker>
               );
             })}
