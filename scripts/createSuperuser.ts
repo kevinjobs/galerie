@@ -26,12 +26,14 @@ async function hashPassword(password: string): Promise<string> {
 }
 
 async function createSuperuser() {
-  const email = process.argv[2];
-  const password = process.argv[3];
+  const email = process.env.SUPERUSER_EMAIL;
+  const password = process.env.SUPERUSER_PASSWORD;
 
   if (!email || !password) {
-    console.log("Usage: npx tsx scripts/createSuperuser.ts <email> <password>");
-    console.log("Example: npx tsx scripts/createSuperuser.ts admin@example.com mypassword123");
+    console.log("Please set SUPERUSER_EMAIL and SUPERUSER_PASSWORD in .env");
+    console.log("Example:");
+    console.log('SUPERUSER_EMAIL=admin@example.com');
+    console.log('SUPERUSER_PASSWORD=mypassword123');
     process.exit(1);
   }
 
