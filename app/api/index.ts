@@ -322,6 +322,20 @@ export const signToken = async (email: string, password: string) => {
   return await response.json();
 };
 
+export const changePassword = async (oldPassword: string, newPassword: string) => {
+  const response = await _fetch(`${BASE_URL}/user/password`, {
+    method: "PUT",
+    body: JSON.stringify({ oldPassword, newPassword }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || "修改密码失败");
+  }
+
+  return await response.json();
+};
+
 export const verifyToken = async (token: string) => {
   const response = await _fetch(`${BASE_URL}/auth/verify-token`, {
     method: "POST",

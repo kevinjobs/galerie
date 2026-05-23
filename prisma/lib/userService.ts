@@ -46,9 +46,9 @@ export abstract class UserService {
 
     if (input.password) {
       data.password = await this.hashPassword(input.password);
+    } else {
+      delete data.password;
     }
-
-    delete data.password;
 
     const user = await db.user.update({
       where: { uid },

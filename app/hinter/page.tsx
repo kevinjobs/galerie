@@ -10,6 +10,8 @@ export default function HinterPage() {
       <div><Link href="/hinter/user">User</Link></div>
 
       <div><Link href="/hinter/setting">Setting</Link></div>
+
+      <div><Link href="/hinter/profile">Profile</Link></div>
     </div>
   );
 }
