@@ -91,7 +91,7 @@ export default function PhotoInfo({ photo }: { photo: Photo }) {
   return (
     <Context.Provider value={photo}>
       <div
-        className="photo-info h-full py-8 px-8 overflow-y-auto"
+        className="photo-info h-full py-8 px-8 overflow-y-auto break-words"
         style={{ maxHeight: isMobile ? "480px" : "100vh" }}
       >
         <section>
@@ -149,7 +149,7 @@ function PhotoInfoItem({
           <span className="ml-1">编号</span>
         </label>
       );
-      valueElement = <span className="text-muted">{value}</span>;
+      valueElement = <span className="truncate text-muted block">{value}</span>;
       break;
     case "title":
       labelElement = (
@@ -158,6 +158,7 @@ function PhotoInfoItem({
           <span className="ml-1">标题</span>
         </label>
       );
+      valueElement = <span className="break-words">{value}</span>;
       break;
     case "description":
       labelElement = (
@@ -166,7 +167,7 @@ function PhotoInfoItem({
           <span className="ml-1">描述</span>
         </label>
       );
-      valueElement = value || "没有描述";
+      valueElement = <span className="break-words">{value || "没有描述"}</span>;
       break;
     case "location":
       labelElement = (
@@ -220,11 +221,11 @@ function PhotoInfoItem({
   }
 
   return (
-    <div className="w-full flex my-2 items-center">
-      <label className="text-sm text-muted min-w-19" data-label={name}>
+    <div className="w-full flex my-2 items-start">
+      <label className="shrink-0 text-sm text-muted min-w-19" data-label={name}>
         {labelElement}
       </label>
-      <span className="inline-block text-right grow text-sm">
+      <span className="min-w-0 text-right grow text-sm break-all leading-normal">
         {valueElement}
       </span>
     </div>
@@ -273,7 +274,7 @@ function Location() {
   };
 
   return (
-    <span className="inline-block text-right grow text-sm">
+    <span className="inline-block text-right grow text-sm break-words">
       <span>{address || "暂无位置信息"}</span>
       <Button variant="tertiary" onPress={handleGet} size="sm" className="ml-2">
         {address ? "更新" : "获取"}

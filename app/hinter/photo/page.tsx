@@ -2,7 +2,7 @@
 import { getPhotoLists } from "@/app/api";
 import { ArrowsRotateLeft, Plus } from "@gravity-ui/icons";
 import { Button, Input, toast } from "@heroui/react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Photo } from "@/app/typings";
 import { useRouter } from "next/navigation";
@@ -18,6 +18,7 @@ type FilterKey = (typeof filterTabs)[number]["key"];
 
 export default function PhotoPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [filter, setFilter] = useState<FilterKey>("all");
   const [keyword, setKeyword] = useState("");
 
@@ -28,7 +29,7 @@ export default function PhotoPage() {
         orderBy: "shootTime",
         order: "desc",
       }),
-  });
+    });
 
   const photos: Photo[] = useMemo(() => data?.lists || [], [data]);
 
@@ -54,11 +55,14 @@ export default function PhotoPage() {
   };
 
   const handleRefresh = () => {
-    toast.promise(refetch(), {
-      loading: "正在刷新照片列表...",
-      success: "刷新成功",
-      error: "刷新失败，请重试",
-    });
+    toast.promise(
+      queryClient.invalidateQueries({ queryKey: ["photoLists"] }),
+      {
+        loading: "正在刷新照片列表...",
+        success: "刷新成功",
+        error: "刷新失败，请重试",
+      },
+    );
   };
 
   return (

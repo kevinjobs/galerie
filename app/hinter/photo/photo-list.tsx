@@ -96,7 +96,7 @@ export default function PhotoList({
           <div className="p-4 lg:p-5">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0">
-                <h3 className="text-lg font-semibold text-foreground lg:text-xl">
+                <h3 className="truncate text-lg font-semibold text-foreground lg:text-xl">
                   {item.title || "未命名照片"}
                 </h3>
                 <p className="mt-1 line-clamp-2 text-sm text-muted">
@@ -111,7 +111,7 @@ export default function PhotoList({
             <div className="mt-3 grid grid-cols-2 gap-3">
               <div className="rounded-2xl bg-background p-3">
                 <p className="text-[11px] uppercase tracking-[0.24em] text-muted">摄影师</p>
-                <p className="mt-0.5 text-sm text-foreground">{item.author || "未知"}</p>
+                <p className="mt-0.5 truncate text-sm text-foreground">{item.author || "未知"}</p>
               </div>
               <div className="rounded-2xl bg-background p-3">
                 <p className="text-[11px] uppercase tracking-[0.24em] text-muted">位置</p>
