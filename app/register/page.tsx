@@ -1,7 +1,7 @@
 "use client";
 
 import { Check } from "@gravity-ui/icons";
-import { Button, Card, Header, Input, InputOTP, Label, toast } from "@heroui/react";
+import { Button, Input, InputOTP, Label, toast } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { registerUser, sendVerifyCode } from "../api";
@@ -30,15 +30,7 @@ export default function Basic() {
   });
 
   const submit = (data: RegisterFormData) => {
-    const register = async () => {
-      try {
-        await registerUser(data.email, data.password, data.verifyCode);
-      } catch (error) {
-        throw error;
-      }
-    }
-
-    register().then(() => {
+    registerUser(data.email, data.password, data.verifyCode).then(() => {
       toast.success("注册成功！正在跳转到登录页...");
       setTimeout(() => {
         router.push("/login");
@@ -49,9 +41,10 @@ export default function Basic() {
   };
 
   return (
-    <Card className="inline-block p-8">
-      <Header className="text-2xl text-center font-bold">注册用户</Header>
-      <form onSubmit={handleSubmit(submit)} className="mt-8">
+    <div className="w-full max-w-md rounded-3xl border border-border bg-surface p-8 shadow-sm">
+      <h1 className="text-center text-2xl font-bold text-foreground">注册用户</h1>
+      <p className="mt-2 text-center text-sm text-muted">输入邮箱和验证码以创建账户</p>
+      <form onSubmit={handleSubmit(submit)} className="mt-8 space-y-5">
         <Controller
           name="email"
           control={control}
@@ -59,12 +52,10 @@ export default function Basic() {
           rules={{ required: "请输入邮箱", pattern: { value: /^\S+@\S+$/i, message: "请输入有效的邮箱地址" } }}
           render={({ field }) => (
             <div>
-              <div className="flex flex-nowrap mb-2 items-center">
-                <label htmlFor="email" className="w-12 inline-block">
-                  邮箱
-                </label>
-                <Input id="email" {...field} aria-invalid={errors.email ? "true" : "false"} />
-                <Button variant="secondary" className="ml-4" onClick={() => {
+              <label htmlFor="email" className="mb-1 block text-sm text-foreground">邮箱</label>
+              <div className="flex gap-2">
+                <Input id="email" {...field} placeholder="your@email.com" className="flex-1" />
+                <Button variant="secondary" onPress={() => {
                   toast.promise(sendVerifyCode(getValues("email")), {
                     loading: "正在发送验证码...",
                     success: "验证码已发送，请检查邮箱",
@@ -72,7 +63,7 @@ export default function Basic() {
                   })
                 }}>发送验证码</Button>
               </div>
-              <p className="text-sm text-red-500 mt-1 h-5">{errors.email?.message}</p>
+              <p className="mt-1 text-xs text-danger h-4">{errors.email?.message}</p>
             </div>
           )}
         />
@@ -83,13 +74,9 @@ export default function Basic() {
           rules={{ required: "请输入密码", minLength: { value: 8, message: "密码至少需要8个字符" } }}
           render={({ field }) => (
             <div>
-              <div className="flex flex-nowrap mb-2 items-center">
-                <label htmlFor="password" className="w-12 inline-block">
-                  密码
-                </label>
-                <Input id="password" type="password" {...field} />
-              </div>
-              <p className="text-sm text-red-500 mt-1 h-5">{errors.password?.message}</p>
+              <label htmlFor="password" className="mb-1 block text-sm text-foreground">密码</label>
+              <Input id="password" type="password" {...field} placeholder="········" className="w-full" />
+              <p className="mt-1 text-xs text-danger h-4">{errors.password?.message}</p>
             </div>
           )}
         />
@@ -99,38 +86,42 @@ export default function Basic() {
           defaultValue=""
           rules={{ required: "请输入验证码", minLength: { value: 6, message: "验证码必须是6位" }, maxLength: { value: 6, message: "验证码必须是6位" } }}
           render={({ field }) => (
-            <div className="flex flex-col gap-2 text-center mt-8 items-center">
-              <div className="flex flex-col gap-1">
-                <Label>请输入验证码</Label>
-                <p className="text-sm text-muted">验证码已经发送至邮箱 {getValues("email")}</p>
+            <div className="space-y-3">
+              <Label className="block text-sm text-foreground">请输入验证码</Label>
+              <p className="text-xs text-muted">验证码已发送至 {getValues("email")}</p>
+              <div className="flex justify-center gap-1">
+                <InputOTP maxLength={6} {...field}>
+                  <InputOTP.Group>
+                    <InputOTP.Slot index={0} />
+                    <InputOTP.Slot index={1} />
+                    <InputOTP.Slot index={2} />
+                  </InputOTP.Group>
+                  <InputOTP.Separator />
+                  <InputOTP.Group>
+                    <InputOTP.Slot index={3} />
+                    <InputOTP.Slot index={4} />
+                    <InputOTP.Slot index={5} />
+                  </InputOTP.Group>
+                </InputOTP>
               </div>
-              <InputOTP maxLength={6} {...field}>
-                <InputOTP.Group>
-                  <InputOTP.Slot index={0} />
-                  <InputOTP.Slot index={1} />
-                  <InputOTP.Slot index={2} />
-                </InputOTP.Group>
-                <InputOTP.Separator />
-                <InputOTP.Group>
-                  <InputOTP.Slot index={3} />
-                  <InputOTP.Slot index={4} />
-                  <InputOTP.Slot index={5} />
-                </InputOTP.Group>
-              </InputOTP>
-              <p className="text-sm text-red-500 mt-1 h-5">{errors.verifyCode?.message}</p>
-              <div className="flex items-center gap-[5px] px-1 pt-1 justify-center">
-                <p className="text-sm text-muted">未收到邮件?</p>
-                <Button className="" variant="ghost">
-                  重新发送邮件
+              <p className="text-xs text-danger h-4 text-center">{errors.verifyCode?.message}</p>
+              <div className="flex items-center justify-center gap-1">
+                <p className="text-xs text-muted">未收到邮件?</p>
+                <Button variant="ghost" size="sm" onPress={() => {
+                  toast.promise(sendVerifyCode(getValues("email")), {
+                    loading: "正在重新发送验证码...",
+                    success: "验证码已重新发送",
+                    error: "发送失败，请稍后再试",
+                  });
+                }}>
+                  重新发送
                 </Button>
               </div>
             </div>
           )}
         />
-        <div className="text-center">
-          <Button type="submit" className="mt-8"><Check />点击注册</Button>
-        </div>
+        <Button type="submit" className="w-full"><Check />点击注册</Button>
       </form>
-    </Card>
+    </div>
   );
 }

@@ -107,11 +107,18 @@ export default function HinterLayout({
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex flex-col items-center gap-1 px-3 py-1.5 text-xs transition-colors ${
+                className={`relative flex flex-col items-center gap-1 px-3 py-1.5 text-xs transition-colors ${
                   active ? "text-primary" : "text-muted hover:text-foreground"
                 }`}
               >
-                <Icon width={20} height={20} />
+                {active && (
+                  <span className="absolute -top-2 left-1/2 h-1 w-8 -translate-x-1/2 rounded-full bg-primary" />
+                )}
+                <span className={`flex items-center justify-center rounded-xl transition-colors ${
+                  active ? "bg-primary/15" : ""
+                }`}>
+                  <Icon width={20} height={20} />
+                </span>
                 <span>{item.shortLabel}</span>
               </Link>
             );

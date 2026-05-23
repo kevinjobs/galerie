@@ -111,7 +111,15 @@ export abstract class UserService {
       where: { email, code: verifyCode },
     });
 
-    return record !== null;
+    if (!record) return false;
+
+    // 验证码 10 分钟过期
+    const now = Date.now();
+    const createdAt = new Date(record.createTime).getTime();
+    const TEN_MINUTES = 10 * 60 * 1000;
+    if (now - createdAt > TEN_MINUTES) return false;
+
+    return true;
   }
 
   static async hashPassword(password: string): Promise<string> {

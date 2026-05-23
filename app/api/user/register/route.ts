@@ -23,8 +23,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 从 email 前缀生成默认用户名
+    const defaultName = email.split("@")[0];
     const user = await UserService.add({
-      name: "",
+      name: defaultName,
       email,
       password,
       permissions: DEFAULT_PERMISSIONS,

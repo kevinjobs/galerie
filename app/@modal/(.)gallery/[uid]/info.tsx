@@ -236,15 +236,24 @@ function Location() {
   const [address, setAddress] = useState<string | null>(location || null);
 
   const handleGet = () => {
-    const { longitude, latitude } = JSON.parse(exif || "{}");
+    let parsedExif: Record<string, unknown> = {};
+    try {
+      parsedExif = JSON.parse(exif || "{}");
+    } catch {
+      toast.warning("照片中没有可用的位置信息");
+      return;
+    }
 
-    const lg = longitude.split(",")[0];
-    const lt = latitude.split(",")[0];
+    const longitude = String(parsedExif.longitude || "");
+    const latitude = String(parsedExif.latitude || "");
 
-    if (!longitude || !latitude) {
+    if (!longitude || !latitude || longitude === "undefined" || latitude === "undefined") {
       toast.warning("照片中没有位置信息");
       return;
     }
+
+    const lg = longitude.split(",")[0];
+    const lt = latitude.split(",")[0];
 
     getAddress(lg as string, lt as string).then((res) => {
       const adds = res.regeocode.formatted_address;

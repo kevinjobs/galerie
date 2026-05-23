@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { PhotoService } from "@/prisma/lib/photoService";
 import { AuthTool } from "@/prisma/lib/auth";
 import { PermissionError } from "@/prisma/lib/errors";
+import { Prisma } from "@prisma/client";
+
+function isPrismaUniqueError(error: unknown): boolean {
+  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002";
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -48,6 +53,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(photo);
   } catch (error) {
     if (error instanceof Error) {
+      if (isPrismaUniqueError(error)) {
+        return NextResponse.json({ error: "照片标题已存在，请使用其他标题" }, { status: 409 });
+      }
       const status = error instanceof PermissionError ? 403 : 418;
       return NextResponse.json({ error: error.message }, { status });
     }
@@ -87,6 +95,9 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(photo);
   } catch (error) {
     if (error instanceof Error) {
+      if (isPrismaUniqueError(error)) {
+        return NextResponse.json({ error: "照片标题已存在，请使用其他标题" }, { status: 409 });
+      }
       const status = error instanceof PermissionError ? 403 : 418;
       return NextResponse.json({ error: error.message }, { status });
     }

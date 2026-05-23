@@ -23,14 +23,14 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const vc = await db.verifyCode.create({
+    await db.verifyCode.create({
       data: {
         email,
         code,
       },
     });
 
-    return NextResponse.json(vc);
+    return NextResponse.json({ success: true, message: "Verification code sent successfully" });
   } catch (error) {
     if (error instanceof Error) {
       return NextResponse.json({ error: error.message }, { status: 418 });

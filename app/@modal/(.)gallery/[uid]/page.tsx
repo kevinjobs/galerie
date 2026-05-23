@@ -29,7 +29,7 @@ export default function GalleryModal({
   const router = useRouter();
   return (
     <div
-      className="fixed top-0 left-0 w-screen h-screen bg-background overflow-hidden z-999"
+      className="fixed top-0 left-0 w-screen h-screen bg-background overflow-hidden z-50"
     >
       <main className="h-full w-full flex">
         <section

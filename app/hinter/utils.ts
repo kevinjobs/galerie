@@ -119,7 +119,11 @@ export async function uploadToCOS(
       onProgress?.(progress);
     },
     onFileFinish: (err, data) => {
-      if (onDone) onDone("tencent:" + data?.Location, file);
+      if (err) {
+        console.error("COS 上传分片失败:", err);
+        return;
+      }
+      if (data && onDone) onDone("tencent:" + data.Location, file);
     },
   };
 

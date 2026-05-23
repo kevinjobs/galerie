@@ -18,7 +18,7 @@ describe('API Functions', () => {
     it('应该返回正确的腾讯云 COS 链接', () => {
       const src = 'tencent:my-bucket.cos.ap-guangzhou.myqcloud.com/photo.jpg'
       const result = genSrc(src)
-      expect(result).toBe('https://my-bucket.cos.ap-guangzhou.myqcloud.com/photo.jpg')
+      expect(result).toBe('https://my-bucket.cos.ap-guangzhou.myqcloud.com/photo.jpg!origin')
     })
 
     it('对于 local 前缀应该返回正确的本地路径', () => {

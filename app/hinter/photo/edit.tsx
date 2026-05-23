@@ -185,7 +185,11 @@ export default function EditPanel({ photo, onFinish }: EditPanelProps) {
             <UploadCloud
               onDone={handleUploadDone}
               previewSrc={memoizedPhoto?.src}
-              onClear={reset}
+              onClear={() => {
+                reset();
+                setValue("src", "");
+                setUploadResult(null);
+              }}
             />
             <div className="mt-4">
               <h2 className="font-bold mb-2">编辑基本信息</h2>

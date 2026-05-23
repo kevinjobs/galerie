@@ -1,6 +1,6 @@
 "use client";
 import { getUserLists } from "@/app/api";
-import { Modal } from "@/app/components";
+import { Confirm, Modal } from "@/app/components";
 import { UserPlain } from "@/app/typings";
 import { ArrowRotateLeft, Pencil, Plus, TrashBin } from "@gravity-ui/icons";
 import {
@@ -127,9 +127,33 @@ export default function UserPage() {
                   >
                     <Pencil width={14} height={14} />
                   </Button>
-                  <Button isIconOnly size="sm" variant="danger">
-                    <TrashBin width={14} height={14} />
-                  </Button>
+                  <Confirm
+                    title="确认删除该用户？"
+                    variant="danger"
+                    content={<p className="text-danger">删除后无法恢复</p>}
+                    onConfirmAction={async () => {
+                      try {
+                        const res = await fetch(`/api/user?uid=${item.uid}`, {
+                          method: "DELETE",
+                          headers: {
+                            Authorization: `Bearer ${localStorage.getItem("token")?.replaceAll('"', "")}`,
+                          },
+                        });
+                        if (!res.ok) {
+                          const err = await res.json();
+                          throw new Error(err.error || "删除失败");
+                        }
+                        toast.success("用户已删除");
+                        refetch();
+                      } catch (err) {
+                        toast.danger(`删除失败: ${(err as Error).message}`);
+                      }
+                    }}
+                  >
+                    <Button isIconOnly size="sm" variant="danger">
+                      <TrashBin width={14} height={14} />
+                    </Button>
+                  </Confirm>
                 </div>
               </div>
 

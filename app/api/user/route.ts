@@ -61,6 +61,10 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
+    // 过滤空密码，避免覆盖已有密码
+    if (body.password === "" || body.password === undefined) {
+      delete body.password;
+    }
     const user = await UserService.update(uid, body);
 
     if (!user) {
