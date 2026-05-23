@@ -10,7 +10,6 @@ import {
   TrashBin,
 } from "@gravity-ui/icons";
 import { Button, toast } from "@heroui/react";
-
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
 
@@ -23,254 +22,161 @@ export default function PhotoLists({
 }) {
   const router = useRouter();
 
-  const HEADS = [
-    {
-      name: "src",
-      label: "预览",
-    },
-    {
-      name: "title",
-      label: "标题",
-    },
-    {
-      name: "description",
-      label: "描述",
-    },
-    {
-      name: "shootTime",
-      label: "拍摄时间",
-    },
-    {
-      name: "location",
-      label: "位置",
-    },
-    {
-      name: "author",
-      label: "摄影师",
-    },
-    {
-      name: "isPublic",
-      label: "公开",
-    },
-    {
-      name: "isSelected",
-      label: "精选",
-    },
-    {
-      name: "toolbar",
-      label: "操作",
-    },
-  ];
-
-  const handleDelete = (item: Photo) => {
-    deletePhotoByUid(item.uid)
-      .then(() => {
-        onRefresh();
-        toast.success("删除成功");
-      })
-      .catch((err) => {
-        toast.danger(err.message);
-      });
+  const buildUpdateBody = (item: Photo, overrides: Partial<Photo>) => {
+    return {
+      title: item.title,
+      description: item.description,
+      location: item.location,
+      author: item.author,
+      shootTime: item.shootTime || new Date().toISOString(),
+      isPublic: overrides.isPublic ?? item.isPublic,
+      isSelected: overrides.isSelected ?? item.isSelected,
+      src: item.src,
+      exif: item.exif || "",
+    };
   };
 
-  const RENDER_DATA = () => {
-    return lists?.map((item: Photo) => ({
-      key: item.uid,
-      element: (
-        <tr key={item.id} className="">
-          {HEADS.map((head) => {
-            if (head.name === "src") {
-              return (
-                <td key={head.name} className="w-40 h-30 p-2">
-                  <img
-                    src={genSrc(item.src)}
-                    alt={item.title}
-                    className="w-full h-full object-contain"
-                  />
-                </td>
-              );
-            }
+  const handleToggle = (
+    item: Photo,
+    updates: Partial<Photo>,
+    successText: string,
+  ) => {
+    const promise = updatePhoto(item.uid, buildUpdateBody(item, updates));
 
-            if (head.name === "toolbar") {
-              return (
-                <td key={head.name} className="p-2">
-                  <div className="flex items-center">
-                    <Button
-                      isIconOnly
-                      onPress={() => router.push(`/hinter/photo/${item.uid}`)}
-                    >
-                      <Pencil />
-                    </Button>
-                    <Confirm
-                      title="确认删除？"
-                      variant="danger"
-                      onConfirmAction={() => handleDelete(item)}
-                      content={
-                        <p className="text-danger">
-                          确认删除该图片？删除后不可找回
-                        </p>
-                      }
-                    >
-                      <Button isIconOnly variant="danger" className="ml-2">
-                        <TrashBin />
-                      </Button>
-                    </Confirm>
-                  </div>
-                </td>
-              );
-            }
+    toast.promise(promise, {
+      loading: "正在更新照片状态...",
+      success: successText,
+      error: "更新失败，请重试",
+    });
 
-            if (head.name === "isPublic") {
-              return (
-                <td key={head.name} className="p-2">
-                  {item.isPublic ? (
-                    <Confirm
-                      title="确认取消公开？"
-                      onConfirmAction={() => {
-                        updatePhoto(item.uid, { ...item, isPublic: false }).then(res => {
-                          onRefresh();
-                          toast.success("已取消公开");
-                        }).catch(err => {
-                          toast.danger(err.message);
-                        });
-                      }}
-                      content={
-                        <p className="text-danger">
-                          确认取消公开该图片？取消后不可找回
-                        </p>
-                      }
-                    >
-                      <LockOpen />
-                    </Confirm>
-                  ) : (
-                    <Confirm
-                      title="确认公开？"
-                      onConfirmAction={() => {
-                        toast.promise(
-                          updatePhoto(item.uid, { ...item, isPublic: true }),
-                          {
-                            loading: "正在公开...",
-                            success: () => {
-                              onRefresh();
-                              return "已公开";
-                            },
-                            error: "公开失败",
-                          },
-                        );
-                      }}
-                      content={
-                        <p className="text-danger">
-                          确认公开该图片？公开后不可取消
-                        </p>
-                      }
-                    >
-                      <LockFill />
-                    </Confirm>
-                  )}
-                </td>
-              );
-            }
+    promise.then(() => onRefresh());
+  };
 
-            if (head.name === "isSelected") {
-              return (
-                <td key={head.name} className="p-2">
-                  {item.isSelected ? (
-                    <Confirm
-                      title="确认取消精选？"
-                      onConfirmAction={() => {
-                        toast.promise(
-                          updatePhoto(item.uid, {
-                            ...item,
-                            isSelected: false,
-                          }),
-                          {
-                            loading: "正在取消...",
-                            success: () => {
-                              onRefresh();
-                              return "取消成功";
-                            },
-                            error: "取消失败",
-                          },
-                        );
-                      }}
-                    >
-                      <StarFill color="#fffb0d" />
-                    </Confirm>
-                  ) : (
-                    <Confirm
-                      title="确认标记为精选？"
-                      onConfirmAction={() => {
-                        toast.promise(
-                          updatePhoto(item.uid, {
-                            ...item,
-                            isSelected: true,
-                          }),
-                          {
-                            loading: "正在标记...",
-                            success: () => {
-                              onRefresh();
-                              return "标记成功";
-                            },
-                            error: "标记失败",
-                          },
-                        );
-                      }}
-                    >
-                      <Star />
-                    </Confirm>
-                  )}
-                </td>
-              );
-            }
+  const handleDelete = (item: Photo) => {
+    const promise = deletePhotoByUid(item.uid);
 
-            if (head.name === "author") {
-              return (
-                <td key={head.name} className="p-2">
-                  {item.author || "未知"}
-                </td>
-              );
-            }
+    toast.promise(promise, {
+      loading: "正在删除照片...",
+      success: "删除成功",
+      error: "删除失败，请重试",
+    });
 
-            if (head.name === "shootTime") {
-              return (
-                <td key={head.name} className="p-2">
-                  {dayjs(item.shootTime).format("YYYY-MM-DD HH:mm:ss")}
-                </td>
-              );
-            }
-
-            return (
-              <td key={head.name} className="p-2">
-                {item[head.name]}
-              </td>
-            );
-          })}
-        </tr>
-      ),
-    }));
+    promise.then(() => onRefresh());
   };
 
   return (
-    <div className="flex justify-center">
-      <table>
-        <thead>
-          <tr className="">
-            {HEADS.map((head) => (
-              <th
-                key={head.name}
-                className="text-left py-3 first:pl-8 bg-surface first:rounded-l-full last:rounded-r-full last:pr-8 last:pl-4"
-              >
-                {head.label}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {RENDER_DATA()?.map(
-            (item: { key: string; element: React.ReactNode }) => item.element,
-          )}
-        </tbody>
-      </table>
+    <div className="grid gap-4 xl:grid-cols-2">
+      {lists.map((item) => (
+        <article
+          key={item.uid}
+          className="overflow-hidden rounded-3xl border border-border bg-surface shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+        >
+          <div className="relative overflow-hidden bg-muted/5">
+            <img
+              src={genSrc(item.src, true)}
+              alt={item.title}
+              className="h-56 w-full object-cover"
+            />
+            <div className="absolute inset-x-0 top-0 flex items-center justify-between gap-2 bg-black/25 p-3 text-xs text-white">
+              <span className="rounded-full bg-black/50 px-3 py-1">{item.isPublic ? "公开" : "私有"}</span>
+              <span className="rounded-full bg-black/50 px-3 py-1">{item.isSelected ? "精选" : "普通"}</span>
+            </div>
+          </div>
+
+          <div className="p-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
+                <h3 className="text-xl font-semibold text-foreground">
+                  {item.title || "未命名照片"}
+                </h3>
+                <p className="mt-2 line-clamp-2 text-sm text-muted">
+                  {item.description || "暂无描述"}
+                </p>
+              </div>
+              <p className="text-sm text-muted whitespace-nowrap">
+                {dayjs(item.shootTime).format("YYYY-MM-DD HH:mm")}
+              </p>
+            </div>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-3xl bg-background p-3">
+                <p className="text-[11px] uppercase tracking-[0.24em] text-muted">摄影师</p>
+                <p className="mt-1 text-sm text-foreground">{item.author || "未知"}</p>
+              </div>
+              <div className="rounded-3xl bg-background p-3">
+                <p className="text-[11px] uppercase tracking-[0.24em] text-muted">位置</p>
+                <p className="mt-1 text-sm text-foreground">{item.location || "未知"}</p>
+              </div>
+            </div>
+
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap gap-2">
+                <span
+                  className={`rounded-full px-3 py-1 text-xs ${
+                    item.isPublic ? "bg-primary/10 text-primary" : "bg-muted/10 text-muted"
+                  }`}
+                >
+                  {item.isPublic ? "公开" : "私有"}
+                </span>
+                <span
+                  className={`rounded-full px-3 py-1 text-xs ${
+                    item.isSelected ? "bg-warning/10 text-warning" : "bg-muted/10 text-muted"
+                  }`}
+                >
+                  {item.isSelected ? "精选" : "普通"}
+                </span>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onPress={() => router.push(`/hinter/photo/${item.uid}`)}
+                >
+                  编辑
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onPress={() =>
+                    handleToggle(
+                      item,
+                      { isPublic: !item.isPublic },
+                      item.isPublic ? "已切换为私有" : "已公开",
+                    )
+                  }
+                >
+                  {item.isPublic ? <LockOpen /> : <LockFill />}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onPress={() =>
+                    handleToggle(
+                      item,
+                      { isSelected: !item.isSelected },
+                      item.isSelected ? "已取消精选" : "已设为精选",
+                    )
+                  }
+                >
+                  {item.isSelected ? <StarFill /> : <Star />}
+                </Button>
+                <Confirm
+                  title="确认删除该照片？"
+                  variant="danger"
+                  content={<p className="text-danger">删除后无法恢复</p>}
+                  onConfirmAction={() => handleDelete(item)}
+                >
+                  <Button size="sm" variant="danger">
+                    <TrashBin />
+                  </Button>
+                </Confirm>
+              </div>
+            </div>
+          </div>
+        </article>
+      ))}
     </div>
   );
 }
+
