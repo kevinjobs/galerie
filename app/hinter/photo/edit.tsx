@@ -178,9 +178,9 @@ export default function EditPanel({ photo, onFinish }: EditPanelProps) {
   }, [exifs]);
 
   return (
-    <div className="rounded-2xl m-auto">
+    <div className="rounded-2xl w-full max-w-full overflow-x-hidden">
       <form onSubmit={handleSubmit(submit)} className="">
-        <main style={{ display: isMobile ? "block" : "flex" }} className="w-fit m-auto items-center">
+        <main style={{ display: isMobile ? "block" : "flex" }} className="w-full max-w-full m-auto items-center overflow-x-hidden">
           <section className="p-4">
             <UploadCloud
               onDone={handleUploadDone}

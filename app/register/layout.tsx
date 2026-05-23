@@ -1,13 +1,18 @@
 "use client";
-import { isMobile } from "react-device-detect";
 import { MOBILE_HEADER_HEIGHT, BROWSER_HEADER_HEIGHT } from "../config";
+import { useEffect, useState } from "react";
 
 export default function Layout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const headerHeight = isMobile ? MOBILE_HEADER_HEIGHT : BROWSER_HEADER_HEIGHT;
+  const [headerHeight, setHeaderHeight] = useState(BROWSER_HEADER_HEIGHT);
+
+  useEffect(() => {
+    setHeaderHeight(window.innerWidth < 768 ? MOBILE_HEADER_HEIGHT : BROWSER_HEADER_HEIGHT);
+  }, []);
+
   return (
     <div
       className="register-page flex justify-center items-center"

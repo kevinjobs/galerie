@@ -5,10 +5,10 @@ import { useAtom } from "jotai";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { isMobile } from "react-device-detect";
 import { verifyToken } from "../api";
 import { settingAtom, tokenAtom, userAtom } from "../store";
 import { Setting, UserPlain } from "../typings";
+import { MOBILE_HEADER_HEIGHT, BROWSER_HEADER_HEIGHT } from "../config";
 
 export interface NavbarProps {
   data: {
@@ -19,11 +19,20 @@ export interface NavbarProps {
 }
 
 export function Navbar({ data }: NavbarProps) {
-  const router = useRouter();
+  const [mounted, setMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
-  const [token, setToken] = useAtom(tokenAtom);
-  const [user, setUser] = useAtom(userAtom);
-  const [setting, setSetting] = useAtom(settingAtom);
+  useEffect(() => {
+    setMounted(true);
+    setIsMobile(window.innerWidth < 768);
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const [token] = useAtom(tokenAtom);
+  const setUser = useAtom(userAtom)[1];
+  const setSetting = useAtom(settingAtom)[1];
 
   useEffect(() => {
     if (token) {
@@ -38,11 +47,29 @@ export function Navbar({ data }: NavbarProps) {
     }
   }, []);
 
-  return (
-    <>
-      {isMobile ? <MobileNav data={data} /> : <BrowserNav data={data} />}
-    </>
-  );
+  // 避免 hydration mismatch：首次渲染用通用占位
+  if (!mounted) {
+    return (
+      <nav className="flex h-full w-200 items-center mx-auto">
+        <div className="hinter-logo">
+          <h1 className="text-2xl font-bold">
+            <Link href="/" className="text-black dark:text-white">
+              Gelerie
+            </Link>
+          </h1>
+        </div>
+        <div className="hinter-navbar-center mx-8 grow">
+          {data?.map((item) => (
+            <Link key={item.label} href={item.to} className="mx-8">
+              {item.label}
+            </Link>
+          ))}
+        </div>
+      </nav>
+    );
+  }
+
+  return isMobile ? <MobileNav data={data} /> : <BrowserNav data={data} />;
 }
 
 function BrowserNav({ data }: NavbarProps) {
@@ -88,8 +115,6 @@ function BrowserNav({ data }: NavbarProps) {
                       router.push("/login");
                     }
                     break;
-                  default:
-                    console.log(key);
                 }
               }}
             >
@@ -122,7 +147,6 @@ function BrowserNav({ data }: NavbarProps) {
 
 
 function MobileNav({ data }: NavbarProps) {
-  const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useAtom(userAtom);
   const [token, setToken] = useAtom(tokenAtom);
   const router = useRouter();
@@ -152,8 +176,6 @@ function MobileNav({ data }: NavbarProps) {
                             router.push("/login");
                           }
                           break;
-                        default:
-                          console.log(key);
                       }
                     }}
                   >
@@ -188,10 +210,8 @@ function MobileNav({ data }: NavbarProps) {
         <div className="grow"></div>
         <div className="pr-4">
           <Dropdown>
-            <Dropdown.Trigger onPress={() => setIsOpen(!isOpen)}>
-              <Button className="w-8 h-8" isIconOnly variant="ghost">
-                <Bars width={32} height={32} />
-              </Button>
+            <Dropdown.Trigger>
+              <Bars width={32} height={32} />
             </Dropdown.Trigger>
             <Dropdown.Popover>
               <Dropdown.Menu
@@ -209,8 +229,6 @@ function MobileNav({ data }: NavbarProps) {
                     case "hinter":
                       router.push("/hinter")
                       break;
-                    default:
-                      console.log(key);
                   }
 
                 }}

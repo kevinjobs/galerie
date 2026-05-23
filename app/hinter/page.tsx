@@ -80,7 +80,7 @@ export default function HinterPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="rounded-3xl border border-border bg-surface p-5 shadow-sm">
+        <section className="rounded-3xl border border-border bg-surface p-5 shadow-sm overflow-x-hidden">
           <h2 className="text-base font-semibold text-foreground">最近拍摄</h2>
           <p className="mt-1 text-sm text-muted">最新上传的 5 张照片</p>
           <div className="mt-4 space-y-3">
@@ -111,7 +111,7 @@ export default function HinterPage() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-border bg-surface p-5 shadow-sm">
+        <section className="rounded-3xl border border-border bg-surface p-5 shadow-sm overflow-x-hidden">
           <h2 className="text-base font-semibold text-foreground">快捷入口</h2>
           <p className="mt-1 text-sm text-muted">快速跳转到各管理模块</p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">

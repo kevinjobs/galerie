@@ -2,8 +2,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MOBILE_HEADER_HEIGHT, BROWSER_HEADER_HEIGHT } from "../config";
-import { isMobile } from "react-device-detect";
 import { Picture, Person, Gear, PersonPencil } from "@gravity-ui/icons";
+import { useEffect, useState } from "react";
 
 const menuItems = [
   {
@@ -42,7 +42,18 @@ export default function HinterLayout({
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
-  const headerHeight = isMobile ? MOBILE_HEADER_HEIGHT : BROWSER_HEADER_HEIGHT;
+  const [mounted, setMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    setIsMobile(window.innerWidth < 768);
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const headerHeight = mounted && isMobile ? MOBILE_HEADER_HEIGHT : BROWSER_HEADER_HEIGHT;
 
   const isActive = (href: string) => {
     if (href === "/hinter/photo") {
@@ -53,7 +64,7 @@ export default function HinterLayout({
 
   return (
     <div className="hinter min-h-screen" style={{ paddingTop: headerHeight }}>
-      <div className="mx-auto flex min-h-[calc(100vh-3.5rem)] max-w-[1200px] gap-6 px-4 pb-8 pt-4">
+      <div className="mx-auto flex max-w-[1200px] gap-6 px-4 pb-8 pt-4">
         <aside className="hidden w-64 shrink-0 flex-col gap-4 lg:flex">
           <div className="rounded-3xl border border-border bg-surface p-5 shadow-sm">
             <p className="text-xs uppercase tracking-[0.28em] text-muted">Hinter 控制台</p>
@@ -93,7 +104,7 @@ export default function HinterLayout({
           </nav>
         </aside>
 
-        <main className="min-w-0 flex-1 rounded-3xl border border-border bg-surface p-4 shadow-sm lg:p-6">
+        <main className="min-w-0 flex-1 rounded-3xl border border-border bg-surface p-4 shadow-sm lg:p-6 overflow-x-hidden">
           {children}
         </main>
       </div>
@@ -126,7 +137,7 @@ export default function HinterLayout({
         </div>
       </div>
 
-      <div className="h-16 lg:hidden" />
+      <div className="h-20 lg:hidden" />
     </div>
   );
 }

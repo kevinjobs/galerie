@@ -1,10 +1,10 @@
 "use client";
 import { Toast } from "@heroui/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserView, isMobile, MobileView } from "react-device-detect";
 import { Navbar } from "./components/navbar";
 import "./globals.css";
 import { MOBILE_HEADER_HEIGHT, BROWSER_HEADER_HEIGHT } from "./config";
+import { useEffect, useState } from "react";
 
 export default function RootLayout({
   children,
@@ -13,6 +13,20 @@ export default function RootLayout({
   children: React.ReactNode;
   modal: React.ReactNode;
 }>) {
+  const [mounted, setMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    setIsMobile(window.innerWidth < 768);
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  // 首次 SSR 渲染使用桌面版高度，避免 hydration mismatch
+  const headerHeight = mounted && isMobile ? MOBILE_HEADER_HEIGHT : BROWSER_HEADER_HEIGHT;
+
   return (
     <html lang="en" className="dark" data-theme="dark">
       <head>
@@ -21,13 +35,12 @@ export default function RootLayout({
           name="viewport"
           content="initial-scale=1.0, user-scalable=no, width=device-width"
         />
-
       </head>
       <body className="">
         <Toast.Provider placement="top" />
         <header
           className="galerie-header w-full flex items-center fixed top-0 left-0 backdrop-blur-sm bg-background/0 z-40"
-          style={{ height: isMobile ? MOBILE_HEADER_HEIGHT : BROWSER_HEADER_HEIGHT }}
+          style={{ height: headerHeight }}
         >
           <Navbar
             data={[
@@ -39,14 +52,10 @@ export default function RootLayout({
           />
         </header>
         <QueryClientProvider client={new QueryClient()}>
-          <BrowserView className="galerie-main w-full max-w-full">
+          <div className="galerie-main w-full max-w-full">
             {children}
             {modal}
-          </BrowserView>
-          <MobileView className="galerie-main w-full max-w-full">
-            {children}
-            {modal}
-          </MobileView>
+          </div>
         </QueryClientProvider>
       </body>
     </html>
