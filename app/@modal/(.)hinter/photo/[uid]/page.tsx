@@ -16,17 +16,23 @@ export default function PhotoEditModal({
   const { uid } = use(params);
   const [photo, setPhoto] = useState<Photo | null>(null);
 
+  const isNew = uid === "new";
+
   useEffect(() => {
+    if (isNew) return;
     getPhotoByUid(uid)
       .then(setPhoto)
       .catch((error) => {
         console.error("Error fetching photo:", error);
       });
-  }, [uid]);
+  }, [uid, isNew]);
 
   return (
     <Modal isOpen onChangeAction={() => router.back()} size="full">
-      <EditPanel photo={photo} />
+      <EditPanel
+        photo={photo}
+        onFinish={() => router.back()}
+      />
     </Modal>
   );
 }

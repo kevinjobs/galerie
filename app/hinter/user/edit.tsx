@@ -5,7 +5,7 @@ import {
   Button,
   Checkbox,
   CheckboxGroup,
-  Input as I,
+  Input,
   Label,
   toast,
   TextArea,
@@ -14,17 +14,29 @@ import { Controller, useForm } from "react-hook-form";
 import { settingAtom, userAtom } from "@/app/store";
 import { useAtom } from "jotai";
 
-function Input(props: React.ComponentProps<typeof I>) {
-  const { className, value, onChange, ...rest } = props;
-  return (
-    <I
-      value={value}
-      onChange={onChange}
-      {...rest}
-      className={className + " min-w-60"}
-    />
-  );
-}
+const permissionGroups = [
+  {
+    group: "photo",
+    label: "照片",
+    perms: [
+      { value: "photo.upload", label: "上传" },
+      { value: "photo.get", label: "读取" },
+      { value: "photo.create", label: "创建" },
+      { value: "photo.update", label: "更新" },
+      { value: "photo.delete", label: "删除" },
+    ],
+  },
+  {
+    group: "user",
+    label: "用户",
+    perms: [
+      { value: "user.get", label: "读取" },
+      { value: "user.create", label: "创建" },
+      { value: "user.update", label: "更新" },
+      { value: "user.delete", label: "删除" },
+    ],
+  },
+];
 
 export function UserEdit({
   onSubmitAction,
@@ -35,8 +47,8 @@ export function UserEdit({
   onCancelAction?: () => void;
   defaultUser?: UserPlain | null;
 }) {
-  const [setting, setSetting] = useAtom(settingAtom);
-  const [user, setUser] = useAtom(userAtom);
+  const [setting] = useAtom(settingAtom);
+  const [currentUser, setCurrentUser] = useAtom(userAtom);
 
   const { handleSubmit, control } = useForm<UserPlain>({
     values: {
@@ -56,6 +68,7 @@ export function UserEdit({
       createUser(data)
         .then((res) => {
           toast.success("创建成功");
+          onSubmitAction?.(data);
         })
         .catch((err) => {
           toast.danger("创建失败: " + err.message);
@@ -63,239 +76,155 @@ export function UserEdit({
     } else {
       updateUser(defaultUser.uid, data)
         .then((res) => {
-          if (res.email === user?.email) {
-            setUser(res);
-            setSetting(res.setting);
+          if (res.email === currentUser?.email) {
+            setCurrentUser(res);
           }
           toast.success("更新成功");
+          onSubmitAction?.(data);
         })
         .catch((err) => {
           toast.danger("更新失败: " + err.message);
         });
     }
-
-    if (onSubmitAction) {
-      onSubmitAction(data);
-    }
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(submit)}
-    >
-      <h2 className="text-2xl font-bold mb-4 text-center">
-        {defaultUser?.uid ? "编辑" : "新增"}用户
+    <form onSubmit={handleSubmit(submit)} className="px-6 py-6">
+      <h2 className="mb-6 text-center text-2xl font-bold text-foreground">
+        {defaultUser?.uid ? "编辑用户" : "新增用户"}
       </h2>
-      <div className="flex justify-center flex-wrap w-full">
+
+      <div className="mx-auto max-w-lg space-y-5">
         <Controller
           name="uid"
           control={control}
-          defaultValue=""
           render={({ field }) => (
-            <div className="flex flex-nowrap mb-2 items-center">
-              <label htmlFor="uid" className="w-14 inline-block">
-                UID
-              </label>
-              <Input id="uid" {...field} disabled />
+            <div className="grid grid-cols-[4rem_1fr] items-center gap-3">
+              <Label className="text-right text-sm">UID</Label>
+              <Input {...field} readOnly />
             </div>
           )}
         />
+
         <Controller
           name="name"
           control={control}
-          defaultValue=""
+          rules={{ required: "用户名不能为空" }}
           render={({ field }) => (
-            <div className="flex flex-nowrap mb-2 items-center">
-              <label htmlFor="name" className="w-14 inline-block">
-                用户名
-              </label>
-              <Input id="name" {...field} />
+            <div className="grid grid-cols-[4rem_1fr] items-center gap-3">
+              <Label className="text-right text-sm">用户名</Label>
+              <Input {...field} placeholder="请输入用户名"  />
             </div>
           )}
         />
+
         {!defaultUser?.uid && (
           <Controller
             name="password"
             control={control}
-            defaultValue=""
+            rules={{ required: "密码不能为空" }}
             render={({ field }) => (
-              <div className="flex flex-nowrap mb-2 items-center">
-                <label htmlFor="password" className="w-14 inline-block">
-                  密码
-                </label>
-                <Input id="password" {...field} />
+              <div className="grid grid-cols-[4rem_1fr] items-center gap-3">
+                <Label className="text-right text-sm">密码</Label>
+                <Input {...field} type="password" placeholder="设置密码"  />
               </div>
             )}
           />
         )}
+
         <Controller
           name="email"
           control={control}
-          defaultValue=""
+          rules={{ required: "邮箱不能为空" }}
           render={({ field }) => (
-            <div className="flex flex-nowrap mb-2 items-center">
-              <label htmlFor="email" className="w-14 inline-block">
-                Email
-              </label>
-              <Input id="email" {...field} />
+            <div className="grid grid-cols-[4rem_1fr] items-center gap-3">
+              <Label className="text-right text-sm">Email</Label>
+              <Input {...field} placeholder="user@example.com"  />
             </div>
           )}
         />
+
         <Controller
           name="nickname"
           control={control}
-          defaultValue=""
           render={({ field }) => (
-            <div className="flex flex-nowrap mb-2 items-center">
-              <label htmlFor="nickname" className="w-14 inline-block">
-                昵称
-              </label>
-              <Input id="nickname" {...field} />
+            <div className="grid grid-cols-[4rem_1fr] items-center gap-3">
+              <Label className="text-right text-sm">昵称</Label>
+              <Input {...field} placeholder="可选"  />
             </div>
           )}
         />
+
         {defaultUser?.uid && (
           <Controller
             name="password"
             control={control}
-            defaultValue=""
             render={({ field }) => (
-              <div className="flex flex-nowrap mb-2 items-center">
-                <label htmlFor="password" className="w-14 inline-block">
-                  改密码
-                </label>
-                <Input id="password" {...field} />
+              <div className="grid grid-cols-[4rem_1fr] items-center gap-3">
+                <Label className="text-right text-sm">改密码</Label>
+                <Input {...field} type="password" placeholder="留空则不修改"  />
               </div>
             )}
           />
         )}
+
         <Controller
           name="permissions"
           control={control}
-          defaultValue={[]}
           render={({ field }) => (
-            <div className="flex flex-nowrap mb-2 items-center">
-              <label htmlFor="permissions" className="w-14 inline-block">
-                权限
-              </label>
-              <CheckboxGroup {...field}>
-                <div className="flex w-60 min-w-60 flex-nowrap justify-around">
-                  <div className="">
-                    <Checkbox value="photo.upload">
-                      <Checkbox.Control>
-                        <Checkbox.Indicator />
-                      </Checkbox.Control>
-                      <Checkbox.Content>
-                        <Label>照片-上传</Label>
-                      </Checkbox.Content>
-                    </Checkbox>
-                    <Checkbox value="photo.get">
-                      <Checkbox.Control>
-                        <Checkbox.Indicator />
-                      </Checkbox.Control>
-                      <Checkbox.Content>
-                        <Label>照片-读</Label>
-                      </Checkbox.Content>
-                    </Checkbox>
-                    <Checkbox value="photo.create">
-                      <Checkbox.Control>
-                        <Checkbox.Indicator />
-                      </Checkbox.Control>
-                      <Checkbox.Content>
-                        <Label>照片-写</Label>
-                      </Checkbox.Content>
-                    </Checkbox>
-                    <Checkbox value="photo.update">
-                      <Checkbox.Control>
-                        <Checkbox.Indicator />
-                      </Checkbox.Control>
-                      <Checkbox.Content>
-                        <Label>照片-更新</Label>
-                      </Checkbox.Content>
-                    </Checkbox>
-                    <Checkbox value="photo.delete">
-                      <Checkbox.Control>
-                        <Checkbox.Indicator />
-                      </Checkbox.Control>
-                      <Checkbox.Content>
-                        <Label>照片-删除</Label>
-                      </Checkbox.Content>
-                    </Checkbox>
+            <div className="grid grid-cols-[4rem_1fr] gap-3">
+              <Label className="pt-1 text-right text-sm">权限</Label>
+              <CheckboxGroup {...field} className="space-y-3">
+                {permissionGroups.map((group) => (
+                  <div key={group.group}>
+                    <p className="mb-1.5 text-xs font-medium text-muted">{group.label}</p>
+                    <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+                      {group.perms.map((perm) => (
+                        <Checkbox key={perm.value} value={perm.value} >
+                          <Checkbox.Control>
+                            <Checkbox.Indicator />
+                          </Checkbox.Control>
+                          <Checkbox.Content>
+                            <Label className="text-sm">{perm.label}</Label>
+                          </Checkbox.Content>
+                        </Checkbox>
+                      ))}
+                    </div>
                   </div>
-                  <div className="ml-4" style={{ marginLeft: 8 }}>
-                    <Checkbox value="user.get">
-                      <Checkbox.Control>
-                        <Checkbox.Indicator />
-                      </Checkbox.Control>
-                      <Checkbox.Content>
-                        <Label>用户-读</Label>
-                      </Checkbox.Content>
-                    </Checkbox>
-                    <Checkbox value="user.create">
-                      <Checkbox.Control>
-                        <Checkbox.Indicator />
-                      </Checkbox.Control>
-                      <Checkbox.Content>
-                        <Label>用户-写</Label>
-                      </Checkbox.Content>
-                    </Checkbox>
-                    <Checkbox value="user.update">
-                      <Checkbox.Control>
-                        <Checkbox.Indicator />
-                      </Checkbox.Control>
-                      <Checkbox.Content>
-                        <Label>用户-更新</Label>
-                      </Checkbox.Content>
-                    </Checkbox>
-                    <Checkbox value="user.delete">
-                      <Checkbox.Control>
-                        <Checkbox.Indicator />
-                      </Checkbox.Control>
-                      <Checkbox.Content>
-                        <Label>用户-删除</Label>
-                      </Checkbox.Content>
-                    </Checkbox>
-                  </div>
-                </div>
+                ))}
               </CheckboxGroup>
             </div>
           )}
         />
+
         <Controller
           name="setting"
           control={control}
           render={({ field }) => (
-            <div className="flex flex-nowrap mt-4 mb-2 items-center w-74">
-              <label htmlFor="setting" className="w-14 min-w-14 inline-block">
-                设置
-              </label>
+            <div className="grid grid-cols-[4rem_1fr] gap-3">
+              <Label className="pt-1 text-right text-sm">设置</Label>
               <TextArea
                 fullWidth
-                id="setting"
-                rows={12}
+                rows={8}
+                
                 {...field}
                 value={JSON.stringify(field.value, null, 2)}
                 onChange={(e) => {
-                  field.onChange(JSON.parse(e.target.value));
+                  try {
+                    field.onChange(JSON.parse(e.target.value));
+                  } catch {
+                    // ignore invalid JSON during editing
+                  }
                 }}
               />
             </div>
           )}
         />
       </div>
-      <div className="mt-8 text-center">
-        <Button type="submit">保存</Button>
-        <Button
-          variant="danger"
-          className="ml-2"
-          onPress={() => {
-            if (onCancelAction) {
-              onCancelAction();
-            }
-          }}
-        >
-          取消
-        </Button>
+
+      <div className="mt-8 flex justify-center gap-3">
+        <Button type="submit" variant="primary">保存</Button>
+        <Button variant="danger" onPress={() => onCancelAction?.()}>取消</Button>
       </div>
     </form>
   );

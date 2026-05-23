@@ -3,25 +3,16 @@ import { changePassword, updateUser } from "@/app/api";
 import { Confirm } from "@/app/components";
 import { settingAtom, tokenAtom, userAtom } from "@/app/store";
 import { UserPlain } from "@/app/typings";
-import { ArrowRightFromSquare, TrashBin } from "@gravity-ui/icons";
-import { Button, Input as I, Label, toast } from "@heroui/react";
+import { ArrowRightFromSquare, TrashBin, PersonPencil } from "@gravity-ui/icons";
+import { Button, Input, Label, toast } from "@heroui/react";
 import { useAtom } from "jotai";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 
-function Input(props: React.ComponentProps<typeof I>) {
-  return (
-    <I
-      {...props}
-      className={(props.className || "") + " min-w-60"}
-    />
-  );
-}
-
 export default function ProfilePage() {
   const [user, setUser] = useAtom(userAtom);
   const [token, setToken] = useAtom(tokenAtom);
-  const [setting, setSetting] = useAtom(settingAtom);
+  const [, setSetting] = useAtom(settingAtom);
   const router = useRouter();
 
   const { control, handleSubmit, reset } = useForm({
@@ -84,112 +75,123 @@ export default function ProfilePage() {
     }
   };
 
+  const initial = (user?.nickname || user?.name || user?.email || "?")
+    .charAt(0)
+    .toUpperCase();
+
   return (
-    <div className="flex justify-center pb-8">
-      <div className="w-full max-w-md">
-        {/* 头像与基本信息 */}
-        <div className="text-center mt-8 mb-8">
-          <div className="w-20 h-20 rounded-full bg-surface mx-auto flex items-center justify-center text-3xl font-bold text-muted">
-            {user?.name?.toUpperCase()?.slice(0, 1) || user?.email?.toUpperCase()?.slice(0, 2)}
+    <div className="space-y-6">
+      <section className="rounded-3xl border border-border bg-background p-6 shadow-sm">
+        <p className="text-sm uppercase tracking-[0.24em] text-muted">个人资料</p>
+        <h1 className="mt-2 text-3xl font-semibold text-foreground">账户信息</h1>
+      </section>
+
+      <section className="rounded-3xl border border-border bg-surface p-6 shadow-sm">
+        <div className="flex flex-col items-center gap-4 sm:flex-row">
+          <div className="flex size-20 shrink-0 items-center justify-center rounded-full bg-muted/10 text-3xl font-bold text-muted">
+            {initial}
           </div>
-          <div className="mt-4">
-            <h1 className="text-2xl font-bold">{user?.name || "未命名用户"}</h1>
-            <p className="text-sm text-muted mt-1">{user?.email}</p>
+          <div className="text-center sm:text-left">
+            <h2 className="text-xl font-bold text-foreground">{user?.nickname || user?.name || "未命名用户"}</h2>
+            <p className="text-sm text-muted">{user?.email}</p>
+            <p className="mt-1 text-xs text-muted">@{user?.name}</p>
           </div>
         </div>
+      </section>
 
-        {/* 修改昵称 */}
-        <section>
-          <h2 className="font-bold mb-4 text-sm">基本信息</h2>
-          <form onSubmit={handleSubmit(handleUpdateNickname)}>
-            <Controller
-              name="nickname"
-              control={control}
-              render={({ field }) => (
-                <div className="flex flex-nowrap items-center my-2">
-                  <Label className="w-14 inline-block">昵称</Label>
-                  <Input {...field} placeholder="设置昵称" />
-                  <Button type="submit" size="sm" className="ml-2">保存</Button>
+      <section className="rounded-3xl border border-border bg-surface p-6 shadow-sm">
+        <h2 className="flex items-center gap-2 text-base font-semibold text-foreground">
+          <PersonPencil width={18} height={18} />
+          基本信息
+        </h2>
+        <form onSubmit={handleSubmit(handleUpdateNickname)} className="mt-4">
+          <Controller
+            name="nickname"
+            control={control}
+            render={({ field }) => (
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                <div className="flex-1">
+                  <Label className="mb-1 block text-sm">昵称</Label>
+                  <Input {...field} placeholder="设置昵称"  />
                 </div>
-              )}
-            />
-          </form>
-        </section>
+                <Button type="submit" >保存</Button>
+              </div>
+            )}
+          />
+        </form>
+      </section>
 
-        <hr className="my-6 border-border" />
-
-        {/* 修改密码 */}
-        <section>
-          <h2 className="font-bold mb-4 text-sm">修改密码</h2>
-          <form onSubmit={handleSubmit(handleChangePassword)}>
-            <Controller
-              name="oldPassword"
-              control={control}
-              rules={{ required: "请输入旧密码" }}
-              render={({ field, fieldState }) => (
-                <div className="flex flex-nowrap items-center my-2">
-                  <Label className="w-14 inline-block">旧密码</Label>
-                  <Input {...field} type="password" placeholder="输入旧密码" />
-                  {fieldState.error && (
-                    <p className="text-sm text-red-500 mt-1">{fieldState.error.message}</p>
-                  )}
-                </div>
-              )}
-            />
-            <Controller
-              name="newPassword"
-              control={control}
-              rules={{ required: "请输入新密码", minLength: { value: 6, message: "密码至少6位" } }}
-              render={({ field, fieldState }) => (
-                <div className="flex flex-nowrap items-center my-2">
-                  <Label className="w-14 inline-block">新密码</Label>
-                  <Input {...field} type="password" placeholder="输入新密码（至少6位）" />
-                  {fieldState.error && (
-                    <p className="text-sm text-red-500 mt-1">{fieldState.error.message}</p>
-                  )}
-                </div>
-              )}
-            />
-            <div className="mt-4 text-center">
-              <Button type="submit" variant="secondary">修改密码</Button>
-            </div>
-          </form>
-        </section>
-
-        <hr className="my-6 border-border" />
-
-        {/* 危险操作 */}
-        <section>
-          <h2 className="font-bold mb-4 text-sm text-danger">危险区域</h2>
-          <div className="flex flex-col gap-4">
-            <Confirm
-              title="退出登录"
-              content="确定要退出当前账户吗？"
-              confirmText="退出"
-              variant="danger"
-              onConfirmAction={handleLogout}
-            >
-              <Button variant="danger" className="w-full justify-start">
-                <ArrowRightFromSquare width={16} height={16} />
-                <span className="ml-2">退出登录</span>
-              </Button>
-            </Confirm>
-
-            <Confirm
-              title="注销账户"
-              content="此操作不可撤销，账户中的所有数据将被永久删除。确定要继续吗？"
-              confirmText="确认注销"
-              variant="danger"
-              onConfirmAction={handleDeleteAccount}
-            >
-              <Button variant="danger" className="w-full justify-start">
-                <TrashBin width={16} height={16} />
-                <span className="ml-2">注销账户</span>
-              </Button>
-            </Confirm>
+      <section className="rounded-3xl border border-border bg-surface p-6 shadow-sm">
+        <h2 className="text-base font-semibold text-foreground">修改密码</h2>
+        <form onSubmit={handleSubmit(handleChangePassword)} className="mt-4 space-y-4">
+          <Controller
+            name="oldPassword"
+            control={control}
+            rules={{ required: "请输入旧密码" }}
+            render={({ field, fieldState }) => (
+              <div>
+                <Label className="mb-1 block text-sm">旧密码</Label>
+                <Input {...field} type="password" placeholder="输入旧密码"  />
+                {fieldState.error && (
+                  <p className="mt-1 text-xs text-danger">{fieldState.error.message}</p>
+                )}
+              </div>
+            )}
+          />
+          <Controller
+            name="newPassword"
+            control={control}
+            rules={{ required: "请输入新密码", minLength: { value: 6, message: "密码至少6位" } }}
+            render={({ field, fieldState }) => (
+              <div>
+                <Label className="mb-1 block text-sm">新密码</Label>
+                <Input {...field} type="password" placeholder="输入新密码（至少6位）"  />
+                {fieldState.error && (
+                  <p className="mt-1 text-xs text-danger">{fieldState.error.message}</p>
+                )}
+              </div>
+            )}
+          />
+          <div className="flex justify-end">
+            <Button type="submit" variant="secondary" >修改密码</Button>
           </div>
-        </section>
-      </div>
+        </form>
+      </section>
+
+      <section className="rounded-3xl border border-danger/30 bg-surface p-6 shadow-sm">
+        <h2 className="flex items-center gap-2 text-base font-semibold text-danger">
+          <TrashBin width={18} height={18} />
+          危险区域
+        </h2>
+        <p className="mt-1 text-sm text-muted">以下操作不可逆，请谨慎执行。</p>
+        <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+          <Confirm
+            title="退出登录"
+            content="确定要退出当前账户吗？"
+            confirmText="退出"
+            variant="danger"
+            onConfirmAction={handleLogout}
+          >
+            <Button variant="danger" className="w-full justify-start sm:w-auto">
+              <ArrowRightFromSquare width={16} height={16} />
+              <span className="ml-2">退出登录</span>
+            </Button>
+          </Confirm>
+
+          <Confirm
+            title="注销账户"
+            content="此操作不可撤销，账户中的所有数据将被永久删除。确定要继续吗？"
+            confirmText="确认注销"
+            variant="danger"
+            onConfirmAction={handleDeleteAccount}
+          >
+            <Button variant="danger" className="w-full justify-start sm:w-auto">
+              <TrashBin width={16} height={16} />
+              <span className="ml-2">注销账户</span>
+            </Button>
+          </Confirm>
+        </div>
+      </section>
     </div>
   );
 }

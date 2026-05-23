@@ -5,46 +5,61 @@ import { settingAtom, userAtom } from "@/app/store";
 import { useAtom } from "jotai";
 import { Setting } from "@/app/typings";
 import { updateUser } from "@/app/api";
+import { useState } from "react";
+import { Gear, Picture } from "@gravity-ui/icons";
 
-export default function Default() {
+export default function SettingPage() {
   const [setting, setSetting] = useAtom(settingAtom);
   const [user, setUser] = useAtom(userAtom);
+  const [saving, setSaving] = useState(false);
 
   const { control, handleSubmit } = useForm({
     values: { ...setting },
   });
 
-  const submit = (data: Setting) => {
+  const submit = async (data: Setting) => {
+    setSaving(true);
     setSetting(data);
     if (user?.uid) {
-      updateUser(user.uid, { ...user, setting: data })
-        .then((res) => {
-          toast.success("设置已保存");
-          setUser(res);
-          setSetting(res.setting);
-        })
-        .catch((err) => {
-          toast.danger(`保存设置失败: ${err.message}`);
-        });
+      try {
+        const res = await updateUser(user.uid, { ...user, setting: data });
+        toast.success("设置已保存");
+        setUser(res);
+        setSetting(res.setting);
+      } catch (err) {
+        toast.danger(`保存设置失败: ${(err as Error).message}`);
+      }
     }
+    setSaving(false);
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
-      <main className="rounded-3xl border border-border bg-surface p-6 shadow-sm">
-          <div className="mb-6">
-            <p className="text-sm uppercase tracking-[0.24em] text-muted">杂项</p>
-            <h1 className="mt-3 text-3xl font-semibold text-foreground">界面与存储首选项</h1>
-            <p className="mt-2 text-sm text-muted">调整界面主题、语言及照片存储方式。</p>
+    <div className="space-y-6">
+      <section className="rounded-3xl border border-border bg-background p-6 shadow-sm">
+        <p className="text-sm uppercase tracking-[0.24em] text-muted">杂项</p>
+        <h1 className="mt-2 text-3xl font-semibold text-foreground">界面与存储首选项</h1>
+        <p className="mt-2 text-sm text-muted">调整界面主题、语言及照片存储方式。</p>
+      </section>
+
+      <form onSubmit={handleSubmit(submit)} className="space-y-6">
+        <section className="rounded-3xl border border-border bg-surface p-6 shadow-sm">
+          <div className="flex items-center gap-3">
+            <span className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Gear width={18} height={18} />
+            </span>
+            <div>
+              <h2 className="text-base font-semibold text-foreground">外观</h2>
+              <p className="text-sm text-muted">主题与语言设置</p>
+            </div>
           </div>
 
-          <form onSubmit={handleSubmit(submit)} className="space-y-6">
+          <div className="mt-6 space-y-6">
             <Controller
               name="theme"
               control={control}
               rules={{ required: true }}
               render={({ field }) => (
-                <SettingItem label="系统主题" description="选择系统主题: 跟随系统、深色模式或浅色模式">
+                <SettingItem label="系统主题" description="跟随系统、深色模式或浅色模式">
                   <Select {...field} className="w-full max-w-lg">
                     <Select.Trigger>
                       <Select.Value />
@@ -102,13 +117,27 @@ export default function Default() {
                 </SettingItem>
               )}
             />
+          </div>
+        </section>
 
+        <section className="rounded-3xl border border-border bg-surface p-6 shadow-sm">
+          <div className="flex items-center gap-3">
+            <span className="flex size-9 items-center justify-center rounded-xl bg-success/10 text-success">
+              <Picture width={18} height={18} />
+            </span>
+            <div>
+              <h2 className="text-base font-semibold text-foreground">存储</h2>
+              <p className="text-sm text-muted">照片存储方式与目录配置</p>
+            </div>
+          </div>
+
+          <div className="mt-6 space-y-6">
             <Controller
               name="upload.type"
               control={control}
               rules={{ required: true }}
               render={({ field }) => (
-                <SettingItem label="照片存储库" description="选择照片存储方式: 腾讯云对象存储或服务器端存储">
+                <SettingItem label="照片存储库" description="腾讯云对象存储或服务器端存储">
                   <Select {...field} className="w-full max-w-lg">
                     <Select.Trigger>
                       <Select.Value />
@@ -136,17 +165,18 @@ export default function Default() {
               control={control}
               rules={{ required: true }}
               render={({ field }) => (
-                <SettingItem label="存储目录" description="设置照片在存储库中的目录前缀，默认为 '/upload'">
-                  <Input {...field} className="w-full max-w-lg" />
+                <SettingItem label="存储目录" description="照片在存储库中的目录前缀">
+                  <Input {...field} className="w-full max-w-lg" placeholder="/upload" />
                 </SettingItem>
               )}
             />
+          </div>
+        </section>
 
-            <div className="flex justify-end pt-4 border-t border-border">
-              <Button type="submit">保存设置</Button>
-            </div>
-          </form>
-        </main>
+        <div className="flex justify-end">
+          <Button type="submit" isDisabled={saving}>保存设置</Button>
+        </div>
+      </form>
     </div>
   );
 }
@@ -161,10 +191,10 @@ function SettingItem({
   description?: string;
 }) {
   return (
-    <div className="grid gap-4 md:grid-cols-[180px_minmax(0,1fr)] items-start">
+    <div className="grid gap-3 md:grid-cols-[160px_minmax(0,1fr)]">
       <div>
-        <div className="text-sm font-medium text-foreground">{label}</div>
-        {description ? <div className="mt-2 text-sm text-muted">{description}</div> : null}
+        <p className="text-sm font-medium text-foreground">{label}</p>
+        {description ? <p className="mt-1 text-xs text-muted">{description}</p> : null}
       </div>
       <div>{children}</div>
     </div>
