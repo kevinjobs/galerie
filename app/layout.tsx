@@ -26,7 +26,7 @@ export default function RootLayout({
       <body className="">
         <Toast.Provider placement="top" />
         <header
-          className="galerie-header w-full flex items-center fixed top-0 left-0 backdrop-blur-sm bg-background/0 z-999"
+          className="galerie-header w-full flex items-center fixed top-0 left-0 backdrop-blur-sm bg-background/0 z-40"
           style={{ height: isMobile ? MOBILE_HEADER_HEIGHT : BROWSER_HEADER_HEIGHT }}
         >
           <Navbar

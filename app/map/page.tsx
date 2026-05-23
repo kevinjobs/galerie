@@ -103,7 +103,7 @@ function MapContent() {
   return (
     <>
       {isMobile ? (
-        <div id="map-container" className="w-full h-screen">
+        <div id="map-container" className="w-full h-full">
           <MapContainer
             center={[31, 118]}
             zoom={5}
@@ -142,7 +142,7 @@ function MapContent() {
           </MapContainer>
         </div>
       ) : (
-        <div id="map-container" className="w-full h-screen">
+        <div id="map-container" className="w-full h-full">
           <MapContainer
             center={[31, 118]}
             zoom={5}
