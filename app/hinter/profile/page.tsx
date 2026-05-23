@@ -15,9 +15,23 @@ export default function ProfilePage() {
   const [, setSetting] = useAtom(settingAtom);
   const router = useRouter();
 
-  const { control, handleSubmit, reset } = useForm({
+  // 昵称表单
+  const {
+    control: nicknameControl,
+    handleSubmit: handleNicknameSubmit,
+  } = useForm({
     values: {
       nickname: user?.nickname || "",
+    },
+  });
+
+  // 密码表单
+  const {
+    control: passwordControl,
+    handleSubmit: handlePasswordSubmit,
+    reset: resetPassword,
+  } = useForm({
+    values: {
       oldPassword: "",
       newPassword: "",
     },
@@ -57,7 +71,7 @@ export default function ProfilePage() {
     try {
       await changePassword(data.oldPassword, data.newPassword);
       toast.success("密码已修改");
-      reset({ oldPassword: "", newPassword: "", nickname: user?.nickname || "" });
+      resetPassword({ oldPassword: "", newPassword: "" });
     } catch (err) {
       toast.danger(`修改密码失败: ${(err as Error).message}`);
     }
@@ -104,10 +118,10 @@ export default function ProfilePage() {
           <PersonPencil width={18} height={18} />
           基本信息
         </h2>
-        <form onSubmit={handleSubmit(handleUpdateNickname)} className="mt-4">
+        <form onSubmit={handleNicknameSubmit(handleUpdateNickname)} className="mt-4">
           <Controller
             name="nickname"
-            control={control}
+            control={nicknameControl}
             render={({ field }) => (
               <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
                 <div className="flex-1">
@@ -123,10 +137,10 @@ export default function ProfilePage() {
 
       <section className="rounded-3xl border border-border bg-surface p-6 shadow-sm">
         <h2 className="text-base font-semibold text-foreground">修改密码</h2>
-        <form onSubmit={handleSubmit(handleChangePassword)} className="mt-4 space-y-4">
+        <form onSubmit={handlePasswordSubmit(handleChangePassword)} className="mt-4 space-y-4">
           <Controller
             name="oldPassword"
-            control={control}
+            control={passwordControl}
             rules={{ required: "请输入旧密码" }}
             render={({ field, fieldState }) => (
               <div>
@@ -140,7 +154,7 @@ export default function ProfilePage() {
           />
           <Controller
             name="newPassword"
-            control={control}
+            control={passwordControl}
             rules={{ required: "请输入新密码", minLength: { value: 6, message: "密码至少6位" } }}
             render={({ field, fieldState }) => (
               <div>
