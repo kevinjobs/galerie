@@ -44,26 +44,30 @@ export default function GalleryModal({
           </header>
           <MobileView>
             <div className="h-screen">
-              <img
-                className="h-full object-contain m-auto bg-background"
-                src={genSrc(photo?.src)}
-                alt={photo?.title}
-              />
+              {photo?.src && (
+                <img
+                  className="h-full object-contain m-auto bg-background"
+                  src={genSrc(photo.src)}
+                  alt={photo.title}
+                />
+              )}
             </div>
           </MobileView>
           <BrowserView>
             <div className="h-screen">
-              <img
-                className="h-full object-contain m-auto"
-                src={genSrc(photo?.src, false)}
-                alt={photo?.title}
-              />
+              {photo?.src && (
+                <img
+                  className="h-full object-contain m-auto"
+                  src={genSrc(photo.src, false)}
+                  alt={photo.title}
+                />
+              )}
             </div>
           </BrowserView>
         </section>
         <BrowserView className="w-[25%]">
           <section className="photo-preview-right h-full p-1">
-            <div className="border boder-border h-full rounded-2xl overflow-hidden">
+            <div className="border border-border h-full rounded-2xl overflow-hidden">
               {photo && <PhotoInfo photo={photo} />}
             </div>
           </section>

@@ -4,7 +4,7 @@ import React from "react";
 import dynamic from "next/dynamic";
 import { toast } from "@heroui/react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { isMobile } from "react-device-detect";
 import { useQuery } from "@tanstack/react-query";
 import { getPhotoLists } from "../api";
@@ -65,6 +65,7 @@ function EmptyOverlay({ message }: { message: string }) {
 
 function MapContent() {
   const router = useRouter();
+  const toastedRef = useRef(false);
 
   // 应用暗色地图样式
   React.useEffect(() => {
@@ -108,8 +109,9 @@ function MapContent() {
   const markers: Photo[] = data?.lists?.filter((item: Photo) => getPosition(item) !== null) || [];
 
   useEffect(() => {
-    if (markers.length === 0 && data?.lists && data.lists.length > 0) {
+    if (markers.length === 0 && data?.lists && data.lists.length > 0 && !toastedRef.current) {
       toast.info("暂无照片位置信息");
+      toastedRef.current = true;
     }
   }, [markers.length, data?.lists]);
 

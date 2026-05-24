@@ -7,6 +7,7 @@ import { Controller, useForm } from "react-hook-form";
 import { signToken } from "../api";
 import { useSetAtom } from "jotai";
 import { tokenAtom, userAtom, settingAtom } from "../store";
+import { useEffect, useRef } from "react";
 
 interface RegisterFormData {
   email: string;
@@ -19,6 +20,15 @@ export default function Basic() {
   const setSetting = useSetAtom(settingAtom);
 
   const router = useRouter();
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   const defaultUser: RegisterFormData = {
     email: "",
@@ -45,7 +55,7 @@ export default function Basic() {
 
       toast.success("登录成功！正在跳转到管理页面...");
 
-      setTimeout(() => {
+      timeoutRef.current = setTimeout(() => {
         router.push("/hinter");
       }, 2000);
 

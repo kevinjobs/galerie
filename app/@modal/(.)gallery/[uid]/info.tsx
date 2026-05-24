@@ -15,6 +15,21 @@ import { getAddress, updatePhoto } from "@/app/api";
 import { Button, toast } from "@heroui/react";
 import { isMobile } from "react-device-detect";
 
+const defaultExif: Exif = {
+  focalLength: "",
+  createTime: "",
+  fNumber: "",
+  exposureTime: "",
+  iso: 0,
+  width: "",
+  height: "",
+  lens: "",
+  model: "",
+  altitude: "",
+  latitude: "",
+  longitude: "",
+};
+
 const Context = createContext<Partial<Photo>>({});
 
 const hiddenInfo = ["id", "src", "updateTime", "exif"];
@@ -79,7 +94,12 @@ export default function PhotoInfo({ photo }: { photo: Photo }) {
       string,
       Array<string | number | boolean | undefined>
     > = {};
-    const exifs: Exif = JSON.parse(photo?.exif || "{}");
+    let exifs: Exif = defaultExif;
+    try {
+      exifs = JSON.parse(photo?.exif || "{}");
+    } catch {
+      exifs = defaultExif;
+    }
     for (const k in exifs) {
       if (SHOW_EXIF_INFOS.includes(k)) {
         showExifInfos[k] = [INFO_NAME_DICT[k], exifs[k]];

@@ -1,4 +1,5 @@
-import { isMobile } from "react-device-detect";
+"use client";
+import { useEffect, useState } from "react";
 
 export interface AlbumProps {
   data: AlbumItemProps[];
@@ -20,6 +21,15 @@ export function Album({
   itemWidth = 200,
   itemHeight = 180,
 }: AlbumProps) {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   const width = isMobile ? "100%" : itemWidth * columns + columns * 2 * gap;
 
   const iW = isMobile ? `calc(50% - ${gap * 2}px)` : itemWidth;
@@ -32,7 +42,7 @@ export function Album({
       {data.map((item, index) => {
         return (
           <div
-            key={index}
+            key={`${new Date(item.createTime).getTime()}-${index}`}
             className={`inline-block`}
             style={{ width: iW, height: itemHeight, margin: gap }}
           >

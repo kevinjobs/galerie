@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import { PermissionError } from "./errors";
 
 export interface UserInfo {
@@ -52,7 +53,7 @@ export abstract class AuthTool {
   static checkPermission(bearer: string | null | undefined, permission: string): void {
     if (!bearer) throw new PermissionError("No Token Provided");
 
-    const token = bearer.replace("Bearer ", "");
+    const token = bearer.replace(/^Bearer\s+/i, "").trim();
     const decoded = AuthTool.verify(token);
 
     const { permissions } = decoded;
@@ -63,7 +64,7 @@ export abstract class AuthTool {
   }
 
   static generateCode(): string {
-    const code = Math.floor(Math.random() * 1000000).toString();
-    return code.padStart(6, "0");
+    const code = crypto.randomInt(0, 1000000);
+    return code.toString().padStart(6, "0");
   }
 }

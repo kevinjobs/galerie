@@ -3,7 +3,7 @@ import { use } from "react";
 import { genSrc } from "../../api";
 import { usePhoto } from "../../hooks/usePhoto";
 
-export default function GalleryPriview({
+export default function GalleryPreview({
   params,
 }: {
   params: Promise<{ uid: string }>;

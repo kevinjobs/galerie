@@ -5,6 +5,7 @@ import { Button, Input, InputOTP, Label, toast } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { registerUser, sendVerifyCode } from "../api";
+import { useEffect, useRef } from "react";
 
 interface RegisterFormData {
   email: string;
@@ -14,6 +15,15 @@ interface RegisterFormData {
 
 export default function Basic() {
   const router = useRouter();
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   const defaultUser: RegisterFormData = {
     email: "",
@@ -32,7 +42,7 @@ export default function Basic() {
   const submit = (data: RegisterFormData) => {
     registerUser(data.email, data.password, data.verifyCode).then(() => {
       toast.success("注册成功！正在跳转到登录页...");
-      setTimeout(() => {
+      timeoutRef.current = setTimeout(() => {
         router.push("/login");
       }, 2000);
     }).catch((error) => {

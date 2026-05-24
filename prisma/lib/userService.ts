@@ -1,6 +1,14 @@
 import { db } from "./db";
 import crypto from "crypto";
-import { Photo, User } from "@prisma/client";
+import { Photo, User, Prisma } from "@prisma/client";
+
+type UserUpdateInput = {
+  name?: string;
+  email?: string;
+  password?: string;
+  nickname?: string;
+  permissions?: string[];
+};
 
 export abstract class UserService {
   static async add(input: {
@@ -34,15 +42,9 @@ export abstract class UserService {
 
   static async update(
     uid: string,
-    input: {
-      name?: string;
-      email?: string;
-      password?: string;
-      nickname?: string;
-      permissions?: string[];
-    }
+    input: UserUpdateInput
   ): Promise<Omit<User, "password">> {
-    const data: Record<string, unknown> = { ...input };
+    const data: Prisma.UserUpdateInput = { ...input };
 
     if (input.password) {
       data.password = await this.hashPassword(input.password);

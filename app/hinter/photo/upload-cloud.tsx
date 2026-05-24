@@ -19,7 +19,6 @@ export interface UploadOnDoneParams {
 export interface UploadProps {
   onDone?: ({ src, tags, file }: UploadOnDoneParams) => void;
   onProgress?: (progress: number) => void;
-  onStart?: () => void;
   onClear?: () => void;
   previewSrc?: string | null;
 }

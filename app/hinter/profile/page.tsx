@@ -69,7 +69,7 @@ export default function ProfilePage() {
   const handleUpdateNickname = async (data: { nickname: string }) => {
     if (!user?.uid) return;
     try {
-      const res = await updateUser(user.uid, { ...user, nickname: data.nickname } as UserPlain);
+      const res = await updateUser(user.uid, { nickname: data.nickname });
       setUser(res);
       setSetting(res.setting);
       toast.success("昵称已更新");

@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export interface ToolbarProps {
   items: {
@@ -11,11 +11,14 @@ export interface ToolbarProps {
 }
 
 export default function Toolbar({ items }: ToolbarProps) {
-  const idx = items.findIndex((item) => item.default);
+  const getDefaultIdx = () => items.findIndex((item) => item.default);
+  const [offset, setOffset] = useState(getDefaultIdx);
 
-  const [offset, setOffset] = useState(idx);
+  useEffect(() => {
+    setOffset(getDefaultIdx());
+  }, [items]);
 
-  const hanldeClick = (i: number) => {
+  const handleClick = (i: number) => {
     setOffset(i);
   };
 
@@ -28,7 +31,7 @@ export default function Toolbar({ items }: ToolbarProps) {
             data-name={item.name}
             key={item.name}
             onClick={() => {
-              hanldeClick(i);
+              handleClick(i);
               item.onPress(item.name);
             }}
           >

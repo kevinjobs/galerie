@@ -4,9 +4,11 @@ import { wgs84ToGcj02 } from "../hinter/utils";
 export const BASE_URL = "/api";
 
 export const genSrc = (str?: string, compressed?: boolean) => {
-  const parts = str?.split(":");
+  if (!str) return "";
 
-  if (!parts) return "#";
+  const parts = str.split(":");
+
+  if (parts.length < 2) return "";
 
   if (parts[0] === "tencent") {
     const url = `https://${parts[1]}`;

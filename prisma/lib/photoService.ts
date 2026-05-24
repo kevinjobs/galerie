@@ -3,6 +3,9 @@ import { Photo, Prisma } from "@prisma/client";
 import path from "path";
 import fs from "fs/promises";
 
+const ALLOWED_ORDER_FIELDS = ["id", "uid", "title", "shootTime", "createTime", "updateTime", "author", "location"] as const;
+const ALLOWED_ORDER_DIRECTIONS = ["asc", "desc"] as const;
+
 export interface PhotoCreateInput {
   title: string;
   src: string;
@@ -93,7 +96,9 @@ export abstract class PhotoService {
     }
 
     const orderByClause: Prisma.PhotoOrderByWithRelationInput = {};
-    orderByClause[orderBy as keyof Prisma.PhotoOrderByWithRelationInput] = order as "asc" | "desc";
+    const safeOrderBy = ALLOWED_ORDER_FIELDS.includes(orderBy as typeof ALLOWED_ORDER_FIELDS[number]) ? orderBy : "shootTime";
+    const safeOrder: "asc" | "desc" = ALLOWED_ORDER_DIRECTIONS.includes(order as typeof ALLOWED_ORDER_DIRECTIONS[number]) ? order as "asc" | "desc" : "desc";
+    orderByClause[safeOrderBy as keyof Prisma.PhotoOrderByWithRelationInput] = safeOrder;
 
     const count = await db.photo.count({ where });
     const photos = await db.photo.findMany({
@@ -123,6 +128,15 @@ export abstract class PhotoService {
   }
 
   static async deleteByUid(photoUid: string): Promise<void> {
+    const photo = await db.photo.findUnique({ where: { uid: photoUid } });
+    if (photo?.src?.startsWith("local:")) {
+      const filename = photo.src.replace("local:", "");
+      const filepath = path.resolve(uploadDir, path.basename(filename));
+      const resolvedUploadDir = path.resolve(uploadDir);
+      if (filepath.startsWith(resolvedUploadDir + path.sep)) {
+        fs.unlink(filepath).catch(() => {});
+      }
+    }
     await db.photo.delete({
       where: { uid: photoUid },
     });
@@ -131,16 +145,31 @@ export abstract class PhotoService {
   static async upload(file: File): Promise<string> {
     await ensureUploadDir();
     const resolvedUploadDir = path.resolve(uploadDir);
-    const filepath = path.resolve(uploadDir, file.name);
+    const ext = path.extname(file.name);
+    const baseName = path.basename(file.name, ext);
+    let finalName = `${baseName}${ext}`;
+    let counter = 0;
 
-    if (!filepath.startsWith(resolvedUploadDir + path.sep) && filepath !== resolvedUploadDir) {
-      throw new Error("Invalid file path");
+    while (true) {
+      const filepath = path.resolve(uploadDir, finalName);
+      if (!filepath.startsWith(resolvedUploadDir + path.sep) && filepath !== resolvedUploadDir) {
+        throw new Error("Invalid file path");
+      }
+      try {
+        await fs.access(filepath);
+        counter++;
+        finalName = `${baseName}_${counter}${ext}`;
+      } catch {
+        break;
+      }
     }
+
+    const finalPath = path.resolve(uploadDir, finalName);
 
     try {
       const buffer = Buffer.from(await file.arrayBuffer());
-      await fs.writeFile(filepath, buffer);
-      return `/photo/file/${path.basename(filepath)}`;
+      await fs.writeFile(finalPath, buffer);
+      return `/photo/file/${finalName}`;
     } catch {
       throw new Error("Failed to upload photo");
     }

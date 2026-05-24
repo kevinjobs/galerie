@@ -54,7 +54,7 @@ export function Navbar({ data }: NavbarProps) {
         <div className="hinter-logo">
           <h1 className="text-2xl font-bold">
             <Link href="/" className="text-black dark:text-white">
-              Gelerie
+              Galerie
             </Link>
           </h1>
         </div>
