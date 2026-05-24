@@ -69,4 +69,4 @@ export interface UserPlain {
 
 export type UserCreate = Omit<UserPlain, "id" | "uid">;
 
-export type UserUpdate = UserPlain;
+export type UserUpdate = Partial<UserPlain>;
