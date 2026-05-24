@@ -2,6 +2,7 @@ import { deletePhotoByUid, genSrc, updatePhoto } from "@/app/api";
 import { Confirm } from "@/app/components";
 import { Photo } from "@/app/typings";
 import {
+  LocationArrowFill,
   LockFill,
   LockOpen,
   Pencil,
@@ -63,28 +64,28 @@ export default function PhotoList({
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
       {lists.map((item) => (
         <article
           key={item.uid}
-          className="overflow-hidden rounded-3xl border border-border bg-surface shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+          className="group overflow-hidden rounded-2xl border border-border bg-surface shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
         >
           <div className="relative overflow-hidden bg-muted/5">
             <img
               src={genSrc(item.src, true)}
               alt={item.title}
-              className="h-48 w-full object-cover lg:h-56"
+              className="h-36 w-full object-cover transition duration-300 group-hover:scale-105 sm:h-40 lg:h-44"
             />
-            <div className="absolute inset-x-0 top-0 flex items-center justify-between gap-2 bg-gradient-to-b from-black/40 to-transparent p-3 text-xs text-white">
+            <div className="absolute inset-x-0 top-0 flex items-center justify-between gap-1 bg-gradient-to-b from-black/40 to-transparent px-2.5 py-1.5 text-[11px] text-white">
               <span
-                className={`rounded-full px-3 py-1 ${
+                className={`rounded-full px-2 py-0.5 ${
                   item.isPublic ? "bg-primary/60" : "bg-black/50"
                 }`}
               >
                 {item.isPublic ? "公开" : "私有"}
               </span>
               <span
-                className={`rounded-full px-3 py-1 ${
+                className={`rounded-full px-2 py-0.5 ${
                   item.isSelected ? "bg-warning/60" : "bg-black/50"
                 }`}
               >
@@ -93,46 +94,47 @@ export default function PhotoList({
             </div>
           </div>
 
-          <div className="p-4 lg:p-5">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-              <div className="min-w-0">
-                <h3 className="truncate text-lg font-semibold text-foreground lg:text-xl">
-                  {item.title || "未命名照片"}
-                </h3>
-                <p className="mt-1 line-clamp-2 text-sm text-muted">
-                  {item.description || "暂无描述"}
-                </p>
-              </div>
-              <p className="shrink-0 text-xs text-muted sm:text-sm">
-                {dayjs(item.shootTime).format("YYYY-MM-DD HH:mm")}
+          <div className="p-3 lg:p-4">
+            <div className="flex items-start justify-between gap-2">
+              <h3 className="min-w-0 truncate text-sm font-semibold text-foreground">
+                {item.title || "未命名照片"}
+              </h3>
+              <p className="shrink-0 truncate text-right text-[11px] text-muted"
+                 title={item.author || "未知"}>
+                {item.author || "未知"}
               </p>
             </div>
 
-            <div className="mt-3 grid grid-cols-2 gap-3">
-              <div className="rounded-2xl bg-background p-3">
-                <p className="text-[11px] uppercase tracking-[0.24em] text-muted">摄影师</p>
-                <p className="mt-0.5 truncate text-sm text-foreground">{item.author || "未知"}</p>
-              </div>
-              <div className="rounded-2xl bg-background p-3">
-                <p className="text-[11px] uppercase tracking-[0.24em] text-muted">位置</p>
-                <p className="mt-0.5 truncate text-sm text-foreground">{item.location || "未知"}</p>
-              </div>
-            </div>
+            <p className="mt-1 line-clamp-1 text-xs text-muted">
+              {item.description || "暂无描述"}
+            </p>
 
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
-              <div className="flex flex-wrap gap-1.5">
+            {item.location && (
+              <p className="mt-1.5 truncate text-xs text-muted">
+                <LocationArrowFill width={11} height={11} className="relative -top-[1px] mr-0.5 inline-block" />
+                {item.location}
+              </p>
+            )}
+
+            <div className="mt-3 flex items-center justify-between gap-1 border-t border-border pt-2">
+              <p className="truncate text-[11px] text-muted">
+                {dayjs(item.shootTime).format("YYYY-MM-DD HH:mm")}
+              </p>
+              <div className="flex gap-0.5">
                 <Button
                   size="sm"
-                  variant="secondary"
+                  variant="ghost"
+                  isIconOnly
+                  className="h-7 w-7 min-w-0"
                   onPress={() => router.push(`/hinter/photo/${item.uid}`)}
                 >
-                  <Pencil width={14} height={14} />
-                  <span className="ml-1 hidden sm:inline">编辑</span>
+                  <Pencil width={13} height={13} />
                 </Button>
                 <Button
                   size="sm"
                   variant="ghost"
                   isIconOnly
+                  className="h-7 w-7 min-w-0"
                   onPress={() =>
                     handleToggle(
                       item,
@@ -141,12 +143,13 @@ export default function PhotoList({
                     )
                   }
                 >
-                  {item.isPublic ? <LockOpen width={16} height={16} /> : <LockFill width={16} height={16} />}
+                  {item.isPublic ? <LockOpen width={13} height={13} /> : <LockFill width={13} height={13} />}
                 </Button>
                 <Button
                   size="sm"
                   variant="ghost"
                   isIconOnly
+                  className="h-7 w-7 min-w-0"
                   onPress={() =>
                     handleToggle(
                       item,
@@ -155,7 +158,7 @@ export default function PhotoList({
                     )
                   }
                 >
-                  {item.isSelected ? <StarFill width={16} height={16} /> : <Star width={16} height={16} />}
+                  {item.isSelected ? <StarFill width={13} height={13} /> : <Star width={13} height={13} />}
                 </Button>
               </div>
               <Confirm
@@ -164,8 +167,8 @@ export default function PhotoList({
                 content={<p className="text-danger">删除后无法恢复</p>}
                 onConfirmAction={() => handleDelete(item)}
               >
-                <Button size="sm" variant="danger" isIconOnly>
-                  <TrashBin width={16} height={16} />
+                <Button size="sm" variant="danger" isIconOnly className="h-7 w-7 min-w-0">
+                  <TrashBin width={13} height={13} />
                 </Button>
               </Confirm>
             </div>
