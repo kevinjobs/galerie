@@ -4,6 +4,7 @@ import EditPanel from "@/app/hinter/photo/edit";
 import { usePhoto } from "@/app/hooks/usePhoto";
 import { Modal } from "@/app/components";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function PhotoEditModal({
   params,
@@ -11,6 +12,7 @@ export default function PhotoEditModal({
   params: Promise<{ uid: string }>;
 }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const { uid } = use(params);
   const { photo } = usePhoto(uid);
@@ -19,7 +21,10 @@ export default function PhotoEditModal({
     <Modal isOpen onChangeAction={() => router.back()} size="full">
       <EditPanel
         photo={photo}
-        onFinish={() => router.back()}
+        onFinish={() => {
+          queryClient.invalidateQueries({ queryKey: ["photoLists"] });
+          router.back();
+        }}
       />
     </Modal>
   );
