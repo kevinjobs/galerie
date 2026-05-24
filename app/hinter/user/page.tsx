@@ -1,5 +1,5 @@
 "use client";
-import { getUserLists } from "@/app/api";
+import { deleteUserByUid, getUserLists } from "@/app/api";
 import { Confirm, Modal } from "@/app/components";
 import { UserPlain } from "@/app/typings";
 import { ArrowRotateLeft, Pencil, Plus, TrashBin } from "@gravity-ui/icons";
@@ -133,16 +133,7 @@ export default function UserPage() {
                     content={<p className="text-danger">删除后无法恢复</p>}
                     onConfirmAction={async () => {
                       try {
-                        const res = await fetch(`/api/user?uid=${item.uid}`, {
-                          method: "DELETE",
-                          headers: {
-                            Authorization: `Bearer ${localStorage.getItem("token")?.replaceAll('"', "")}`,
-                          },
-                        });
-                        if (!res.ok) {
-                          const err = await res.json();
-                          throw new Error(err.error || "删除失败");
-                        }
+                        await deleteUserByUid(item.uid);
                         toast.success("用户已删除");
                         refetch();
                       } catch (err) {

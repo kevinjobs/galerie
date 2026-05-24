@@ -114,16 +114,12 @@ export abstract class PhotoService {
   static async updateByUid(
     photoUid: string,
     photo: PhotoCreateInput
-  ): Promise<Photo | null> {
-    try {
-      const updatedPhoto = await db.photo.update({
-        where: { uid: photoUid },
-        data: photo,
-      });
-      return updatedPhoto;
-    } catch {
-      throw new Error("Photo not found");
-    }
+  ): Promise<Photo> {
+    const updatedPhoto = await db.photo.update({
+      where: { uid: photoUid },
+      data: photo,
+    });
+    return updatedPhoto;
   }
 
   static async deleteByUid(photoUid: string): Promise<void> {

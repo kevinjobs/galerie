@@ -35,9 +35,7 @@ const pool = new Pool({
   user: dbConfig.user,
   password: dbConfig.password,
   database: dbConfig.database,
-  ssl: dbConfig.ssl ? {
-    rejectUnauthorized: false
-  } : false
+  ssl: dbConfig.ssl ? true : false
 });
 
 const adapter = new PrismaPg(pool);

@@ -9,13 +9,12 @@ export async function PUT(request: NextRequest) {
     if (!authHeader) throw new PermissionError("No Token Provided");
 
     const token = authHeader.replace("Bearer ", "");
-    const decoded = AuthTool.decode(token);
-    if (!decoded) throw new PermissionError("无效的 Token");
+    const decoded = AuthTool.verify(token);
 
     const body = await request.json();
     const { oldPassword, newPassword } = body;
 
-    const user = await UserService.getUserByEmail(decoded.email);
+    const user = await UserService.getUserByEmailWithPassword(decoded.email);
     if (!user) {
       return NextResponse.json({ error: "用户不存在" }, { status: 404 });
     }

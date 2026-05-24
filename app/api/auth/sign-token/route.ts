@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { email, password } = body;
 
-    const user = await UserService.getUserByEmail(email);
+    const user = await UserService.getUserByEmailWithPassword(email);
 
     if (!user) {
       throw new NotFoundError("用户不存在");

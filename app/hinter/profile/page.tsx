@@ -1,5 +1,5 @@
 "use client";
-import { changePassword, updateUser } from "@/app/api";
+import { changePassword, deleteUserByUid, updateUser } from "@/app/api";
 import { Confirm } from "@/app/components";
 import { settingAtom, tokenAtom, userAtom } from "@/app/store";
 import { UserPlain } from "@/app/typings";
@@ -46,18 +46,7 @@ export default function ProfilePage() {
 
   const handleDeleteAccount = async () => {
     try {
-      const res = await fetch(`/api/user?uid=${user?.uid}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "注销失败");
-      }
-
+      await deleteUserByUid(user?.uid || "");
       setToken(null);
       setUser(null);
       toast.success("账户已注销");

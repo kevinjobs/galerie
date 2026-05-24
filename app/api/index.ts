@@ -270,6 +270,19 @@ export const createUser = async (user: UserCreate) => {
   return data;
 };
 
+export const deleteUserByUid = async (uid: string) => {
+  const response = await _fetch(`${BASE_URL}/user?uid=${uid}`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(`删除用户失败 [ ${error.error} ]`);
+  }
+
+  return await response.json();
+};
+
 export const registerUser = async (
   email: string,
   password: string,

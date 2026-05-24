@@ -34,23 +34,33 @@ export function UploadCloud({
 
   const ref = React.useRef<HTMLInputElement>(null);
   const [src, setSrc] = React.useState<string | null>();
+  const objectUrlRef = React.useRef<string | null>(null);
+
+  const revokeObjectUrl = React.useCallback(() => {
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
+  }, []);
 
   const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const oldFile = e.target.files?.[0];
 
     if (oldFile) {
-      // 生成新的文件名
       const filename = `${md5(oldFile.name.split(".")[0])}.${oldFile.name.split(".")[1]}`;
       const file = new File([oldFile], filename, { type: oldFile.type });
 
       const convertedFile = await convertImgFormat(file);
 
-      setSrc(URL.createObjectURL(convertedFile));
+      revokeObjectUrl();
+      const newObjectUrl = URL.createObjectURL(convertedFile);
+      objectUrlRef.current = newObjectUrl;
+      setSrc(newObjectUrl);
 
       const exifs = await readExifs(file);
 
       const handleDone = (src: string, file: File) => {
-        e.target.files = null;
+        e.target.value = "";
         if (onDone) onDone({ src, tags: exifs, file });
       };
 
@@ -121,9 +131,10 @@ export function UploadCloud({
           variant="danger"
           className="ml-2"
           onPress={() => {
+            revokeObjectUrl();
             setSrc(null);
-            if (ref.current?.files) {
-              ref.current.files = null;
+            if (ref.current) {
+              ref.current.value = "";
             }
             if (onClear) onClear();
           }}

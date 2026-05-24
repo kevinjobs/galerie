@@ -41,7 +41,7 @@ export abstract class UserService {
       nickname?: string;
       permissions?: string[];
     }
-  ): Promise<Omit<User, "password"> | null> {
+  ): Promise<Omit<User, "password">> {
     const data: Record<string, unknown> = { ...input };
 
     if (input.password) {
@@ -54,8 +54,6 @@ export abstract class UserService {
       where: { uid },
       data,
     });
-
-    if (!user) return null;
 
     const { password: _, ...result } = user;
     return result;
@@ -87,12 +85,22 @@ export abstract class UserService {
     return result;
   }
 
-  static async getUserByEmail(email: string): Promise<User | null> {
+  static async getUserByEmailWithPassword(email: string): Promise<User | null> {
+    const user = await db.user.findUnique({
+      where: { email },
+    });
+    return user;
+  }
+
+  static async getUserByEmail(email: string): Promise<Omit<User, "password"> | null> {
     const user = await db.user.findUnique({
       where: { email },
     });
 
-    return user;
+    if (!user) return null;
+
+    const { password: _, ...result } = user;
+    return result;
   }
 
   static async getAll(): Promise<Omit<User, "password">[]> {

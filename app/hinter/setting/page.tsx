@@ -19,6 +19,7 @@ export default function SettingPage() {
 
   const submit = async (data: Setting) => {
     setSaving(true);
+    const oldSetting = setting;
     setSetting(data);
     if (user?.uid) {
       try {
@@ -27,6 +28,7 @@ export default function SettingPage() {
         setUser(res);
         setSetting(res.setting);
       } catch (err) {
+        setSetting(oldSetting);
         toast.danger(`保存设置失败: ${(err as Error).message}`);
       }
     }

@@ -45,7 +45,7 @@ export function Navbar({ data }: NavbarProps) {
           toast.danger(`获取登录信息失败: ${error.message}`);
         });
     }
-  }, []);
+  }, [token, setUser, setSetting]);
 
   // 避免 hydration mismatch：首次渲染用通用占位
   if (!mounted) {

@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { getPhotoLists, genSrc } from "./api";
@@ -8,12 +8,14 @@ import { LocationArrowFill } from "@gravity-ui/icons";
 import { isMobile } from "react-device-detect";
 
 export default function Home() {
+  const [randomSeed] = useState(() => Math.random());
+
   const { data, isLoading } = useQuery({
     queryKey: ["cover-photos"],
     queryFn: () => getPhotoLists({ isSelected: true, isPublic: true, limit: 100 }),
   });
 
-  const coverPhoto = React.useMemo(() => {
+  const coverPhoto = useMemo(() => {
     if (!data?.lists) return null;
 
     const landscapePhotos = data.lists.filter((photo: Photo) => {
@@ -23,7 +25,6 @@ export default function Home() {
         const exif = JSON.parse(photo.exif);
         if (!exif.width || !exif.height) return false;
 
-        // 提取数字部分
         const getNumber = (value: any) => {
           if (typeof value === 'number') return value;
           if (typeof value === 'string') {
@@ -45,9 +46,9 @@ export default function Home() {
 
     if (landscapePhotos.length === 0) return null;
 
-    const randomIndex = Math.floor(Math.random() * landscapePhotos.length);
+    const randomIndex = Math.floor(randomSeed * landscapePhotos.length);
     return landscapePhotos[randomIndex];
-  }, [data]);
+  }, [data, randomSeed]);
 
   const getImageUrl = (photo: Photo) => {
     if (!photo.src) return "";

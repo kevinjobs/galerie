@@ -9,16 +9,26 @@ export interface UserInfo {
   permissions?: string[];
 }
 
+function getJwtSecret(): string {
+  const key = process.env.JWT_SECRET;
+  if (!key) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("JWT_SECRET environment variable is required in production");
+    }
+    console.warn("WARNING: JWT_SECRET not set, using insecure default key. Set JWT_SECRET in production!");
+    return "insecure-dev-secret-key-change-in-production";
+  }
+  return key;
+}
+
 export abstract class AuthTool {
   static sign(payload: object): string {
-    const key = process.env.JWT_SECRET || "default-secret-key-change-in-production";
-    return jwt.sign(payload, key, { expiresIn: "7d", algorithm: "HS256" });
+    return jwt.sign(payload, getJwtSecret(), { expiresIn: "7d", algorithm: "HS256" });
   }
 
   static verify(token: string): UserInfo {
-    const key = process.env.JWT_SECRET || "default-secret-key-change-in-production";
     try {
-      return jwt.verify(token, key) as UserInfo;
+      return jwt.verify(token, getJwtSecret()) as UserInfo;
     } catch {
       throw new PermissionError("无效的 Token");
     }

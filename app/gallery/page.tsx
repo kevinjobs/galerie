@@ -32,7 +32,7 @@ export default function GalleryPage() {
           <img
             src={genSrc(item.src)}
             alt={item.title}
-            loading="eager"
+            loading="lazy"
             className="object-cover w-full h-full"
           />
         </Link>
