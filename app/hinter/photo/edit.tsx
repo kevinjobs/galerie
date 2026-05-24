@@ -3,7 +3,7 @@
 import { Button, Input as I, Label, Switch, toast } from "@heroui/react";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { isMobile } from "react-device-detect";
 import { Controller, FieldErrors, useForm } from "react-hook-form";
 import { createPhoto, getAddress, updatePhoto } from "../../api";
@@ -44,9 +44,6 @@ export default function EditPanel({ photo, onFinish }: EditPanelProps) {
   const [uploadResult, setUploadResult] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
 
-  const memoizedPhoto = useMemo(() => photo, [photo]);
-  const memoizedExifs = useMemo(() => exifs, [exifs]);
-
   const defaultExifs: Exif = {
     focalLength: "",
     createTime: new Date().toISOString(),
@@ -62,6 +59,21 @@ export default function EditPanel({ photo, onFinish }: EditPanelProps) {
     longitude: "",
   };
 
+  const parseExifSafe = (exif?: string | object | null): Exif => {
+    if (!exif) return defaultExifs;
+    if (typeof exif === "string") {
+      try {
+        return JSON.parse(exif) as Exif;
+      } catch {
+        return defaultExifs;
+      }
+    }
+    if (typeof exif === "object" && !Array.isArray(exif)) {
+      return exif as unknown as Exif;
+    }
+    return defaultExifs;
+  };
+
   const {
     handleSubmit,
     control,
@@ -69,21 +81,76 @@ export default function EditPanel({ photo, onFinish }: EditPanelProps) {
     setValue,
     reset,
   } = useForm<FormData>({
-    values: {
-      id: memoizedPhoto?.id || -1,
-      uid: memoizedPhoto?.uid || "",
-      title: memoizedPhoto?.title || file?.name || "",
-      description: memoizedPhoto?.description || "",
-      location: memoizedPhoto?.location || "",
-      author: memoizedPhoto?.author || "",
-      shootTime: memoizedPhoto?.shootTime || exifs?.createTime || "",
-      isPublic: memoizedPhoto?.isPublic || false,
-      isSelected: memoizedPhoto?.isSelected || false,
-      src: memoizedPhoto?.src || String(uploadResult),
-      ...JSON.parse(memoizedPhoto?.exif || JSON.stringify(defaultExifs)),
-      ...memoizedExifs,
+    defaultValues: {
+      id: -1,
+      uid: "",
+      title: "",
+      description: "",
+      location: "",
+      author: "",
+      shootTime: "",
+      isPublic: false,
+      isSelected: false,
+      src: "",
+      ...defaultExifs,
     },
   });
+
+  useEffect(() => {
+    if (photo) {
+      const parsedExif = parseExifSafe(photo.exif as any);
+      reset({
+        id: photo.id,
+        uid: photo.uid,
+        title: photo.title || "",
+        description: photo.description || "",
+        location: photo.location || "",
+        author: photo.author || "",
+        shootTime: photo.shootTime || "",
+        isPublic: photo.isPublic || false,
+        isSelected: photo.isSelected || false,
+        src: photo.src || "",
+        ...parsedExif,
+      });
+    } else {
+      reset({
+        id: -1,
+        uid: "",
+        title: "",
+        description: "",
+        location: "",
+        author: "",
+        shootTime: "",
+        isPublic: false,
+        isSelected: false,
+        src: "",
+        ...defaultExifs,
+      });
+    }
+  }, [photo, reset]);
+
+  useEffect(() => {
+    if (file?.name && !photo) {
+      setValue("title", file.name);
+    }
+  }, [file, photo, setValue]);
+
+  useEffect(() => {
+    if (uploadResult) {
+      setValue("src", String(uploadResult));
+    }
+  }, [uploadResult, setValue]);
+
+  useEffect(() => {
+    if (exifs) {
+      (Object.keys(exifs) as string[]).forEach((key) => {
+        setValue(key, (exifs as any)[key]);
+      });
+      if (exifs.createTime) {
+        setValue("shootTime", exifs.createTime);
+      }
+    }
+  }, [exifs, setValue]);
 
   const submit = async (fd: FormData) => {
     const data = {
@@ -111,8 +178,8 @@ export default function EditPanel({ photo, onFinish }: EditPanelProps) {
       }),
     };
 
-    if (memoizedPhoto) {
-      toast.promise(updatePhoto(memoizedPhoto.uid, data), {
+    if (photo) {
+      toast.promise(updatePhoto(photo.uid, data), {
         success: () => {
           handleFinish();
           return "更新照片成功";
@@ -122,7 +189,7 @@ export default function EditPanel({ photo, onFinish }: EditPanelProps) {
       });
     }
 
-    if (!memoizedPhoto) {
+    if (!photo) {
       toast.promise(createPhoto(data), {
         success: () => {
           handleFinish();
@@ -175,7 +242,7 @@ export default function EditPanel({ photo, onFinish }: EditPanelProps) {
           console.error(error);
         });
     }
-  }, [exifs]);
+  }, [exifs, setValue]);
 
   return (
     <div className="rounded-2xl w-full max-w-6xl mx-auto overflow-x-hidden">
@@ -184,11 +251,14 @@ export default function EditPanel({ photo, onFinish }: EditPanelProps) {
           <section className="p-4">
             <UploadCloud
               onDone={handleUploadDone}
-              previewSrc={memoizedPhoto?.src}
+              previewSrc={photo?.src}
               onClear={() => {
-                reset();
-                setValue("src", "");
+                setExifs(null);
                 setUploadResult(null);
+                setValue("src", "");
+                (Object.keys(defaultExifs) as string[]).forEach((key) => {
+                  setValue(key, (defaultExifs as any)[key]);
+                });
               }}
             />
             <div className="mt-4">
@@ -226,48 +296,38 @@ export default function EditPanel({ photo, onFinish }: EditPanelProps) {
               <Controller
                 name="isPublic"
                 control={control}
-                render={({ field }) => {
-                  const { value, onChange, ...rest } = field;
-
-                  return (
-                    <FormItem label="是否公开" name="isPublic" errors={errors}>
-                      <Switch
-                        value={value ? "true" : "false"}
-                        onChange={onChange}
-                        {...rest}
-                      >
-                        <Switch.Control>
-                          <Switch.Thumb />
-                        </Switch.Control>
-                      </Switch>
-                    </FormItem>
-                  );
-                }}
+                render={({ field }) => (
+                  <FormItem label="是否公开" name="isPublic" errors={errors}>
+                    <Switch
+                      isSelected={field.value}
+                      onChange={field.onChange}
+                    >
+                      <Switch.Control>
+                        <Switch.Thumb />
+                      </Switch.Control>
+                    </Switch>
+                  </FormItem>
+                )}
               />
               <Controller
                 name="isSelected"
                 control={control}
-                render={({ field }) => {
-                  const { value, onChange, ...rest } = field;
-
-                  return (
-                    <FormItem
-                      label="是否精选"
-                      name="isSelected"
-                      errors={errors}
+                render={({ field }) => (
+                  <FormItem
+                    label="是否精选"
+                    name="isSelected"
+                    errors={errors}
+                  >
+                    <Switch
+                      isSelected={field.value}
+                      onChange={field.onChange}
                     >
-                      <Switch
-                        value={value ? "true" : "false"}
-                        onChange={onChange}
-                        {...rest}
-                      >
-                        <Switch.Control>
-                          <Switch.Thumb />
-                        </Switch.Control>
-                      </Switch>
-                    </FormItem>
-                  );
-                }}
+                      <Switch.Control>
+                        <Switch.Thumb />
+                      </Switch.Control>
+                    </Switch>
+                  </FormItem>
+                )}
               />
               <Controller
                 name="author"
@@ -422,7 +482,7 @@ export default function EditPanel({ photo, onFinish }: EditPanelProps) {
             className="bg-(--accent) rounded-full"
             style={{ width: isMobile ? "80%" : "200px" }}
           >
-            {memoizedPhoto ? "更新" : "添加"}
+            {photo ? "更新" : "添加"}
           </Button>
         </footer>
       </form>

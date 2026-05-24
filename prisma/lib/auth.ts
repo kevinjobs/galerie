@@ -34,8 +34,7 @@ export abstract class AuthTool {
 
   static hasPermission(token: string | null | undefined, allow: string): boolean {
     if (!token) throw new Error("Unauthorized");
-    const decoded = AuthTool.decode(token);
-    if (!decoded) throw new Error("Invalid token");
+    const decoded = AuthTool.verify(token);
     const { permissions } = decoded;
     return permissions?.includes(allow) ?? false;
   }
@@ -44,9 +43,7 @@ export abstract class AuthTool {
     if (!bearer) throw new PermissionError("No Token Provided");
 
     const token = bearer.replace("Bearer ", "");
-    const decoded = AuthTool.decode(token);
-
-    if (!decoded) throw new PermissionError("无效的 Token");
+    const decoded = AuthTool.verify(token);
 
     const { permissions } = decoded;
 

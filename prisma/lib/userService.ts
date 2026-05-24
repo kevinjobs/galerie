@@ -113,11 +113,12 @@ export abstract class UserService {
 
     if (!record) return false;
 
-    // 验证码 10 分钟过期
     const now = Date.now();
     const createdAt = new Date(record.createTime).getTime();
     const TEN_MINUTES = 10 * 60 * 1000;
     if (now - createdAt > TEN_MINUTES) return false;
+
+    await db.verifyCode.delete({ where: { uid: record.uid } });
 
     return true;
   }

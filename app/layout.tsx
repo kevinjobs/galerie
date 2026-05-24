@@ -15,6 +15,7 @@ export default function RootLayout({
 }>) {
   const [mounted, setMounted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [queryClient] = useState(() => new QueryClient());
 
   useEffect(() => {
     setMounted(true);
@@ -51,7 +52,7 @@ export default function RootLayout({
             ]}
           />
         </header>
-        <QueryClientProvider client={new QueryClient()}>
+        <QueryClientProvider client={queryClient}>
           <div className="galerie-main w-full max-w-full">
             {children}
             {modal}

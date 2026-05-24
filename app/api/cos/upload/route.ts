@@ -140,35 +140,15 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    try {
-      // 尝试使用 STS 生成临时密钥
-      const stsData = await getSts(cosKey, condition);
-      return NextResponse.json(
-        Object.assign(stsData as any, {
-          startTime: Math.round(Date.now() / 1000),
-          bucket: config.bucket,
-          region: config.region,
-          key: cosKey,
-        })
-      );
-    } catch (error) {
-      console.error("使用 STS 生成临时密钥失败，使用永久密钥:", error);
-      // 如果 STS 失败，使用永久密钥（仅用于开发和测试）
-      const startTime = Math.floor(Date.now() / 1000);
-      const expiredTime = startTime + 1800;
-      return NextResponse.json({
-        credentials: {
-          tmpSecretId: TENCENT_COS_SECRET_ID,
-          tmpSecretKey: TENCENT_COS_SECRET_KEY,
-          sessionToken: "",
-        },
-        startTime,
-        expiredTime,
-        bucket: TENCENT_COS_BUCKET,
-        region: TENCENT_COS_REGION,
+    const stsData = await getSts(cosKey, condition);
+    return NextResponse.json(
+      Object.assign(stsData as any, {
+        startTime: Math.round(Date.now() / 1000),
+        bucket: config.bucket,
+        region: config.region,
         key: cosKey,
-      });
-    }
+      })
+    );
   } catch (error) {
     console.error("获取上传信息失败:", error);
     if (error instanceof Error) {

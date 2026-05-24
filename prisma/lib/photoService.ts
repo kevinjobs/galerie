@@ -74,12 +74,26 @@ export abstract class PhotoService {
       where.isPublic = isPublic;
     }
 
-    const orderByClause: Prisma.PhotoOrderByWithRelationInput = {};
     if (order === "random") {
-      orderByClause.id = "asc";
-    } else {
-      orderByClause[orderBy as keyof Prisma.PhotoOrderByWithRelationInput] = order as "asc" | "desc";
+      const count = await db.photo.count({ where });
+      const randomOffset = Math.floor(Math.random() * Math.max(count - limit + 1, 1));
+      const photos = await db.photo.findMany({
+        where,
+        skip: randomOffset,
+        take: limit,
+        orderBy: { id: "asc" },
+      });
+
+      return {
+        lists: photos,
+        total: count,
+        offset,
+        limit,
+      };
     }
+
+    const orderByClause: Prisma.PhotoOrderByWithRelationInput = {};
+    orderByClause[orderBy as keyof Prisma.PhotoOrderByWithRelationInput] = order as "asc" | "desc";
 
     const count = await db.photo.count({ where });
     const photos = await db.photo.findMany({
@@ -120,19 +134,30 @@ export abstract class PhotoService {
 
   static async upload(file: File): Promise<string> {
     await ensureUploadDir();
-    const filepath = path.join(uploadDir, file.name);
+    const resolvedUploadDir = path.resolve(uploadDir);
+    const filepath = path.resolve(uploadDir, file.name);
+
+    if (!filepath.startsWith(resolvedUploadDir + path.sep) && filepath !== resolvedUploadDir) {
+      throw new Error("Invalid file path");
+    }
 
     try {
       const buffer = Buffer.from(await file.arrayBuffer());
       await fs.writeFile(filepath, buffer);
-      return `/photo/file/${file.name}`;
+      return `/photo/file/${path.basename(filepath)}`;
     } catch {
       throw new Error("Failed to upload photo");
     }
   }
 
   static async getFile(filename: string): Promise<Buffer | null> {
-    const filepath = path.join(uploadDir, filename);
+    const resolvedUploadDir = path.resolve(uploadDir);
+    const filepath = path.resolve(uploadDir, filename);
+
+    if (!filepath.startsWith(resolvedUploadDir + path.sep) && filepath !== resolvedUploadDir) {
+      return null;
+    }
+
     try {
       return await fs.readFile(filepath);
     } catch {
