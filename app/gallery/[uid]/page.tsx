@@ -1,8 +1,7 @@
 "use client";
-import { useState, useEffect, use } from "react";
-import { getPhotoByUid } from "../../api";
-import { Photo } from "../../typings";
+import { use } from "react";
 import { genSrc } from "../../api";
+import { usePhoto } from "../../hooks/usePhoto";
 
 export default function GalleryPriview({
   params,
@@ -10,19 +9,7 @@ export default function GalleryPriview({
   params: Promise<{ uid: string }>;
 }) {
   const { uid } = use(params);
-  const [photo, setPhoto] = useState<Photo | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (uid && typeof uid === "string") {
-      setLoading(true);
-      getPhotoByUid(uid)
-        .then(setPhoto)
-        .catch((err) => setError(err.message || "加载照片失败"))
-        .finally(() => setLoading(false));
-    }
-  }, [uid]);
+  const { photo, loading, error } = usePhoto(uid);
 
   if (loading) {
     return (

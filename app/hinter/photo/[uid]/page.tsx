@@ -1,8 +1,7 @@
 "use client";
-import { use, useEffect, useState } from "react";
+import { use } from "react";
 import EditPanel from "@/app/hinter/photo/edit";
-import { getPhotoByUid } from "@/app/api";
-import { Photo } from "@/app/typings";
+import { usePhoto } from "@/app/hooks/usePhoto";
 
 export default function PhotoEditPage({
   params,
@@ -10,18 +9,7 @@ export default function PhotoEditPage({
   params: Promise<{ uid: string }>;
 }) {
   const { uid } = use(params);
-  const [photo, setPhoto] = useState<Photo | null>(null);
-
-  const isNew = uid === "new";
-
-  useEffect(() => {
-    if (isNew) return;
-    getPhotoByUid(uid)
-      .then(setPhoto)
-      .catch((error) => {
-        console.error("Error fetching photo:", error);
-      });
-  }, [uid, isNew]);
+  const { photo } = usePhoto(uid);
 
   return <EditPanel photo={photo} />;
 }

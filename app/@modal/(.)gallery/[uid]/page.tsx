@@ -1,11 +1,11 @@
 "use client";
-import { genSrc, getPhotoByUid } from "@/app/api";
-import { Photo } from "@/app/typings";
+import { genSrc } from "@/app/api";
 import { Xmark, CircleInfo } from "@gravity-ui/icons";
 import { Button } from "@heroui/react";
 import { useRouter } from "next/navigation";
-import { use, useEffect, useState } from "react";
+import { use, useState } from "react";
 import { BrowserView, isMobile, MobileView } from "react-device-detect";
+import { usePhoto } from "@/app/hooks/usePhoto";
 import PhotoInfo from "./info";
 
 export default function GalleryModal({
@@ -15,16 +15,8 @@ export default function GalleryModal({
 }) {
   const { uid } = use(params);
 
-  const [photo, setPhoto] = useState<Photo | null>(null);
+  const { photo } = usePhoto(uid);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
-
-  useEffect(() => {
-    const fetchPhoto = async () => {
-      const photo = await getPhotoByUid(uid);
-      setPhoto(photo);
-    };
-    fetchPhoto();
-  }, [uid]);
 
   const router = useRouter();
   return (
