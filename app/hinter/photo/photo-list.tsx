@@ -70,7 +70,10 @@ export default function PhotoList({
           key={item.uid}
           className="group overflow-hidden rounded-2xl border border-border bg-surface shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
         >
-          <div className="relative overflow-hidden bg-muted/5">
+          <div
+            className="relative overflow-hidden bg-muted/5 cursor-pointer"
+            onClick={() => router.push(`/gallery/${item.uid}`)}
+          >
             <img
               src={genSrc(item.src, true)}
               alt={item.title}
