@@ -8,7 +8,7 @@ import {
   arrayBufferToFile,
   getImageSize,
   isDng,
-  dngToJpg
+  dngToJpg,
 } from '../app/hinter/utils'
 
 // Mock dependencies
@@ -23,8 +23,8 @@ vi.mock('exifreader', () => ({
 }))
 
 vi.mock('heic-to', () => ({
-  heicTo: vi.fn(),
-  isHeic: vi.fn()
+  heicTo: vi.fn().mockResolvedValue(new Blob(['converted'], { type: 'image/jpeg' })),
+  isHeic: vi.fn().mockResolvedValue(true),
 }))
 
 vi.mock('../app/api', () => ({
@@ -91,21 +91,20 @@ describe('Utils', () => {
   })
 
   describe('convertImgFormat', () => {
-    it('对于非 DNG 文件应该直接返回原文件', async () => {
+    it('对于普通 JPEG 文件应该转换后返回 JPEG', async () => {
       const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' })
       const result = await convertImgFormat(file)
-      expect(result).toEqual(file)
+      expect(result.type).toBe('image/jpeg')
     })
 
-    it('对于 DNG 文件应该调用转换', async () => {
-      // 由于 convertImgFormat 内部调用 dngToJpg，且我们已经在上面测试过 dngToJpg
-      // 这里只需要验证 DNG 文件被正确处理即可
+    it('convertImgFormat 应串联 HEIC + DNG 转换且返回 File', async () => {
+      const heicFile = new File(['test'], 'photo.HEIC', { type: 'image/heic' })
+      const result = await convertImgFormat(heicFile)
+      expect(result).toBeInstanceOf(File)
+    })
+
+    it('对于 DNG 文件应该调用 dngToJpg 转换', async () => {
       const dngFile = new File(['test'], 'photo.dng', { type: 'image/dng' })
-
-      // Mock dngToJpg 的行为
-      const mockJpgFile = new File(['converted'], 'photo.jpg', { type: 'image/jpeg' })
-
-      // 由于无法直接 mock 内部函数，我们验证 isDng 检测正确
       expect(isDng(dngFile)).toBe(true)
     })
   })

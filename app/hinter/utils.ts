@@ -73,8 +73,10 @@ export const dngToJpg = async (file: File, quality = 0.92): Promise<File> => {
 };
 
 export async function convertImgFormat(file: File) {
+  // 转换 HEIC/HEIF 为 JPEG
+  const heicConverted = await heicToJpg(file);
   // 转换 DNG 为 JPEG
-  const convertedFile = await dngToJpg(file, 0.92);
+  const convertedFile = await dngToJpg(heicConverted, 0.92);
   return convertedFile;
 }
 
