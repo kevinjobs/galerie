@@ -49,6 +49,10 @@ export function UploadCloud({
       const filename = `${md5(oldFile.name.split(".")[0])}.${oldFile.name.split(".")[1]}`;
       const file = new File([oldFile], filename, { type: oldFile.type });
 
+      // 1. 先读取原始文件的 EXIF（DNG 等 RAW 格式的 EXIF 需要在转换前读取）
+      const exifs = await readExifs(file);
+
+      // 2. 转换文件格式（如 DNG 转 JPEG）
       const convertedFile = await convertImgFormat(file);
 
       revokeObjectUrl();
@@ -56,11 +60,10 @@ export function UploadCloud({
       objectUrlRef.current = newObjectUrl;
       setSrc(newObjectUrl);
 
-      const exifs = await readExifs(file);
-
-      const handleDone = (src: string, file: File) => {
+      const handleDone = (src: string) => {
         e.target.value = "";
-        if (onDone) onDone({ src, tags: exifs, file });
+        // 返回转换后的文件，但 EXIF 来自原始文件
+        if (onDone) onDone({ src, tags: exifs, file: convertedFile });
       };
 
       const handleProgress = (p: number) => {
@@ -70,16 +73,16 @@ export function UploadCloud({
       // 上传图片
       const upload = async () => {
         if (setting?.upload?.type === "tencent") {
-          return uploadToCOS(convertedFile, (src, file) => {
+          return uploadToCOS(convertedFile, (src) => {
             setSrc(genSrc(src));
-            handleDone(src, file);
+            handleDone(src);
           }, handleProgress, setting?.upload);
         }
 
         if (setting?.upload?.type === "local" || !setting?.upload?.type) {
           try {
             const res = await uploadPhoto(convertedFile);
-            handleDone(`local:${res.src}`, file);
+            handleDone(`local:${res.src}`);
           } catch (err) {
             throw err;
           }
@@ -89,7 +92,7 @@ export function UploadCloud({
       toast.promise(upload(), {
         loading: "正在上传...",
         success: "上传成功",
-        error: "上传失败",
+        error: (err) => `上传失败: ${err instanceof Error ? err.message : "未知错误"}`,
       });
     }
   };

@@ -1,14 +1,81 @@
 import COS from "cos-js-sdk-v5";
 import * as ExifReader from "exifreader";
 import { heicTo, isHeic } from "heic-to";
+import * as UTIF from "utif";
 import { Exif } from "../typings";
 import { getCosUploadInfo } from "../api";
 
+/**
+ * 检测文件是否为 DNG 格式
+ */
+export const isDng = (file: File): boolean => {
+  const ext = file.name.toLowerCase().split('.').pop();
+  return ext === 'dng' || file.type === 'image/dng' || file.type === 'image/x-adobe-dng';
+};
+
+/**
+ * 将 DNG 文件转换为 JPEG
+ * 使用 UTIF 解析 DNG 原始数据，然后用 Canvas 渲染导出，质量 0.92
+ */
+export const dngToJpg = async (file: File, quality = 0.92): Promise<File> => {
+  if (!isDng(file)) {
+    return file;
+  }
+
+  const buffer = await fileToArrayBuffer(file);
+  const ifds = UTIF.decode(buffer);
+
+  if (ifds.length === 0) {
+    throw new Error('无法解析 DNG 文件');
+  }
+
+  UTIF.decodeImage(buffer, ifds[0]);
+
+  const rgba = UTIF.toRGBA8(ifds[0]);
+  const width = ifds[0].width;
+  const height = ifds[0].height;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+
+  if (!ctx) {
+    throw new Error('无法创建 canvas context');
+  }
+
+  const imageData = ctx.createImageData(width, height);
+  imageData.data.set(rgba);
+  ctx.putImageData(imageData, 0, 0);
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          reject(new Error('转换失败，无法生成 blob'));
+          return;
+        }
+
+        const baseName = file.name.replace(/\.dng$/i, '');
+        const newFileName = `${baseName}.jpg`;
+
+        const jpgFile = new File([blob], newFileName, {
+          type: 'image/jpeg',
+          lastModified: Date.now(),
+        });
+
+        resolve(jpgFile);
+      },
+      'image/jpeg',
+      quality,
+    );
+  });
+};
+
 export async function convertImgFormat(file: File) {
-  // 因为腾讯云可以上传heic文件，所以这里不需要转换
-  // const convertedFile = await heicToJpg(file);
-  // 下面还可以转换其他格式照片，如png等，根据需要添加
-  return file;
+  // 转换 DNG 为 JPEG
+  const convertedFile = await dngToJpg(file, 0.92);
+  return convertedFile;
 }
 
 export function wgs84ToGcj02(lng: number, lat: number): [number, number] {
@@ -88,6 +155,15 @@ export function parseExif(tags?: ExifReader.Tags | null): Exif {
   return exifs;
 }
 
+const withTimeout = <T>(promise: Promise<T>, ms: number, message: string): Promise<T> => {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(message)), ms),
+    ),
+  ]);
+};
+
 export async function uploadToCOS(
   file: File,
   onDone?: (src: string, file: File) => void,
@@ -96,14 +172,18 @@ export async function uploadToCOS(
     dir: string;
   },
 ) {
-  // 获取上传信息（临时密钥和 COS 文件路径）
-  const uploadInfo = await getCosUploadInfo(file.name);
+  // 获取上传信息（临时密钥和 COS 文件路径），超时 60s
+  const uploadInfo = await withTimeout(
+    getCosUploadInfo(file.name),
+    60000,
+    "获取上传凭证超时（60s），请检查网络连接或重新登录",
+  );
 
   const cos = new COS({
     SecretId: uploadInfo.credentials.tmpSecretId,
     SecretKey: uploadInfo.credentials.tmpSecretKey,
     SecurityToken: uploadInfo.credentials.sessionToken,
-    Protocol: 'https', // 统一使用 https 协议，否则会有跨域问题
+    Protocol: 'https',
   });
 
   const config: COS.UploadFileParams = {
@@ -128,7 +208,12 @@ export async function uploadToCOS(
   };
 
   try {
-    const data = await cos.uploadFile(config);
+    // COS 上传本身超时 120s
+    const data = await withTimeout(
+      cos.uploadFile(config),
+      120000,
+      "上传到腾讯云超时（120s），请检查网络或 COS 配置",
+    );
     return data;
   } catch (err) {
     console.error("上传失败:", err);
