@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { AuthTool } from "@/prisma/lib/auth";
+import { UserService } from "@/prisma/lib/userService";
 import { PermissionError } from "@/prisma/lib/errors";
 
 export async function POST(request: NextRequest) {
@@ -13,7 +14,12 @@ export async function POST(request: NextRequest) {
       throw new PermissionError("无效的 token");
     }
 
-    return NextResponse.json(decoded);
+    const user = await UserService.getUserByUid(decoded.uid);
+    if (!user) {
+      return NextResponse.json({ error: "用户不存在" }, { status: 404 });
+    }
+
+    return NextResponse.json(user);
   } catch (error) {
     if (error instanceof Error) {
       return NextResponse.json({ error: error.message }, { status: 418 });

@@ -136,7 +136,11 @@ export default function ProfilePage() {
     .toUpperCase();
 
   // 头像
-  const [avatarSeed, setAvatarSeed] = useState(() => Math.random().toString(36).slice(2, 10));
+  const [avatarSeed, setAvatarSeed] = useState<string | null>(null);
+
+  useEffect(() => {
+    setAvatarSeed(Math.random().toString(36).slice(2, 10));
+  }, []);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
@@ -145,10 +149,13 @@ export default function ProfilePage() {
 
   const currentAvatarSrc = user?.avatar ? genSrc(user.avatar) : null;
 
-  const avatarList = useMemo(() => Array.from({ length: 16 }, (_, i) => {
-    const seed = `${avatarSeed}-${i}`;
-    return createAvatar(micah, { seed, size: 128 }).toDataUri();
-  }), [avatarSeed]);
+  const avatarList = useMemo(() => {
+    if (!avatarSeed) return [];
+    return Array.from({ length: 16 }, (_, i) => {
+      const seed = `${avatarSeed}-${i}`;
+      return createAvatar(micah, { seed, size: 128 }).toDataUri();
+    });
+  }, [avatarSeed]);
 
   useEffect(() => {
     return () => {
@@ -196,14 +203,15 @@ export default function ProfilePage() {
         return;
       }
       const { src } = await uploadPhoto(file);
+      const avatarSrc = `local:${src}`;
       await createPhoto({
         title: `avatar_${Date.now()}`,
-        src,
+        src: avatarSrc,
         type: "avatar",
         isPublic: false,
         isSelected: false,
       });
-      const updated = await updateUser(user.uid, { avatar: src });
+      const updated = await updateUser(user.uid, { avatar: avatarSrc });
       setUser(updated);
       setSelectedIndex(null);
       setSelectedFile(null);
@@ -251,21 +259,23 @@ export default function ProfilePage() {
 
         <h3 className="text-sm font-semibold text-foreground mb-4">选择头像</h3>
 
-        <div className="grid grid-cols-4 gap-4 mb-4">
-          {avatarList.map((dataUri, i) => (
-            <button
-              key={i}
-              onClick={() => handleSelectSystem(i)}
-              className={`rounded-full overflow-hidden size-16 ring-2 transition-all cursor-pointer ${
-                selectedIndex === i && !selectedFile
-                  ? "ring-primary scale-110"
-                  : "ring-transparent hover:ring-muted"
-              }`}
-            >
-              <img src={dataUri} alt={`avatar ${i + 1}`} className="size-full" />
-            </button>
-          ))}
-        </div>
+        {avatarList.length > 0 && (
+          <div className="grid grid-cols-4 gap-4 mb-4">
+            {avatarList.map((dataUri, i) => (
+              <button
+                key={i}
+                onClick={() => handleSelectSystem(i)}
+                className={`rounded-full overflow-hidden size-16 ring-2 transition-all cursor-pointer ${
+                  selectedIndex === i && !selectedFile
+                    ? "ring-primary scale-110"
+                    : "ring-transparent hover:ring-muted"
+                }`}
+              >
+                <img src={dataUri} alt={`avatar ${i + 1}`} className="size-full" />
+              </button>
+            ))}
+          </div>
+        )}
 
         <div className="flex gap-3 flex-wrap items-center">
           <Button size="sm" variant="ghost" onPress={handleRefreshAvatars}>
