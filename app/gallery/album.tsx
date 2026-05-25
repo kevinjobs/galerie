@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { isMobile as isMobileDevice } from "react-device-detect";
 
 export interface AlbumProps {
   data: AlbumItemProps[];
@@ -21,7 +22,7 @@ export function Album({
   itemWidth = 200,
   itemHeight = 180,
 }: AlbumProps) {
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(isMobileDevice);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
