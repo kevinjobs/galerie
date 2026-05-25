@@ -5,7 +5,7 @@ import { useAtom } from "jotai";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { verifyToken } from "../api";
+import { verifyToken, genSrc } from "../api";
 import { settingAtom, tokenAtom, userAtom } from "../store";
 import { Setting, UserPlain } from "../typings";
 import { MOBILE_HEADER_HEIGHT, BROWSER_HEADER_HEIGHT } from "../config";
@@ -97,6 +97,7 @@ function BrowserNav({ data }: NavbarProps) {
         <Dropdown>
           <Dropdown.Trigger>
             <Avatar>
+              {user?.avatar && <Avatar.Image src={genSrc(user.avatar)} />}
               <Avatar.Fallback>
                 {
                   user?.name?.toUpperCase()?.slice(0, 1) ||
@@ -160,6 +161,7 @@ function MobileNav({ data }: NavbarProps) {
               <Dropdown>
                 <Dropdown.Trigger>
                   <Avatar size="sm">
+                    {user?.avatar && <Avatar.Image src={genSrc(user.avatar)} />}
                     <Avatar.Fallback>
                       {user?.name?.toUpperCase()?.slice(0, 1) || user?.email?.toUpperCase()?.slice(0, 2)}
                     </Avatar.Fallback>

@@ -16,6 +16,7 @@ export interface PhotoCreateInput {
   author?: string;
   isPublic?: boolean;
   isSelected?: boolean;
+  type?: string;
 }
 
 export interface PhotoListParams {

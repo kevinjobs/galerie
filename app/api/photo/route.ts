@@ -48,6 +48,7 @@ export async function POST(request: NextRequest) {
       author: body.author,
       isPublic: body.isPublic,
       isSelected: body.isSelected,
+      type: body.type,
     });
 
     return NextResponse.json(photo);

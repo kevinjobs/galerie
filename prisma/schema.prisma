@@ -23,6 +23,7 @@ model Photo {
   author       String?
   isPublic     Boolean   @default(false)
   isSelected   Boolean   @default(false)
+  type         String   @default("photo")
 }
 
 model User {
@@ -34,6 +35,7 @@ model User {
   password     String
   permissions  Json?
   setting      Json?
+  avatar       String?
 }
 
 model VerifyCode {

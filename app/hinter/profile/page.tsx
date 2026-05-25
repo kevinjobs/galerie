@@ -1,5 +1,5 @@
 "use client";
-import { changePassword, deleteUserByUid, updateUser } from "@/app/api";
+import { changePassword, deleteUserByUid, updateUser, uploadPhoto, createPhoto, genSrc } from "@/app/api";
 import { Confirm } from "@/app/components";
 import { settingAtom, tokenAtom, userAtom } from "@/app/store";
 import { UserPlain } from "@/app/typings";
@@ -8,6 +8,59 @@ import { Button, Input, Label, toast } from "@heroui/react";
 import { useAtom } from "jotai";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
+import { useRef, useMemo, useState, useEffect, useCallback } from "react";
+import { createAvatar } from "@dicebear/core";
+import { micah } from "@dicebear/collection";
+
+function loadImage(file: File): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.src = url;
+    img.onload = () => { resolve(img); URL.revokeObjectURL(url); };
+    img.onerror = () => { reject(new Error("Failed to load image")); URL.revokeObjectURL(url); };
+  });
+}
+
+function getScaledDimensions(w: number, h: number, maxW: number, maxH: number) {
+  if (w <= maxW && h <= maxH) return { width: w, height: h };
+  const ratio = Math.min(maxW / w, maxH / h);
+  return { width: Math.round(w * ratio), height: Math.round(h * ratio) };
+}
+
+async function resizeImage(file: File, maxW: number, maxH: number, quality: number): Promise<File> {
+  const img = await loadImage(file);
+  const { width, height } = getScaledDimensions(img.width, img.height, maxW, maxH);
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d")!;
+  ctx.drawImage(img, 0, 0, width, height);
+  return new Promise((resolve) => {
+    canvas.toBlob((b) => {
+      resolve(new File([b!], file.name.replace(/\.[^.]+$/, ".jpg"), { type: "image/jpeg" }));
+    }, "image/jpeg", quality);
+  });
+}
+
+async function svgToFile(svgStr: string, filename: string): Promise<File> {
+  const canvas = document.createElement("canvas");
+  canvas.width = 512;
+  canvas.height = 512;
+  const ctx = canvas.getContext("2d")!;
+  const img = new Image();
+  const blob = new Blob([svgStr], { type: "image/svg+xml" });
+  const url = URL.createObjectURL(blob);
+  img.src = url;
+  await new Promise<void>((resolve) => { img.onload = () => resolve(); });
+  ctx.drawImage(img, 0, 0, 512, 512);
+  URL.revokeObjectURL(url);
+  return new Promise((resolve) => {
+    canvas.toBlob((b) => {
+      resolve(new File([b!], filename, { type: "image/jpeg" }));
+    }, "image/jpeg", 0.85);
+  });
+}
 
 export default function ProfilePage() {
   const [user, setUser] = useAtom(userAtom);
@@ -82,6 +135,89 @@ export default function ProfilePage() {
     .charAt(0)
     .toUpperCase();
 
+  // 头像
+  const [avatarSeed, setAvatarSeed] = useState(() => Math.random().toString(36).slice(2, 10));
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [savingAvatar, setSavingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const currentAvatarSrc = user?.avatar ? genSrc(user.avatar) : null;
+
+  const avatarList = useMemo(() => Array.from({ length: 16 }, (_, i) => {
+    const seed = `${avatarSeed}-${i}`;
+    return createAvatar(micah, { seed, size: 128 }).toDataUri();
+  }), [avatarSeed]);
+
+  useEffect(() => {
+    return () => {
+      if (filePreview) URL.revokeObjectURL(filePreview);
+    };
+  }, [filePreview]);
+
+  const handleRefreshAvatars = useCallback(() => {
+    setAvatarSeed(Math.random().toString(36).slice(2, 10));
+    setSelectedIndex(null);
+    setSelectedFile(null);
+    setFilePreview(null);
+  }, []);
+
+  const handleSelectSystem = useCallback((index: number) => {
+    setSelectedIndex(index);
+    setSelectedFile(null);
+    setFilePreview(null);
+  }, []);
+
+  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      setSelectedIndex(null);
+      setFilePreview(URL.createObjectURL(file));
+    }
+    e.target.value = "";
+  }, []);
+
+  const handleSaveAvatar = useCallback(async () => {
+    if (!user?.uid) return;
+    setSavingAvatar(true);
+    try {
+      let file: File;
+      if (selectedFile) {
+        file = await resizeImage(selectedFile, 512, 512, 0.85);
+      } else if (selectedIndex !== null) {
+        const seed = `${avatarSeed}-${selectedIndex}`;
+        const svgStr = createAvatar(micah, { seed, size: 512 }).toString();
+        file = await svgToFile(svgStr, `avatar_${seed}.jpg`);
+      } else {
+        toast.warning("请先选择一个头像");
+        setSavingAvatar(false);
+        return;
+      }
+      const { src } = await uploadPhoto(file);
+      await createPhoto({
+        title: `avatar_${Date.now()}`,
+        src,
+        type: "avatar",
+        isPublic: false,
+        isSelected: false,
+      });
+      const updated = await updateUser(user.uid, { avatar: src });
+      setUser(updated);
+      setSelectedIndex(null);
+      setSelectedFile(null);
+      setFilePreview(null);
+      toast.success("头像已更新");
+    } catch (err) {
+      toast.danger(`保存头像失败: ${(err as Error).message}`);
+    } finally {
+      setSavingAvatar(false);
+    }
+  }, [user?.uid, selectedFile, selectedIndex, avatarSeed, setUser]);
+
+  const avatarPreview = filePreview || (selectedIndex !== null ? avatarList[selectedIndex] : null);
+
   return (
     <div className="space-y-6">
       <section className="rounded-3xl border border-border bg-background p-6 shadow-sm">
@@ -91,14 +227,64 @@ export default function ProfilePage() {
 
       <section className="rounded-3xl border border-border bg-surface p-6 shadow-sm">
         <div className="flex flex-col items-center gap-4 sm:flex-row">
-          <div className="flex size-20 shrink-0 items-center justify-center rounded-full bg-muted/10 text-3xl font-bold text-muted">
-            {initial}
+          <div className="relative size-20 shrink-0">
+            {avatarPreview || currentAvatarSrc ? (
+              <img
+                src={avatarPreview || currentAvatarSrc || ""}
+                className="size-20 rounded-full object-cover"
+                alt="avatar"
+              />
+            ) : (
+              <div className="flex size-20 items-center justify-center rounded-full bg-muted/10 text-3xl font-bold text-muted">
+                {initial}
+              </div>
+            )}
           </div>
           <div className="text-center sm:text-left">
             <h2 className="text-xl font-bold text-foreground">{user?.nickname || user?.name || "未命名用户"}</h2>
             <p className="text-sm text-muted">{user?.email}</p>
             <p className="mt-1 text-xs text-muted">@{user?.name}</p>
           </div>
+        </div>
+
+        <hr className="my-6 border-border" />
+
+        <h3 className="text-sm font-semibold text-foreground mb-4">选择头像</h3>
+
+        <div className="grid grid-cols-4 gap-4 mb-4">
+          {avatarList.map((dataUri, i) => (
+            <button
+              key={i}
+              onClick={() => handleSelectSystem(i)}
+              className={`rounded-full overflow-hidden size-16 ring-2 transition-all cursor-pointer ${
+                selectedIndex === i && !selectedFile
+                  ? "ring-primary scale-110"
+                  : "ring-transparent hover:ring-muted"
+              }`}
+            >
+              <img src={dataUri} alt={`avatar ${i + 1}`} className="size-full" />
+            </button>
+          ))}
+        </div>
+
+        <div className="flex gap-3 flex-wrap items-center">
+          <Button size="sm" variant="ghost" onPress={handleRefreshAvatars}>
+            刷新头像
+          </Button>
+          <Button size="sm" variant="ghost" onPress={() => fileInputRef.current?.click()}>
+            上传图片
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            hidden
+            onChange={handleFileSelect}
+          />
+          {selectedFile && <span className="text-xs text-muted truncate max-w-32">{selectedFile.name}</span>}
+          <Button size="sm" variant="primary" onPress={handleSaveAvatar} isDisabled={savingAvatar}>
+            保存头像
+          </Button>
         </div>
       </section>
 

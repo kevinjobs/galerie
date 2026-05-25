@@ -8,6 +8,7 @@ type UserUpdateInput = {
   password?: string;
   nickname?: string;
   permissions?: string[];
+  avatar?: string;
 };
 
 export abstract class UserService {
