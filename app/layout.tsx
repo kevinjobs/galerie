@@ -5,6 +5,7 @@ import { Navbar } from "./components/navbar";
 import "./globals.css";
 import { MOBILE_HEADER_HEIGHT, BROWSER_HEADER_HEIGHT } from "./config";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 export default function RootLayout({
   children,
@@ -13,6 +14,8 @@ export default function RootLayout({
   children: React.ReactNode;
   modal: React.ReactNode;
 }>) {
+  const pathname = usePathname();
+  const isMapPage = pathname === "/map";
   const [mounted, setMounted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [queryClient] = useState(() => new QueryClient());
@@ -40,7 +43,11 @@ export default function RootLayout({
       <body className="">
         <Toast.Provider placement="top" />
         <header
-          className="galerie-header w-full flex items-center fixed top-0 left-0 backdrop-blur-sm bg-background/0 z-40"
+          className={`galerie-header w-full flex items-center fixed top-0 left-0 z-40 transition-all duration-300 ${
+            isMapPage
+              ? "bg-transparent"
+              : "backdrop-blur-sm bg-background/0"
+          }`}
           style={{ height: headerHeight }}
         >
           <Navbar

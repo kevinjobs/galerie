@@ -46,6 +46,10 @@ const darkMapStyle = `
   #map-container .leaflet-popup-tip {
     background: rgba(20, 20, 30, 0.9);
   }
+
+  #map-container .leaflet-top {
+    top: 64px;
+  }
 `;
 
 const gaodeImgUrl = "http://wprd04.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scl=1&style=9&x={x}&y={y}&z={z}";
