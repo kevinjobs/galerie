@@ -30,21 +30,21 @@ export function Album({
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  const width = isMobile ? "100%" : itemWidth * columns + columns * 2 * gap;
+  const width = isMobile ? "100%" : itemWidth * columns + (columns - 1) * gap;
 
-  const iW = isMobile ? `calc(50% - ${gap * 2}px)` : itemWidth;
+  const iW = isMobile ? "calc(50% - 2px)" : itemWidth;
 
   return (
     <div
       className="leading-none m-auto flex flex-wrap"
-      style={{ width, maxWidth: width }}
+      style={{ width, maxWidth: width, gap }}
     >
       {data.map((item, index) => {
         return (
           <div
             key={`${new Date(item.createTime).getTime()}-${index}`}
             className={`inline-block`}
-            style={{ width: iW, height: itemHeight, margin: gap }}
+            style={{ width: iW, height: itemHeight }}
           >
             {item.element}
           </div>
