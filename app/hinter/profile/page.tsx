@@ -11,6 +11,7 @@ import { Controller, useForm } from "react-hook-form";
 import { useRef, useMemo, useState, useEffect, useCallback } from "react";
 import { createAvatar } from "@dicebear/core";
 import { micah } from "@dicebear/collection";
+import { uploadToCOS } from "../utils";
 
 function loadImage(file: File): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -65,7 +66,7 @@ async function svgToFile(svgStr: string, filename: string): Promise<File> {
 export default function ProfilePage() {
   const [user, setUser] = useAtom(userAtom);
   const [token, setToken] = useAtom(tokenAtom);
-  const [, setSetting] = useAtom(settingAtom);
+  const [setting, setSetting] = useAtom(settingAtom);
   const router = useRouter();
 
   // 昵称表单
@@ -202,8 +203,15 @@ export default function ProfilePage() {
         setSavingAvatar(false);
         return;
       }
-      const { src } = await uploadPhoto(file);
-      const avatarSrc = `local:${src}`;
+      let avatarSrc: string;
+      if (setting?.upload?.type === "tencent") {
+        avatarSrc = await new Promise<string>((resolve, reject) => {
+          uploadToCOS(file, (src) => resolve(src), undefined, setting?.upload).catch(reject);
+        });
+      } else {
+        const { src } = await uploadPhoto(file);
+        avatarSrc = `local:${src}`;
+      }
       await createPhoto({
         title: `avatar_${Date.now()}`,
         src: avatarSrc,
@@ -222,7 +230,7 @@ export default function ProfilePage() {
     } finally {
       setSavingAvatar(false);
     }
-  }, [user?.uid, selectedFile, selectedIndex, avatarSeed, setUser]);
+  }, [user?.uid, selectedFile, selectedIndex, avatarSeed, setUser, setting]);
 
   const avatarPreview = filePreview || (selectedIndex !== null ? avatarList[selectedIndex] : null);
 
