@@ -68,7 +68,9 @@ export abstract class PhotoService {
       isPublic,
     } = params;
 
-    const where: Prisma.PhotoWhereInput = {};
+    const where: Prisma.PhotoWhereInput = {
+      type: { not: "avatar" },
+    };
 
     if (isSelected !== undefined) {
       where.isSelected = isSelected;
