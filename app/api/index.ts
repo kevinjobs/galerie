@@ -8,7 +8,7 @@ export const genSrc = (str?: string, compressed?: boolean) => {
 
   const parts = str.split(":");
 
-  if (parts.length < 2) return "";
+  if (parts.length < 2) return `${BASE_URL}${str}`;
 
   if (parts[0] === "tencent") {
     const url = `https://${parts[1]}`;
