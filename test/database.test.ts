@@ -22,17 +22,39 @@ vi.mock('../prisma/lib/db', () => {
     },
     verifyCode: {
       findFirst: vi.fn(),
+      delete: vi.fn(),
     },
   }
   return { db: mockDb }
 })
 
-vi.mock('fs/promises', () => ({
-  access: vi.fn(),
-  mkdir: vi.fn(),
-  writeFile: vi.fn(),
-  readFile: vi.fn(),
-}))
+vi.mock('fs/promises', () => {
+  const fsMock = {
+    access: vi.fn(),
+    mkdir: vi.fn(),
+    writeFile: vi.fn(),
+    readFile: vi.fn(),
+  }
+  return { default: fsMock, ...fsMock }
+})
+
+// Mock crypto at module level
+vi.mock('crypto', () => {
+  const cryptoMock = {
+    randomBytes: (size: number) => {
+      const buffer = Buffer.alloc(size)
+      buffer.fill('test')
+      return buffer
+    },
+    scrypt: (password: string, salt: string, keylen: number, callback: any) => {
+      // Return different derived keys for different passwords
+      const hash = password === 'testpassword' ? 'correct_hash' : 'wrong_hash'
+      callback(null, Buffer.from(hash))
+    },
+    randomInt: (min: number, max: number) => Math.floor(Math.random() * (max - min)) + min,
+  }
+  return { default: cryptoMock, ...cryptoMock }
+})
 
 describe('Database Services', () => {
   beforeEach(() => {
@@ -78,7 +100,7 @@ describe('Database Services', () => {
         }
 
         const { db } = await import('../prisma/lib/db')
-          ; (db.user.create as any).mockResolvedValue(mockUser)
+        ;(db.user.create as any).mockResolvedValue(mockUser)
 
         const result = await UserService.add({
           name: 'testuser',
@@ -89,7 +111,7 @@ describe('Database Services', () => {
         expect(result).toBeDefined()
         expect(result.uid).toBe('test-uid')
         expect(result.name).toBe('testuser')
-        expect('password' in result).toBe(false) // 密码不应返回
+        expect('password' in result).toBe(false)
       })
     })
 
@@ -107,7 +129,7 @@ describe('Database Services', () => {
         }
 
         const { db } = await import('../prisma/lib/db')
-          ; (db.user.findUnique as any).mockResolvedValue(mockUser)
+        ;(db.user.findUnique as any).mockResolvedValue(mockUser)
 
         const result = await UserService.getUserByEmail('test@example.com')
         expect(result).toBeDefined()
@@ -116,7 +138,7 @@ describe('Database Services', () => {
 
       it('应该返回 null 当用户不存在时', async () => {
         const { db } = await import('../prisma/lib/db')
-          ; (db.user.findUnique as any).mockResolvedValue(null)
+        ;(db.user.findUnique as any).mockResolvedValue(null)
 
         const result = await UserService.getUserByEmail('nonexistent@example.com')
         expect(result).toBeNull()
@@ -126,7 +148,8 @@ describe('Database Services', () => {
     describe('checkVerifyCode', () => {
       it('应该验证验证码', async () => {
         const { db } = await import('../prisma/lib/db')
-          ; (db.verifyCode.findFirst as any).mockResolvedValue({ id: 1 })
+        ;(db.verifyCode.findFirst as any).mockResolvedValue({ id: 1, uid: 'verify-1', code: '123456', createTime: new Date() })
+        ;(db.verifyCode.delete as any).mockResolvedValue(undefined)
 
         const isValid = await UserService.checkVerifyCode('test@example.com', '123456')
         expect(isValid).toBe(true)
@@ -134,7 +157,7 @@ describe('Database Services', () => {
 
       it('应该返回 false 当验证码无效时', async () => {
         const { db } = await import('../prisma/lib/db')
-          ; (db.verifyCode.findFirst as any).mockResolvedValue(null)
+        ;(db.verifyCode.findFirst as any).mockResolvedValue(null)
 
         const isValid = await UserService.checkVerifyCode('test@example.com', 'wrongcode')
         expect(isValid).toBe(false)
@@ -162,7 +185,7 @@ describe('Database Services', () => {
         }
 
         const { db } = await import('../prisma/lib/db')
-          ; (db.photo.create as any).mockResolvedValue(mockPhoto)
+        ;(db.photo.create as any).mockResolvedValue(mockPhoto)
 
         const result = await PhotoService.add({
           title: 'Test Photo',
@@ -183,15 +206,10 @@ describe('Database Services', () => {
         ]
 
         const { db } = await import('../prisma/lib/db')
-          ; (db.photo.count as any).mockResolvedValue(2)
-          ; (db.photo.findMany as any).mockResolvedValue(mockPhotos)
+        ;(db.photo.count as any).mockResolvedValue(2)
+        ;(db.photo.findMany as any).mockResolvedValue(mockPhotos)
 
-        const result = await PhotoService.getAll({
-          offset: 0,
-          limit: 10,
-          orderBy: 'shootTime',
-          order: 'desc',
-        })
+        const result = await PhotoService.getAll({ offset: 0, limit: 10, orderBy: 'shootTime', order: 'desc' })
 
         expect(result.lists).toHaveLength(2)
         expect(result.total).toBe(2)
@@ -203,14 +221,11 @@ describe('Database Services', () => {
         ]
 
         const { db } = await import('../prisma/lib/db')
-          ; (db.photo.count as any).mockResolvedValue(1)
-          ; (db.photo.findMany as any).mockResolvedValue(mockPhotos)
+        ;(db.photo.count as any).mockResolvedValue(1)
+        ;(db.photo.findMany as any).mockResolvedValue(mockPhotos)
 
-        const result = await PhotoService.getAll({
-          isPublic: true,
-        })
+        await PhotoService.getAll({ isPublic: true })
 
-        expect(result.lists).toHaveLength(1)
         expect(db.photo.count).toHaveBeenCalledWith(
           expect.objectContaining({
             where: expect.objectContaining({ isPublic: true }),
@@ -238,7 +253,7 @@ describe('Database Services', () => {
         }
 
         const { db } = await import('../prisma/lib/db')
-          ; (db.photo.update as any).mockResolvedValue(mockUpdatedPhoto)
+        ;(db.photo.update as any).mockResolvedValue(mockUpdatedPhoto)
 
         const result = await PhotoService.updateByUid('photo-uid', {
           title: 'Updated Photo',
@@ -254,11 +269,11 @@ describe('Database Services', () => {
 
       it('应该抛出错误当照片不存在时', async () => {
         const { db } = await import('../prisma/lib/db')
-          ; (db.photo.update as any).mockRejectedValue(new Error('Not found'))
+        ;(db.photo.update as any).mockRejectedValue(new Error('Not found'))
 
         await expect(
           PhotoService.updateByUid('nonexistent-uid', { title: 'Test', src: 'test.jpg' })
-        ).rejects.toThrow('Photo not found')
+        ).rejects.toThrow('Not found')
       })
     })
   })

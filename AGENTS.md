@@ -9,8 +9,9 @@ After completing any non-trivial modification, ask the user whether to run `bun 
 | `bun run dev` | Start dev server on port **9999** |
 | `bun run build` | Production build |
 | `bun run start` | Start production server on port 9999 |
-| `bun test` | Run Vitest tests (jsdom, globals) |
-| `bun test test/<file>.test.ts` | Run a single test file |
+| `bun run vitest run` | Run full Vitest test suite (use this, not `bun test`) |
+| `bun run vitest run test/<file>.test.ts` | Run a single test file |
+| `bun run vitest run --grep "AuthTool"` | Run tests matching a describe pattern |
 | `bunx prisma migrate dev` | Apply dev DB migrations |
 | `bunx prisma generate` | Regenerate Prisma Client |
 | `bunx tsx scripts/createSuperuser.ts` | Create superuser from `.env` vars |

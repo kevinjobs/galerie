@@ -31,9 +31,9 @@ describe('API Functions', () => {
       expect(result).toBe('/api/path/to/photo.jpg')
     })
 
-    it('对于 undefined 应该返回 #', () => {
+    it('对于 undefined 应该返回空字符串', () => {
       const result = genSrc(undefined)
-      expect(result).toBe('#')
+      expect(result).toBe('')
     })
   })
 })

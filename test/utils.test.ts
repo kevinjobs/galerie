@@ -9,23 +9,32 @@ import {
   getImageSize,
   isDng,
   dngToJpg,
+  heicToJpg,
+  uploadToCOS,
 } from '../app/hinter/utils'
 
 // Mock dependencies
-vi.mock('cos-js-sdk-v5', () => ({
-  default: vi.fn().mockImplementation(() => ({
+vi.mock('cos-js-sdk-v5', () => {
+  const cosMock = vi.fn().mockImplementation(() => ({
     uploadFile: vi.fn()
   }))
-}))
+  return { default: cosMock }
+})
 
-vi.mock('exifreader', () => ({
-  load: vi.fn()
-}))
+vi.mock('exifreader', () => {
+  const exifMock = {
+    load: vi.fn()
+  }
+  return { default: exifMock, ...exifMock }
+})
 
-vi.mock('heic-to', () => ({
-  heicTo: vi.fn().mockResolvedValue(new Blob(['converted'], { type: 'image/jpeg' })),
-  isHeic: vi.fn().mockResolvedValue(true),
-}))
+vi.mock('heic-to', () => {
+  const heicMock = {
+    heicTo: vi.fn().mockResolvedValue(new Blob(['converted'], { type: 'image/jpeg' })),
+    isHeic: vi.fn().mockResolvedValue(true),
+  }
+  return { default: heicMock, ...heicMock }
+})
 
 vi.mock('../app/api', () => ({
   getCosUploadInfo: vi.fn()
@@ -222,5 +231,62 @@ describe('Utils', () => {
 
   describe('getImageSize', () => {
     it.todo('应该获取图片尺寸 (需要浏览器环境)')
+  })
+
+  describe('heicToJpg', () => {
+    it.todo('HEIC 文件转换（需要浏览器环境）')
+
+    it('非 HEIC 文件原样返回', async () => {
+      const jpgFile = new File(['test'], 'photo.jpg', { type: 'image/jpeg' })
+      const result = await heicToJpg(jpgFile)
+
+      expect(result.type).toBe('image/jpeg')
+      expect(result.name).toBe('photo.jpg')
+    })
+  })
+
+  describe('uploadToCOS', () => {
+    it('成功上传', async () => {
+      const { getCosUploadInfo } = await import('../app/api')
+      ;(getCosUploadInfo as any).mockResolvedValue({
+        credentials: { tmpSecretId: 'id', tmpSecretKey: 'key', sessionToken: 'token' },
+        bucket: 'test-bucket',
+        region: 'ap-guangzhou',
+        key: 'photos/test.jpg',
+      })
+
+      const COS = (await import('cos-js-sdk-v5')).default
+      const mockCosInstance = {
+        uploadFile: vi.fn().mockResolvedValue({ Location: 'https://test-bucket.cos.ap-guangzhou.myqcloud.com/photos/test.jpg' }),
+      }
+      COS.mockImplementation(() => mockCosInstance)
+
+      const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' })
+
+      const result = await uploadToCOS(file)
+
+      expect(result).toBeDefined()
+      expect(mockCosInstance.uploadFile).toHaveBeenCalled()
+    })
+
+    it('上传失败抛出', async () => {
+      const { getCosUploadInfo } = await import('../app/api')
+      ;(getCosUploadInfo as any).mockResolvedValue({
+        credentials: { tmpSecretId: 'id', tmpSecretKey: 'key', sessionToken: 'token' },
+        bucket: 'test-bucket',
+        region: 'ap-guangzhou',
+        key: 'photos/test.jpg',
+      })
+
+      const COS = (await import('cos-js-sdk-v5')).default
+      const mockCosInstance = {
+        uploadFile: vi.fn().mockRejectedValue(new Error('Upload failed')),
+      }
+      COS.mockImplementation(() => mockCosInstance)
+
+      const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' })
+
+      await expect(uploadToCOS(file)).rejects.toThrow('Upload failed')
+    })
   })
 })

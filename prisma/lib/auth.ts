@@ -57,7 +57,7 @@ export abstract class AuthTool {
     return permissions?.includes(allow) ?? false;
   }
 
-  static checkPermission(bearer: string | null | undefined, permission: string): void {
+  static async checkPermission(bearer: string | null | undefined, permission: string): Promise<void> {
     if (!bearer) throw new PermissionError("No Token Provided");
 
     const token = bearer.replace(/^Bearer\s+/i, "").trim();
@@ -72,11 +72,10 @@ export abstract class AuthTool {
       return;
     } catch (e) {
       if (e instanceof jwt.JsonWebTokenError || e instanceof jwt.TokenExpiredError) {
-        // JWT failed — try API token
-        const apiTokenService = require("./apiTokenService").ApiTokenService;
-        return apiTokenService.checkPermission(token, permission).then((ok: boolean) => {
-          if (!ok) throw new PermissionError(`Permission denied: 缺少 ${permission} 权限`);
-        });
+        const { ApiTokenService } = await import("./apiTokenService");
+        const ok = await ApiTokenService.checkPermission(token, permission);
+        if (!ok) throw new PermissionError(`Permission denied: 缺少 ${permission} 权限`);
+        return;
       }
       throw e;
     }
@@ -91,8 +90,8 @@ export abstract class AuthTool {
       return jwt.verify(token, getJwtSecret()) as UserInfo;
     } catch (e) {
       if (e instanceof jwt.JsonWebTokenError || e instanceof jwt.TokenExpiredError) {
-        const apiTokenService = require("./apiTokenService").ApiTokenService;
-        return apiTokenService.getUserFromApiToken(token);
+        const { ApiTokenService } = await import("./apiTokenService");
+        return ApiTokenService.getUserFromApiToken(token);
       }
       return null;
     }
