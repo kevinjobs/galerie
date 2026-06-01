@@ -36,6 +36,7 @@ model User {
   permissions  Json?
   setting      Json?
   avatar       String?
+  apiTokens    ApiToken[]
 }
 
 model VerifyCode {
@@ -44,4 +45,17 @@ model VerifyCode {
   email        String
   code         String
   createTime   DateTime   @default(now())
+}
+
+model ApiToken {
+  id          Int       @id @default(autoincrement())
+  uid         String    @unique @default(cuid())
+  name        String
+  tokenHash   String    @unique
+  permissions Json
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+  lastUsedAt  DateTime?
+  userId      Int
+  user        User      @relation(fields: [userId], references: [id])
 }

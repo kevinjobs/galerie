@@ -1,10 +1,10 @@
 "use client";
-import { changePassword, deleteUserByUid, updateUser, uploadPhoto, createPhoto, genSrc } from "@/app/api";
-import { Confirm } from "@/app/components";
+import { changePassword, deleteUserByUid, updateUser, uploadPhoto, createPhoto, genSrc, createApiToken, getApiTokens, deleteApiToken } from "@/app/api";
+import { Confirm, Modal } from "@/app/components";
 import { settingAtom, tokenAtom, userAtom } from "@/app/store";
 import { UserPlain } from "@/app/typings";
-import { ArrowRightFromSquare, TrashBin, PersonPencil } from "@gravity-ui/icons";
-import { Button, Input, Label, toast } from "@heroui/react";
+import { ArrowRightFromSquare, TrashBin, PersonPencil, Key, Copy, Check, ArrowsRotateLeft, Xmark } from "@gravity-ui/icons";
+import { Button, Input, Label, toast, Checkbox, Select, ListBox } from "@heroui/react";
 import { useAtom } from "jotai";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
@@ -25,7 +25,7 @@ function loadImage(file: File): Promise<HTMLImageElement> {
 
 function getScaledDimensions(w: number, h: number, maxW: number, maxH: number) {
   if (w <= maxW && h <= maxH) return { width: w, height: h };
-  const ratio = Math.min(maxW / w, maxH / h);
+  const ratio = Math.min(maxW / w, maxW / h);
   return { width: Math.round(w * ratio), height: Math.round(h * ratio) };
 }
 
@@ -63,6 +63,30 @@ async function svgToFile(svgStr: string, filename: string): Promise<File> {
   });
 }
 
+const permissionOptions = [
+  { value: "photo.upload", label: "上传" },
+  { value: "photo.get", label: "读取" },
+  { value: "photo.create", label: "创建" },
+  { value: "photo.update", label: "更新" },
+  { value: "photo.delete", label: "删除" },
+];
+
+const expiresInOptions: { label: string; value: "7d" | "30d" | "1y" | "never" }[] = [
+  { label: "7 天", value: "7d" },
+  { label: "30 天", value: "30d" },
+  { label: "1 年", value: "1y" },
+  { label: "永不过期", value: "never" },
+];
+
+function formatDate(date: Date | null): string {
+  if (!date) return "永不过期";
+  return new Date(date).toLocaleDateString("zh-CN");
+}
+
+function truncateToken(token: string, visible = 8): string {
+  return `${token.slice(0, visible)}...${token.slice(-visible)}`;
+}
+
 export default function ProfilePage() {
   const [user, setUser] = useAtom(userAtom);
   const [token, setToken] = useAtom(tokenAtom);
@@ -91,50 +115,20 @@ export default function ProfilePage() {
     },
   });
 
-  const handleLogout = () => {
-    setToken(null);
-    setUser(null);
-    toast.success("已退出登录");
-    router.push("/login");
-  };
-
-  const handleDeleteAccount = async () => {
-    try {
-      await deleteUserByUid(user?.uid || "");
-      setToken(null);
-      setUser(null);
-      toast.success("账户已注销");
-      router.push("/register");
-    } catch (err) {
-      toast.danger(`注销失败: ${(err as Error).message}`);
-    }
-  };
-
-  const handleChangePassword = async (data: { oldPassword: string; newPassword: string }) => {
-    try {
-      await changePassword(data.oldPassword, data.newPassword);
-      toast.success("密码已修改");
-      resetPassword({ oldPassword: "", newPassword: "" });
-    } catch (err) {
-      toast.danger(`修改密码失败: ${(err as Error).message}`);
-    }
-  };
-
-  const handleUpdateNickname = async (data: { nickname: string }) => {
-    if (!user?.uid) return;
-    try {
-      const res = await updateUser(user.uid, { nickname: data.nickname });
-      setUser(res);
-      setSetting(res.setting);
-      toast.success("昵称已更新");
-    } catch (err) {
-      toast.danger(`更新失败: ${(err as Error).message}`);
-    }
-  };
-
-  const initial = (user?.nickname || user?.name || user?.email || "?")
-    .charAt(0)
-    .toUpperCase();
+  // API Token 表单
+  const {
+    control: tokenControl,
+    handleSubmit: tokenFormSubmit,
+    reset: resetTokenForm,
+    watch: watchTokenForm,
+    setValue: setTokenFormValue,
+  } = useForm({
+    values: {
+      name: "",
+      permissions: [] as string[],
+      expiresIn: "7d" as "7d" | "30d" | "1y" | "never",
+    },
+  });
 
   // 头像
   const [avatarSeed, setAvatarSeed] = useState<string | null>(null);
@@ -233,6 +227,127 @@ export default function ProfilePage() {
   }, [user?.uid, selectedFile, selectedIndex, avatarSeed, setUser, setting]);
 
   const avatarPreview = filePreview || (selectedIndex !== null ? avatarList[selectedIndex] : null);
+
+  // API Token 相关状态
+  const [apiTokens, setApiTokens] = useState<Array<{ uid: string; name: string; permissions: string[]; expiresAt: string | null; createdAt: string; lastUsedAt: string | null }>>([]);
+  const [loadingTokens, setLoadingTokens] = useState(false);
+  const [creatingToken, setCreatingToken] = useState(false);
+  const [createdTokenValue, setCreatedTokenValue] = useState<string | null>(null);
+  const [showTokenFormModal, setShowTokenFormModal] = useState(false);
+  const [showTokenModal, setShowTokenModal] = useState(false);
+  const [copySuccess, setCopySuccess] = useState(false);
+
+  const loadApiTokens = useCallback(async () => {
+    setLoadingTokens(true);
+    try {
+      const tokens = await getApiTokens();
+      setApiTokens(tokens);
+    } catch (err) {
+      toast.danger(`加载 API Token 列表失败: ${(err as Error).message}`);
+    } finally {
+      setLoadingTokens(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (user?.permissions) {
+      loadApiTokens();
+    }
+  }, [user?.permissions]);
+
+  const handleTokenSubmit = async (data: { name: string; permissions: string[]; expiresIn: "7d" | "30d" | "1y" | "never" }) => {
+    if (data.permissions.length === 0) {
+      toast.warning("请至少选择一个权限");
+      return;
+    }
+    setCreatingToken(true);
+    try {
+      const result = await createApiToken({
+        name: data.name,
+        permissions: data.permissions,
+        expiresIn: data.expiresIn,
+      });
+      setShowTokenFormModal(false);
+      setCreatedTokenValue(result.token);
+      setShowTokenModal(true);
+      resetTokenForm();
+      await loadApiTokens();
+    } catch (err) {
+      toast.danger(`创建 API Token 失败: ${(err as Error).message}`);
+    } finally {
+      setCreatingToken(false);
+    }
+  };
+
+  const handleRevokeToken = async (uid: string) => {
+    try {
+      await deleteApiToken(uid);
+      await loadApiTokens();
+      toast.success("Token 已撤销");
+    } catch (err) {
+      toast.danger(`撤销 Token 失败: ${(err as Error).message}`);
+    }
+  };
+
+  const handleCloseTokenModal = useCallback(() => {
+    setShowTokenModal(false);
+    setCreatedTokenValue(null);
+  }, []);
+
+  const handleCopyToken = useCallback(async () => {
+    if (!createdTokenValue) return;
+    await navigator.clipboard.writeText(createdTokenValue);
+    setCopySuccess(true);
+    setTimeout(() => setCopySuccess(false), 2000);
+  }, [createdTokenValue]);
+
+  const handleLogout = () => {
+    setToken(null);
+    setUser(null);
+    toast.success("已退出登录");
+    router.push("/login");
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      await deleteUserByUid(user?.uid || "");
+      setToken(null);
+      setUser(null);
+      toast.success("账户已注销");
+      router.push("/register");
+    } catch (err) {
+      toast.danger(`注销失败: ${(err as Error).message}`);
+    }
+  };
+
+  const handleChangePassword = async (data: { oldPassword: string; newPassword: string }) => {
+    try {
+      await changePassword(data.oldPassword, data.newPassword);
+      toast.success("密码已修改");
+      resetPassword({ oldPassword: "", newPassword: "" });
+    } catch (err) {
+      toast.danger(`修改密码失败: ${(err as Error).message}`);
+    }
+  };
+
+  const handleUpdateNickname = async (data: { nickname: string }) => {
+    if (!user?.uid) return;
+    try {
+      const res = await updateUser(user.uid, { nickname: data.nickname });
+      setUser(res);
+      setSetting(res.setting);
+      toast.success("昵称已更新");
+    } catch (err) {
+      toast.danger(`更新失败: ${(err as Error).message}`);
+    }
+  };
+
+  const initial = (user?.nickname || user?.name || user?.email || "?")
+    .charAt(0)
+    .toUpperCase();
+
+  const selectedPermissions = watchTokenForm("permissions");
+  const hasUserPermissions = user?.permissions && user.permissions.length > 0;
 
   return (
     <div className="space-y-6">
@@ -365,6 +480,64 @@ export default function ProfilePage() {
         </form>
       </section>
 
+      <section className="rounded-3xl border border-border bg-surface p-6 shadow-sm">
+        <h2 className="flex items-center gap-2 text-base font-semibold text-foreground">
+          <Key width={18} height={18} />
+          API 令牌
+        </h2>
+        <p className="mt-1 text-sm text-muted">生成令牌用于第三方工具或脚本访问 API。令牌权限必须是你当前权限的子集。</p>
+
+        {/* 创建令牌表单 */}
+        <div className="flex justify-end">
+          <Button onPress={() => setShowTokenFormModal(true)} variant="primary">
+            创建令牌
+          </Button>
+        </div>
+
+        {/* 令牌列表 */}
+        <div className="mt-6">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-foreground">已生成的令牌</h3>
+            <Button size="sm" variant="ghost" onPress={loadApiTokens} isDisabled={loadingTokens}>
+              <ArrowsRotateLeft width={14} height={14} />
+            </Button>
+          </div>
+
+          {loadingTokens ? (
+            <p className="text-sm text-muted">加载中...</p>
+          ) : apiTokens.length === 0 ? (
+            <p className="text-sm text-muted">暂无令牌</p>
+          ) : (
+            <div className="space-y-2">
+              {apiTokens.map((t) => (
+                <div key={t.uid} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 rounded-xl border border-border bg-background p-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-foreground truncate">{t.name}</p>
+                    <p className="text-xs text-muted mt-0.5">
+                      权限：{t.permissions.join(", ")} · 过期：{formatDate(t.expiresAt ? new Date(t.expiresAt) : null)}
+                    </p>
+                    {t.lastUsedAt && (
+                      <p className="text-xs text-muted mt-0.5">最后使用：{new Date(t.lastUsedAt).toLocaleString("zh-CN")}</p>
+                    )}
+                  </div>
+                  <Confirm
+                    title="撤销令牌"
+                    content={`确定要撤销 "${t.name}" 吗？此操作不可撤销。`}
+                    confirmText="撤销"
+                    variant="danger"
+                    onConfirmAction={() => handleRevokeToken(t.uid)}
+                  >
+                    <Button size="sm" variant="danger">
+                      撤销
+                    </Button>
+                  </Confirm>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
       <section className="rounded-3xl border border-danger/30 bg-surface p-6 shadow-sm">
         <h2 className="flex items-center gap-2 text-base font-semibold text-danger">
           <TrashBin width={18} height={18} />
@@ -399,6 +572,128 @@ export default function ProfilePage() {
           </Confirm>
         </div>
       </section>
+
+      {/* 创建令牌弹出层 */}
+      {showTokenFormModal && (
+        <Modal isOpen={showTokenFormModal} onChangeAction={setShowTokenFormModal} size="lg">
+          <div className="p-6">
+            <h3 className="text-lg font-semibold text-foreground mb-4">创建令牌</h3>
+            <form onSubmit={tokenFormSubmit(handleTokenSubmit)} className="space-y-6">
+              <div>
+                <Label className="mb-1 block text-sm">令牌名称</Label>
+                <Controller
+                  name="name"
+                  control={tokenControl}
+                  rules={{ required: "请输入令牌名称" }}
+                  render={({ field }) => (
+                    <Input {...field} placeholder="例如：脚本上传" />
+                  )}
+                />
+              </div>
+
+              <div>
+                <Label className="mb-1 block text-sm">过期时间</Label>
+                <Controller
+                  name="expiresIn"
+                  control={tokenControl}
+                  render={({ field }) => (
+                    <Select {...field} className="w-full max-w-sm" placeholder="选择过期时间">
+                      <Select.Trigger>
+                        <Select.Value />
+                        <Select.Indicator />
+                      </Select.Trigger>
+                      <Select.Popover>
+                        <ListBox>
+                          {expiresInOptions.map((opt) => (
+                            <ListBox.Item key={opt.value} id={opt.value} textValue={opt.label}>
+                              {opt.label}
+                              <ListBox.ItemIndicator />
+                            </ListBox.Item>
+                          ))}
+                        </ListBox>
+                      </Select.Popover>
+                    </Select>
+                  )}
+                />
+              </div>
+
+              <div>
+                <Label className="mb-1 block text-sm">权限范围（仅显示你已有的权限）</Label>
+                <div className="flex flex-wrap gap-x-4 gap-y-2">
+                  {permissionOptions.map((opt) => (
+                    <Checkbox
+                      key={opt.value}
+                      value={opt.value}
+                      isSelected={selectedPermissions.includes(opt.value)}
+                      onChange={(checked) => {
+                        const newPerms = checked
+                          ? [...selectedPermissions, opt.value]
+                          : selectedPermissions.filter((p) => p !== opt.value);
+                        setTokenFormValue("permissions", newPerms);
+                      }}
+                    >
+                      <Checkbox.Control>
+                        <Checkbox.Indicator />
+                      </Checkbox.Control>
+                      <Checkbox.Content>
+                        <Label className="text-sm">{opt.label}</Label>
+                      </Checkbox.Content>
+                    </Checkbox>
+                  ))}
+                </div>
+                {selectedPermissions.length === 0 && (
+                  <p className="mt-1 text-xs text-muted">请至少选择一个权限</p>
+                )}
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <Button variant="secondary" onPress={() => { setShowTokenFormModal(false); resetTokenForm(); }}>
+                  取消
+                </Button>
+                <Button type="submit" isDisabled={creatingToken || selectedPermissions.length === 0} variant="primary">
+                  {creatingToken ? "创建中..." : "创建令牌"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </Modal>
+      )}
+
+      {/* 令牌创建成功 Modal */}
+      {showTokenModal && createdTokenValue && (
+        <Modal isOpen={showTokenModal} onChangeAction={handleCloseTokenModal}>
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-foreground">令牌已创建</h3>
+              <button onClick={() => { setShowTokenModal(false); setCreatedTokenValue(null); }}>
+                <Xmark width={20} height={20} className="text-muted" />
+              </button>
+            </div>
+            <p className="text-sm text-muted mb-3">
+              这是你的令牌，请妥善保管。它只会显示这一次，关闭后将无法再次查看。
+            </p>
+            <div className="flex items-center gap-2 rounded-lg border border-border bg-background p-3">
+              <code className="flex-1 text-sm font-mono break-all">{createdTokenValue}</code>
+              <Button
+                size="sm"
+                variant="ghost"
+                onPress={handleCopyToken}
+                isIconOnly
+              >
+                {copySuccess ? <Check width={18} height={18} className="text-success" /> : <Copy width={18} height={18} />}
+              </Button>
+            </div>
+            {copySuccess && (
+              <p className="mt-1 text-xs text-success">已复制到剪贴板</p>
+            )}
+            <div className="mt-4 text-center">
+              <Button onPress={() => { setShowTokenModal(false); setCreatedTokenValue(null); }}>
+                完成
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }

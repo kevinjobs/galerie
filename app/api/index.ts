@@ -364,3 +364,62 @@ export const verifyToken = async (token: string) => {
 
   return await response.json();
 };
+
+//
+// API Token 相关
+//
+
+export interface ApiTokenCreateInput {
+  name: string;
+  permissions: string[];
+  expiresIn?: "7d" | "30d" | "1y" | "never";
+}
+
+export interface ApiTokenResponse {
+  uid: string;
+  name: string;
+  permissions: string[];
+  expiresAt: string | null;
+  createdAt: string;
+  lastUsedAt: string | null;
+}
+
+export interface ApiTokenCreateResponse extends ApiTokenResponse {
+  token: string;
+}
+
+export const createApiToken = async (input: ApiTokenCreateInput): Promise<ApiTokenCreateResponse> => {
+  const response = await _fetch(`${BASE_URL}/user/token`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(`创建 API Token 失败 [ ${error.error} ]`);
+  }
+
+  return await response.json();
+};
+
+export const getApiTokens = async (): Promise<ApiTokenResponse[]> => {
+  const response = await _fetch(`${BASE_URL}/user/token`);
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(`获取 API Token 列表失败 [ ${error.error} ]`);
+  }
+
+  return await response.json();
+};
+
+export const deleteApiToken = async (uid: string): Promise<void> => {
+  const response = await _fetch(`${BASE_URL}/user/token?uid=${encodeURIComponent(uid)}`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(`撤销 API Token 失败 [ ${error.error} ]`);
+  }
+};

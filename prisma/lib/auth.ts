@@ -10,6 +10,13 @@ export interface UserInfo {
   permissions?: string[];
 }
 
+export const JWT_ONLY_PERMISSIONS: string[] = [
+  "user.get",
+  "user.create",
+  "user.update",
+  "user.delete",
+];
+
 function getJwtSecret(): string {
   const key = process.env.JWT_SECRET;
   if (!key) {
@@ -54,12 +61,40 @@ export abstract class AuthTool {
     if (!bearer) throw new PermissionError("No Token Provided");
 
     const token = bearer.replace(/^Bearer\s+/i, "").trim();
-    const decoded = AuthTool.verify(token);
 
-    const { permissions } = decoded;
+    // Try JWT first
+    try {
+      const decoded = jwt.verify(token, getJwtSecret()) as UserInfo;
+      const { permissions } = decoded;
+      if (!permissions || !permissions.includes(permission)) {
+        throw new PermissionError(`Permission denied: 缺少 ${permission} 权限`);
+      }
+      return;
+    } catch (e) {
+      if (e instanceof jwt.JsonWebTokenError || e instanceof jwt.TokenExpiredError) {
+        // JWT failed — try API token
+        const apiTokenService = require("./apiTokenService").ApiTokenService;
+        return apiTokenService.checkPermission(token, permission).then((ok: boolean) => {
+          if (!ok) throw new PermissionError(`Permission denied: 缺少 ${permission} 权限`);
+        });
+      }
+      throw e;
+    }
+  }
 
-    if (!permissions || !permissions.includes(permission)) {
-      throw new PermissionError(`Permission denied: 缺少 ${permission} 权限`);
+  static async getUserFromBearer(bearer: string | null | undefined): Promise<UserInfo | null> {
+    if (!bearer) return null;
+
+    const token = bearer.replace(/^Bearer\s+/i, "").trim();
+
+    try {
+      return jwt.verify(token, getJwtSecret()) as UserInfo;
+    } catch (e) {
+      if (e instanceof jwt.JsonWebTokenError || e instanceof jwt.TokenExpiredError) {
+        const apiTokenService = require("./apiTokenService").ApiTokenService;
+        return apiTokenService.getUserFromApiToken(token);
+      }
+      return null;
     }
   }
 
