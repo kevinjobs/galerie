@@ -1,3 +1,4 @@
+import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { UserPlain, Setting } from "./typings";
 
@@ -19,3 +20,6 @@ export const settingAtom = atomWithStorage<Setting | null>("setting", {
     key: '',
   }
 });
+
+// 照片导航列表（存储当前画廊视图的照片 UID 有序数组）
+export const photoListAtom = atom<string[]>([]);

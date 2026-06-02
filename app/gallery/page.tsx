@@ -1,7 +1,9 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSetAtom } from "jotai";
+import { photoListAtom } from "../store";
 import { genSrc, getPhotoLists } from "../api";
 import { Photo } from "../typings";
 import { Album } from "./album";
@@ -14,6 +16,8 @@ export default function GalleryPage() {
 
   const [filter, setFilter] = useState<FilterType>(defaultFilter);
 
+  const setPhotoList = useSetAtom(photoListAtom);
+
   const { data, isPending, isFetching } = useQuery({
     queryKey: ["data", filter],
     queryFn: () =>
@@ -23,6 +27,12 @@ export default function GalleryPage() {
         isPublic: true,
       }),
   });
+
+  useEffect(() => {
+    if (data?.lists) {
+      setPhotoList(data.lists.map((item: Photo) => item.uid));
+    }
+  }, [data, setPhotoList]);
 
   const albumData = useMemo(() => {
     return data?.lists?.map((item: Photo) => ({
