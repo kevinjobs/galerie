@@ -87,6 +87,38 @@ export default function GalleryModal({
     [nextUid, prevUid, containerWidth],
   );
 
+  // 锁定 body 滚动 + 拦截 touchmove，防止移动端触摸穿透到底层页面
+  useEffect(() => {
+    // 1. 锁定 body
+    const prev = {
+      overflow: document.body.style.overflow,
+      position: document.body.style.position,
+      top: document.body.style.top,
+      width: document.body.style.width,
+    };
+    const scrollY = window.scrollY;
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
+
+    // 2. 非 passive touchmove 拦截：移动端的 touchmove 默认 passive，
+    //    必须用 { passive: false } 注册才能让 preventDefault() 生效
+    const block = (e: TouchEvent) => {
+      e.preventDefault();
+    };
+    document.addEventListener("touchmove", block, { passive: false });
+
+    return () => {
+      document.removeEventListener("touchmove", block);
+      document.body.style.overflow = prev.overflow;
+      document.body.style.position = prev.position;
+      document.body.style.top = prev.top;
+      document.body.style.width = prev.width;
+      window.scrollTo(0, scrollY);
+    };
+  }, []);
+
   // 键盘导航
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -183,7 +215,7 @@ export default function GalleryModal({
   };
 
   return (
-    <div className="fixed top-0 left-0 w-screen h-screen bg-background overflow-hidden z-50">
+    <div className="fixed top-0 left-0 w-screen h-screen bg-background overflow-hidden z-50" style={{ overscrollBehavior: "none" }}>
       <main className="h-full w-full flex">
         <section
           className="photo-preview-left relative"
@@ -205,7 +237,7 @@ export default function GalleryModal({
             </Button>
           </header>
           <MobileView>
-            <div {...swipeHandlers} className="h-screen">
+            <div {...swipeHandlers} className="h-screen" style={{ touchAction: "none" }}>
               {renderPhotoViewer(true)}
             </div>
           </MobileView>
