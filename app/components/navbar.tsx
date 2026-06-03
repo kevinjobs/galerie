@@ -1,6 +1,6 @@
 "use client";
 import { Bars, Xmark, House, Picture, MapPin, Gear, ArrowRightFromSquare } from "@gravity-ui/icons";
-import { Avatar, Button, Dropdown, Label, toast } from "@heroui/react";
+import { Avatar, toast } from "@heroui/react";
 import { useAtom } from "jotai";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -53,10 +53,6 @@ export function Navbar({ data }: NavbarProps) {
 }
 
 function BrowserNav({ data }: NavbarProps) {
-  const [user, setUser] = useAtom(userAtom);
-  const [token, setToken] = useAtom(tokenAtom);
-  const router = useRouter();
-
   return (
     <nav className="flex h-full w-200 items-center mx-auto">
       <div className="hinter-logo">
@@ -70,55 +66,6 @@ function BrowserNav({ data }: NavbarProps) {
             {item.label}
           </Link>
         ))}
-      </div>
-      <div className="hinter-navbar-right">
-        <Dropdown>
-          <Dropdown.Trigger>
-            <Avatar>
-              {user?.avatar && <Avatar.Image src={genSrc(user.avatar)} />}
-              <Avatar.Fallback>
-                {
-                  user?.name?.toUpperCase()?.slice(0, 1) ||
-                  user?.email?.toUpperCase()?.slice(0, 2)}
-              </Avatar.Fallback>
-            </Avatar>
-          </Dropdown.Trigger>
-          <Dropdown.Popover>
-            <Dropdown.Menu
-              onAction={(key) => {
-                switch (key) {
-                  case "logout":
-                    if (window.confirm("确定要注销登录吗？")) {
-                      setToken(null);
-                      setUser(null);
-                      router.push("/login");
-                    }
-                    break;
-                }
-              }}
-            >
-              <Dropdown.Item id="user-info" textValue="user-info">
-                <div>
-                  <div>
-                    <Label>{user?.name?.toUpperCase()}</Label>
-                  </div>
-                  <div>
-                    <Label className="text-xs text-muted">
-                      {user?.email}
-                    </Label>
-                  </div>
-                </div>
-              </Dropdown.Item>
-              <Dropdown.Item
-                id="logout"
-                textValue="logout"
-                variant="danger"
-              >
-                <Label>注销登录</Label>
-              </Dropdown.Item>
-            </Dropdown.Menu>
-          </Dropdown.Popover>
-        </Dropdown>
       </div>
     </nav>
   )
@@ -175,21 +122,7 @@ function MobileNav(_props: NavbarProps) {
 
   return (
     <>
-      <nav className="h-full w-full flex items-center justify-between px-4">
-        {/* 左侧头像 */}
-        {user ? (
-          <button onClick={() => router.push("/hinter/profile")} className="opacity-60 hover:opacity-100 transition-opacity">
-            <Avatar size="sm">
-              {user?.avatar && <Avatar.Image src={genSrc(user.avatar)} />}
-              <Avatar.Fallback>
-                {user?.name?.toUpperCase()?.slice(0, 1) || user?.email?.toUpperCase()?.slice(0, 2)}
-              </Avatar.Fallback>
-            </Avatar>
-          </button>
-        ) : (
-          <Link href="/login" className="text-sm text-muted">Login</Link>
-        )}
-
+      <nav className="h-full w-full flex items-center justify-end px-4">
         {/* 右侧汉堡按钮 */}
         <button onClick={handleOpen} className="p-1">
           <Bars width={24} height={24} />

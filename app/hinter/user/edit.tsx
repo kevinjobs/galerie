@@ -279,7 +279,7 @@ export function UserEdit({
             render={({ field }) => (
               <div className="grid grid-cols-[5rem_minmax(0,1fr)] items-center gap-3">
                 <Label className="text-right text-sm">存储目录</Label>
-                <Input {...field} size="sm" className="min-w-0" placeholder="例如 /upload" />
+                <Input {...field} className="min-w-0" placeholder="例如 /upload" />
               </div>
             )}
           />
