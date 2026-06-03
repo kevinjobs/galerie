@@ -37,14 +37,14 @@ export default function SettingPage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-3xl border border-border bg-background p-6 shadow-sm">
+      <section className="rounded-3xl bg-background p-6">
         <p className="text-sm uppercase tracking-[0.24em] text-muted">杂项</p>
         <h1 className="mt-2 text-3xl font-semibold text-foreground">界面与存储首选项</h1>
         <p className="mt-2 text-sm text-muted">调整界面主题、语言及照片存储方式。</p>
       </section>
 
       <form onSubmit={handleSubmit(submit)} className="space-y-6">
-        <section className="rounded-3xl border border-border bg-surface p-6 shadow-sm">
+        <section className="rounded-3xl bg-background p-6">
           <div className="flex items-center gap-3">
             <span className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
               <Gear width={18} height={18} />
@@ -122,7 +122,7 @@ export default function SettingPage() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-border bg-surface p-6 shadow-sm">
+        <section className="rounded-3xl bg-background p-6">
           <div className="flex items-center gap-3">
             <span className="flex size-9 items-center justify-center rounded-xl bg-success/10 text-success">
               <Picture width={18} height={18} />

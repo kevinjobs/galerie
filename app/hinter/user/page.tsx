@@ -57,18 +57,18 @@ export default function UserPage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-3xl border border-border bg-background p-6 shadow-sm">
+      <section className="rounded-3xl bg-background p-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-sm uppercase tracking-[0.24em] text-muted">用户管理</p>
             <h1 className="mt-2 text-3xl font-semibold text-foreground">用户列表</h1>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <Input
               value={search}
               onChange={(e) => setSearch(e.currentTarget.value)}
               placeholder="搜索用户名、邮箱..."
-              className="min-w-[200px]"
+              className="w-full sm:min-w-[200px] sm:w-auto"
             />
             <Button variant="secondary" isIconOnly onPress={handleRefresh}>
               <ArrowRotateLeft width={16} height={16} />
@@ -86,11 +86,11 @@ export default function UserPage() {
           <Spinner />
         </div>
       ) : error ? (
-        <div className="rounded-3xl border border-border bg-surface p-10 text-center text-danger">
+        <div className="rounded-3xl bg-background p-10 text-center text-danger">
           加载失败：{error.message}
         </div>
       ) : filteredUsers.length === 0 ? (
-        <div className="rounded-3xl border border-border bg-surface p-10 text-center text-muted">
+        <div className="rounded-3xl bg-background p-10 text-center text-muted">
           {users.length === 0 ? "暂无用户" : "未找到匹配的用户"}
         </div>
       ) : (
@@ -98,7 +98,7 @@ export default function UserPage() {
           {filteredUsers.map((item) => (
             <div
               key={item.uid}
-              className="rounded-3xl border border-border bg-surface p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
+              className="rounded-3xl bg-background p-5 transition hover:-translate-y-0.5"
             >
               <div className="flex items-center gap-4">
                 <Avatar size="md">

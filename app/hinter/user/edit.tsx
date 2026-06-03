@@ -198,7 +198,7 @@ export function UserEdit({
           )}
         />
 
-        <div className="space-y-4 rounded-2xl border border-border bg-background p-4">
+        <div className="space-y-4 p-0">
           <p className="text-sm font-semibold text-foreground">用户设置</p>
 
           {/* 主题 */}
@@ -288,7 +288,7 @@ export function UserEdit({
 
       <div className="mt-8 flex justify-center gap-3">
         <Button type="submit" variant="primary">保存</Button>
-        <Button variant="danger" onPress={() => onCancelAction?.()}>取消</Button>
+        <Button variant="ghost" onPress={() => onCancelAction?.()}>取消</Button>
       </div>
     </form>
   );

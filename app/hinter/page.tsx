@@ -43,7 +43,7 @@ export default function HinterPage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-3xl border border-border bg-background p-6 shadow-sm">
+      <section className="rounded-3xl bg-background p-6">
         <p className="text-sm uppercase tracking-[0.24em] text-muted">欢迎</p>
         <h1 className="mt-2 text-3xl font-semibold text-foreground">Hinter 控制台</h1>
         <p className="mt-2 max-w-2xl text-sm leading-7 text-muted">
@@ -51,47 +51,47 @@ export default function HinterPage() {
         </p>
       </section>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-3xl border border-border bg-surface p-5 shadow-sm">
+      <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
+        <div className="rounded-3xl bg-background p-4">
           <div className="flex items-center gap-3">
-            <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <Picture width={20} height={20} />
+            <span className="flex size-8 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <Picture width={16} height={16} />
             </span>
             <p className="text-sm text-muted">照片总数</p>
           </div>
-          <p className="mt-3 text-3xl font-semibold text-foreground">{totalPhotos}</p>
+          <p className="mt-3 text-2xl font-semibold text-foreground">{totalPhotos}</p>
         </div>
-        <div className="rounded-3xl border border-border bg-surface p-5 shadow-sm">
+        <div className="rounded-3xl bg-background p-4">
           <div className="flex items-center gap-3">
-            <span className="flex size-10 items-center justify-center rounded-xl bg-success/10 text-success">
-              <Picture width={20} height={20} />
+            <span className="flex size-8 items-center justify-center rounded-xl bg-success/10 text-success">
+              <Picture width={16} height={16} />
             </span>
             <p className="text-sm text-muted">公开照片</p>
           </div>
-          <p className="mt-3 text-3xl font-semibold text-foreground">{publicCount}</p>
+          <p className="mt-3 text-2xl font-semibold text-foreground">{publicCount}</p>
         </div>
-        <div className="rounded-3xl border border-border bg-surface p-5 shadow-sm">
+        <div className="rounded-3xl bg-background p-4">
           <div className="flex items-center gap-3">
-            <span className="flex size-10 items-center justify-center rounded-xl bg-warning/10 text-warning">
-              <Picture width={20} height={20} />
+            <span className="flex size-8 items-center justify-center rounded-xl bg-warning/10 text-warning">
+              <Picture width={16} height={16} />
             </span>
             <p className="text-sm text-muted">精选照片</p>
           </div>
-          <p className="mt-3 text-3xl font-semibold text-foreground">{selectedCount}</p>
+          <p className="mt-3 text-2xl font-semibold text-foreground">{selectedCount}</p>
         </div>
-        <div className="rounded-3xl border border-border bg-surface p-5 shadow-sm">
+        <div className="rounded-3xl bg-background p-4">
           <div className="flex items-center gap-3">
-            <span className="flex size-10 items-center justify-center rounded-xl bg-danger/10 text-danger">
-              <Person width={20} height={20} />
+            <span className="flex size-8 items-center justify-center rounded-xl bg-danger/10 text-danger">
+              <Person width={16} height={16} />
             </span>
             <p className="text-sm text-muted">用户总数</p>
           </div>
-          <p className="mt-3 text-3xl font-semibold text-foreground">{users.length}</p>
+          <p className="mt-3 text-2xl font-semibold text-foreground">{users.length}</p>
         </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="rounded-3xl border border-border bg-surface p-5 shadow-sm overflow-x-hidden">
+        <section className="rounded-3xl bg-background p-5 overflow-x-hidden">
           <h2 className="text-base font-semibold text-foreground">最近拍摄</h2>
           <p className="mt-1 text-sm text-muted">最新上传照片</p>
           <div className="mt-4 space-y-3">
@@ -99,7 +99,7 @@ export default function HinterPage() {
               <Link
                 key={photo.uid}
                 href={`/hinter/photo/${photo.uid}`}
-                className="flex items-center gap-3 rounded-2xl border border-border bg-background p-3 transition hover:border-primary/50"
+                className="flex items-center gap-3 rounded-2xl hover:bg-primary/5 p-3 transition"
               >
                 <div className="size-12 shrink-0 overflow-hidden rounded-xl bg-muted/10">
                   <img
@@ -122,7 +122,7 @@ export default function HinterPage() {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-border bg-surface p-5 shadow-sm overflow-x-hidden">
+        <section className="rounded-3xl bg-background p-5 overflow-x-hidden">
           <h2 className="text-base font-semibold text-foreground">快捷入口</h2>
           <p className="mt-1 text-sm text-muted">快速跳转到各管理模块</p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -132,7 +132,7 @@ export default function HinterPage() {
                 <Link
                   key={card.href}
                   href={card.href}
-                  className="flex items-center gap-3 rounded-2xl border border-border bg-background p-4 transition hover:border-primary/50 hover:bg-primary/5"
+                  className="flex items-center gap-3 rounded-2xl bg-background p-4 transition hover:bg-primary/5"
                 >
                   <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-muted/10 text-muted">
                     <Icon width={20} height={20} />

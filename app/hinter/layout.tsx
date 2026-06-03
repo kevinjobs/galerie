@@ -66,7 +66,7 @@ export default function HinterLayout({
     <div className="hinter min-h-screen" style={{ paddingTop: headerHeight }}>
       <div className="mx-auto flex max-w-[1200px] gap-6 px-4 pb-8 pt-4">
         <aside className="hidden w-64 shrink-0 flex-col gap-4 lg:flex">
-          <div className="rounded-3xl border border-border bg-surface p-5 shadow-sm">
+          <div className="rounded-3xl bg-background p-5">
             <p className="text-xs uppercase tracking-[0.28em] text-muted">Hinter 控制台</p>
             <h2 className="mt-2 text-lg font-semibold text-foreground">导航菜单</h2>
             <p className="mt-1 text-sm text-muted">选择模块进入对应管理界面。</p>
@@ -104,7 +104,7 @@ export default function HinterLayout({
           </nav>
         </aside>
 
-        <main className="min-w-0 flex-1 rounded-3xl border border-border bg-surface p-4 shadow-sm lg:p-6 overflow-x-hidden">
+        <main className="min-w-0 flex-1 rounded-3xl bg-background p-4 lg:p-6 overflow-x-hidden">
           {children}
         </main>
       </div>

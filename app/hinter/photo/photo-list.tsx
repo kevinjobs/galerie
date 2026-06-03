@@ -56,7 +56,7 @@ export default function PhotoList({
 
   if (lists.length === 0) {
     return (
-      <div className="rounded-3xl border border-border bg-surface p-10 text-center text-muted">
+      <div className="rounded-3xl bg-background p-10 text-center text-muted">
         暂无照片数据
       </div>
     );
@@ -67,7 +67,7 @@ export default function PhotoList({
       {lists.map((item) => (
         <article
           key={item.uid}
-          className="group flex items-center gap-3 rounded-xl border border-border bg-surface p-2 shadow-sm transition hover:border-primary/40"
+          className="group flex items-center gap-3 rounded-xl bg-background p-2 transition hover:bg-primary/5"
         >
           {/* 缩略图 */}
           <div
@@ -87,14 +87,6 @@ export default function PhotoList({
               <h3 className="truncate text-sm font-medium text-foreground">
                 {item.title || "未命名"}
               </h3>
-              {item.isPublic ? (
-                <span className="shrink-0 rounded-full bg-primary/15 px-1.5 py-0.5 text-[10px] leading-none text-primary">公开</span>
-              ) : (
-                <span className="shrink-0 rounded-full bg-muted/15 px-1.5 py-0.5 text-[10px] leading-none text-muted">私有</span>
-              )}
-              {item.isSelected && (
-                <StarFill width={11} height={11} className="shrink-0 text-warning" />
-              )}
             </div>
             <p className="mt-0.5 truncate text-[11px] text-muted">
               {item.author || "未知"} · {dayjs(item.shootTime).format("MM-DD")}
@@ -121,7 +113,7 @@ export default function PhotoList({
                 handleToggle(item, { isPublic: !item.isPublic }, item.isPublic ? "已切换为私有" : "已公开")
               }
             >
-              {item.isPublic ? <LockOpen width={12} height={12} /> : <LockFill width={12} height={12} />}
+              {item.isPublic ? <LockOpen width={12} height={12} className="text-success" /> : <LockFill width={12} height={12} />}
             </Button>
             <Button
               size="sm"
@@ -132,7 +124,7 @@ export default function PhotoList({
                 handleToggle(item, { isSelected: !item.isSelected }, item.isSelected ? "已取消精选" : "已设为精选")
               }
             >
-              {item.isSelected ? <StarFill width={12} height={12} /> : <Star width={12} height={12} />}
+              {item.isSelected ? <StarFill width={12} height={12} className="text-warning" /> : <Star width={12} height={12} />}
             </Button>
             <Confirm
               title="确认删除该照片？"

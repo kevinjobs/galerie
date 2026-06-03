@@ -353,12 +353,12 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-3xl border border-border bg-background p-6 shadow-sm">
+      <section className="rounded-3xl bg-background p-6">
         <p className="text-sm uppercase tracking-[0.24em] text-muted">个人资料</p>
         <h1 className="mt-2 text-3xl font-semibold text-foreground">账户信息</h1>
       </section>
 
-      <section className="rounded-3xl border border-border bg-surface p-6 shadow-sm">
+      <section className="rounded-3xl bg-background p-6">
         <div className="flex flex-col items-center gap-4 sm:flex-row">
           <button
             className="relative size-20 shrink-0 cursor-pointer group"
@@ -414,11 +414,10 @@ export default function ProfilePage() {
                 <button
                   key={i}
                   onClick={() => handleSelectSystem(i)}
-                  className={`rounded-full overflow-hidden size-16 ring-2 transition-all cursor-pointer ${
-                    selectedIndex === i && !selectedFile
-                      ? "ring-primary scale-110"
-                      : "ring-transparent hover:ring-muted"
-                  }`}
+                  className={`rounded-full overflow-hidden size-16 ring-2 transition-all cursor-pointer ${selectedIndex === i && !selectedFile
+                    ? "ring-primary scale-110"
+                    : "ring-transparent hover:ring-muted"
+                    }`}
                 >
                   <img src={dataUri} alt={`avatar ${i + 1}`} className="size-full" />
                 </button>
@@ -455,7 +454,7 @@ export default function ProfilePage() {
         </div>
       </Modal>
 
-      <section className="rounded-3xl border border-border bg-surface p-6 shadow-sm">
+      <section className="rounded-3xl bg-background p-6">
         <h2 className="flex items-center gap-2 text-base font-semibold text-foreground">
           <PersonPencil width={18} height={18} />
           基本信息
@@ -468,7 +467,7 @@ export default function ProfilePage() {
               <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
                 <div className="flex-1">
                   <Label className="mb-1 block text-sm">昵称</Label>
-                  <Input {...field} placeholder="设置昵称"  />
+                  <Input {...field} placeholder="设置昵称" className="w-full" />
                 </div>
                 <Button type="submit" >保存</Button>
               </div>
@@ -477,7 +476,7 @@ export default function ProfilePage() {
         </form>
       </section>
 
-      <section className="rounded-3xl border border-border bg-surface p-6 shadow-sm">
+      <section className="rounded-3xl bg-background p-6">
         <h2 className="text-base font-semibold text-foreground">修改密码</h2>
         <form onSubmit={handlePasswordSubmit(handleChangePassword)} className="mt-4 space-y-4">
           <Controller
@@ -487,7 +486,7 @@ export default function ProfilePage() {
             render={({ field, fieldState }) => (
               <div>
                 <Label className="mb-1 block text-sm">旧密码</Label>
-                <Input {...field} type="password" placeholder="输入旧密码"  />
+                <Input {...field} type="password" placeholder="输入旧密码" className="w-full" />
                 {fieldState.error && (
                   <p className="mt-1 text-xs text-danger">{fieldState.error.message}</p>
                 )}
@@ -501,7 +500,7 @@ export default function ProfilePage() {
             render={({ field, fieldState }) => (
               <div>
                 <Label className="mb-1 block text-sm">新密码</Label>
-                <Input {...field} type="password" placeholder="输入新密码（至少6位）"  />
+                <Input {...field} type="password" placeholder="输入新密码（至少6位）" className="w-full" />
                 {fieldState.error && (
                   <p className="mt-1 text-xs text-danger">{fieldState.error.message}</p>
                 )}
@@ -514,7 +513,7 @@ export default function ProfilePage() {
         </form>
       </section>
 
-      <section className="rounded-3xl border border-border bg-surface p-6 shadow-sm">
+      <section className="rounded-3xl bg-background p-6">
         <h2 className="flex items-center gap-2 text-base font-semibold text-foreground">
           <Key width={18} height={18} />
           API 令牌
@@ -544,7 +543,7 @@ export default function ProfilePage() {
           ) : (
             <div className="space-y-2">
               {apiTokens.map((t) => (
-                <div key={t.uid} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 rounded-xl border border-border bg-background p-3">
+                <div key={t.uid} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 rounded-xl bg-background p-3">
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-foreground truncate">{t.name}</p>
                     <p className="text-xs text-muted mt-0.5">
@@ -572,7 +571,7 @@ export default function ProfilePage() {
         </div>
       </section>
 
-      <section className="rounded-3xl border border-danger/30 bg-surface p-6 shadow-sm">
+      <section className="rounded-3xl border border-danger/20 bg-background p-6">
         <h2 className="flex items-center gap-2 text-base font-semibold text-danger">
           <TrashBin width={18} height={18} />
           危险区域
@@ -586,7 +585,7 @@ export default function ProfilePage() {
             variant="danger"
             onConfirmAction={handleLogout}
           >
-            <Button variant="danger" className="w-full justify-start sm:w-auto">
+            <Button variant="secondary" className="w-full justify-start sm:w-auto border-warning/30 text-warning hover:bg-warning/10">
               <ArrowRightFromSquare width={16} height={16} />
               <span className="ml-2">退出登录</span>
             </Button>
@@ -599,7 +598,7 @@ export default function ProfilePage() {
             variant="danger"
             onConfirmAction={handleDeleteAccount}
           >
-            <Button variant="danger" className="w-full justify-start sm:w-auto">
+            <Button variant="danger" className="w-full justify-start sm:w-auto border-warning/30">
               <TrashBin width={16} height={16} />
               <span className="ml-2">注销账户</span>
             </Button>

@@ -66,7 +66,7 @@ export default function PhotoPage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-3xl border border-border bg-background p-6 shadow-sm">
+      <section className="rounded-3xl bg-background p-6">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-end xl:justify-between">
           <div className="max-w-2xl">
             <p className="text-sm uppercase tracking-[0.24em] text-muted">照片管理</p>
@@ -102,7 +102,7 @@ export default function PhotoPage() {
         </div>
       </section>
 
-      <section className="rounded-3xl border border-border bg-surface p-4 shadow-sm">
+      <section className="rounded-3xl bg-background p-4">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex flex-wrap gap-2">
             {filterTabs.map((tab) => (
@@ -137,7 +137,7 @@ export default function PhotoPage() {
       {filteredPhotos.length > 0 ? (
         <PhotoList lists={filteredPhotos} onRefresh={refetch} />
       ) : (
-        <div className="rounded-3xl border border-border bg-surface p-10 text-center text-muted">
+        <div className="rounded-3xl bg-background p-10 text-center text-muted">
           {photos.length === 0
             ? "当前图库为空，稍后上传第一张照片。"
             : "未找到符合条件的照片，请调整搜索或筛选。"}
