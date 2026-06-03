@@ -59,7 +59,7 @@ export default function Home() {
   return (
     <div className="relative w-screen h-screen overflow-hidden">
       {isLoading ? (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
+        <div className="absolute inset-0 flex items-center justify-center bg-background">
           <div className="animate-pulse text-white/60">加载中...</div>
         </div>
       ) : coverPhoto ? (
@@ -74,7 +74,7 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
         </>
       ) : (
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900" />
+        <div className="absolute inset-0 bg-background" />
       )}
 
       <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-10">
