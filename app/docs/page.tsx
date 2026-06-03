@@ -43,7 +43,7 @@ export default function DocsPage() {
   const tags = [...new Set(paths.flatMap(([, methods]) => Object.values(methods).map((m: any) => m.tags?.[0]).filter(Boolean)))];
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="max-w-4xl mx-auto px-4 py-8" style={{ paddingTop: 'var(--header-height)' }}>
       <header className="mb-8">
         <h1 className="text-3xl font-bold mb-2">{spec.info.title} API</h1>
         <p className="text-gray-400 mb-1">{spec.info.description}</p>

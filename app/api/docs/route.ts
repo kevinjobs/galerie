@@ -552,6 +552,63 @@ const spec = {
         },
       },
     },
+    "/geocode": {
+      get: {
+        tags: ["地图"],
+        summary: "通过经纬度获取地址信息",
+        description: "代理高德逆地理编码 API。接收 WGS84 经纬度参数，服务端将其转换为 GCJ-02 坐标后调用高德 API，返回地址信息。不需要认证。",
+        parameters: [
+          { name: "longitude", in: "query", required: true, schema: { type: "string" }, description: "经度（WGS84 坐标系）" },
+          { name: "latitude", in: "query", required: true, schema: { type: "string" }, description: "纬度（WGS84 坐标系）" },
+        ],
+        responses: {
+          "200": {
+            description: "返回高德 API 响应",
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    status: { type: "string" },
+                    info: { type: "string" },
+                    regeocode: {
+                      type: "object",
+                      properties: {
+                        formatted_address: { type: "string", description: "格式化地址" },
+                        addressComponent: {
+                          type: "object",
+                          properties: {
+                            city: { type: "string" },
+                            province: { type: "string" },
+                            district: { type: "string" },
+                            adcode: { type: "string" },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+                example: {
+                  status: "1",
+                  info: "OK",
+                  regeocode: {
+                    formatted_address: "北京市朝阳区建国门外大街1号",
+                    addressComponent: {
+                      city: "北京市",
+                      province: "北京市",
+                      district: "朝阳区",
+                      adcode: "110105",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          "400": { description: "缺少 longitude 或 latitude 参数，或参数格式错误" },
+          "500": { description: "服务端未配置高德 API Key 或高德 API 请求失败" },
+        },
+      },
+    },
     "/cos/upload": {
       get: {
         tags: ["腾讯云 COS"],
@@ -592,6 +649,7 @@ const spec = {
 export async function GET() {
   return NextResponse.json(spec, {
     headers: {
+      "Content-Type": "application/json; charset=utf-8",
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET",
       "Access-Control-Allow-Headers": "Content-Type, Authorization",
