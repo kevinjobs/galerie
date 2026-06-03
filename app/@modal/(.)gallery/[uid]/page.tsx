@@ -187,15 +187,22 @@ export default function GalleryModal({
   }, [hasPrev, hasNext, isAnimating, animateTo]);
 
   // 滑动手势（缩放时禁用）
+  // 速度感应：快速滑动只需较短距离，慢速滑动需要较长距离
   const swipeHandlers = useSwipeable({
     onSwiping: (eventData) => {
       if (!isAnimating && !isZoomed) {
         setOffsetX(eventData.deltaX);
       }
     },
-    onSwipedLeft: () => {
+    onSwipedLeft: (eventData) => {
       if (isZoomed) return;
-      if (hasNext && Math.abs(offsetX) > containerWidth * 0.3) {
+      const velocity = eventData.velocity; // px/ms
+      const distance = Math.abs(eventData.deltaX);
+      // 速度 > 0.5 px/ms 视为快速滑动，降低距离阈值
+      // 速度越快快，所需距离越短（最低 10% 宽度）
+      const velocityBonus = Math.min(velocity * 100, containerWidth * 0.2);
+      const threshold = containerWidth * 0.3 - velocityBonus;
+      if (hasNext && distance > Math.max(threshold, containerWidth * 0.1)) {
         animateTo("next");
       } else {
         setIsAnimating(true);
@@ -203,9 +210,13 @@ export default function GalleryModal({
         setTimeout(() => setIsAnimating(false), 300);
       }
     },
-    onSwipedRight: () => {
+    onSwipedRight: (eventData) => {
       if (isZoomed) return;
-      if (hasPrev && Math.abs(offsetX) > containerWidth * 0.3) {
+      const velocity = eventData.velocity;
+      const distance = Math.abs(eventData.deltaX);
+      const velocityBonus = Math.min(velocity * 100, containerWidth * 0.2);
+      const threshold = containerWidth * 0.3 - velocityBonus;
+      if (hasPrev && distance > Math.max(threshold, containerWidth * 0.1)) {
         animateTo("prev");
       } else {
         setIsAnimating(true);
@@ -214,7 +225,7 @@ export default function GalleryModal({
       }
     },
     trackMouse: false,
-    delta: 50,
+    delta: 10,
     preventScrollOnSwipe: true,
   });
 
