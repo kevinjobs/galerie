@@ -144,6 +144,9 @@ export default function GalleryModal({
     [nextUid, prevUid, containerWidth, isZoomed],
   );
 
+  // 信息面板 ref：用于判断触摸是否发生在面板内，允许面板内滚动
+  const infoPanelRef = useRef<HTMLDivElement>(null);
+
   // 锁定 body 滚动 + 拦截 touchmove，防止移动端触摸穿透到底层页面
   useEffect(() => {
     // 1. 锁定 body
@@ -161,7 +164,12 @@ export default function GalleryModal({
 
     // 2. 非 passive touchmove 拦截：移动端的 touchmove 默认 passive，
     //    必须用 { passive: false } 注册才能让 preventDefault() 生效
+    //    但如果触摸目标在 infoPanelRef 容器内，则允许滚动
     const block = (e: TouchEvent) => {
+      const target = e.target as HTMLElement;
+      if (infoPanelRef.current?.contains(target)) {
+        return;
+      }
       e.preventDefault();
     };
     document.addEventListener("touchmove", block, { passive: false });
@@ -547,7 +555,10 @@ export default function GalleryModal({
             }`}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="border border-border rounded-2xl overflow-auto bg-background max-h-[60vh]">
+            <div
+              ref={infoPanelRef}
+              className="border border-border rounded-2xl overflow-auto bg-background max-h-[60vh]"
+            >
               {activePhoto && <PhotoInfo photo={activePhoto} />}
             </div>
           </div>
