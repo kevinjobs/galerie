@@ -2,31 +2,34 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { UserService } from '../prisma/lib/userService'
 import { PhotoService } from '../prisma/lib/photoService'
 
-// Mock the database
-vi.mock('../prisma/lib/db', () => {
-  const mockDb = {
-    user: {
-      create: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-      findUnique: vi.fn(),
-      findMany: vi.fn(),
-    },
-    photo: {
-      create: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-      findUnique: vi.fn(),
-      findMany: vi.fn(),
-      count: vi.fn(),
-    },
-    verifyCode: {
-      findFirst: vi.fn(),
-      delete: vi.fn(),
-    },
-  }
-  return { db: mockDb }
-})
+// Use vi.hoisted to define mock before vi.mock is hoisted
+const mockDb = vi.hoisted(() => ({
+  user: {
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    findUnique: vi.fn(),
+    findMany: vi.fn(),
+  },
+  photo: {
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    findUnique: vi.fn(),
+    findMany: vi.fn(),
+    count: vi.fn(),
+  },
+  verifyCode: {
+    findFirst: vi.fn(),
+    delete: vi.fn(),
+  },
+}))
+
+vi.mock('@/prisma/lib/db', () => ({
+  db: mockDb,
+}))
+
+import { db } from '@/prisma/lib/db'
 
 vi.mock('fs/promises', () => {
   const fsMock = {
@@ -99,7 +102,6 @@ describe('Database Services', () => {
           setting: null,
         }
 
-        const { db } = await import('../prisma/lib/db')
         ;(db.user.create as any).mockResolvedValue(mockUser)
 
         const result = await UserService.add({
@@ -128,7 +130,6 @@ describe('Database Services', () => {
           setting: null,
         }
 
-        const { db } = await import('../prisma/lib/db')
         ;(db.user.findUnique as any).mockResolvedValue(mockUser)
 
         const result = await UserService.getUserByEmail('test@example.com')
@@ -137,7 +138,6 @@ describe('Database Services', () => {
       })
 
       it('应该返回 null 当用户不存在时', async () => {
-        const { db } = await import('../prisma/lib/db')
         ;(db.user.findUnique as any).mockResolvedValue(null)
 
         const result = await UserService.getUserByEmail('nonexistent@example.com')
@@ -147,7 +147,6 @@ describe('Database Services', () => {
 
     describe('checkVerifyCode', () => {
       it('应该验证验证码', async () => {
-        const { db } = await import('../prisma/lib/db')
         ;(db.verifyCode.findFirst as any).mockResolvedValue({ id: 1, uid: 'verify-1', code: '123456', createTime: new Date() })
         ;(db.verifyCode.delete as any).mockResolvedValue(undefined)
 
@@ -156,7 +155,6 @@ describe('Database Services', () => {
       })
 
       it('应该返回 false 当验证码无效时', async () => {
-        const { db } = await import('../prisma/lib/db')
         ;(db.verifyCode.findFirst as any).mockResolvedValue(null)
 
         const isValid = await UserService.checkVerifyCode('test@example.com', 'wrongcode')
@@ -184,7 +182,6 @@ describe('Database Services', () => {
           isSelected: false,
         }
 
-        const { db } = await import('../prisma/lib/db')
         ;(db.photo.create as any).mockResolvedValue(mockPhoto)
 
         const result = await PhotoService.add({
@@ -205,7 +202,6 @@ describe('Database Services', () => {
           { id: 2, uid: 'photo2', title: 'Photo 2', src: 'photo2.jpg' },
         ]
 
-        const { db } = await import('../prisma/lib/db')
         ;(db.photo.count as any).mockResolvedValue(2)
         ;(db.photo.findMany as any).mockResolvedValue(mockPhotos)
 
@@ -220,7 +216,6 @@ describe('Database Services', () => {
           { id: 1, uid: 'photo1', title: 'Public Photo', src: 'photo1.jpg', isPublic: true },
         ]
 
-        const { db } = await import('../prisma/lib/db')
         ;(db.photo.count as any).mockResolvedValue(1)
         ;(db.photo.findMany as any).mockResolvedValue(mockPhotos)
 
@@ -252,7 +247,6 @@ describe('Database Services', () => {
           isSelected: true,
         }
 
-        const { db } = await import('../prisma/lib/db')
         ;(db.photo.update as any).mockResolvedValue(mockUpdatedPhoto)
 
         const result = await PhotoService.updateByUid('photo-uid', {
@@ -268,7 +262,6 @@ describe('Database Services', () => {
       })
 
       it('应该抛出错误当照片不存在时', async () => {
-        const { db } = await import('../prisma/lib/db')
         ;(db.photo.update as any).mockRejectedValue(new Error('Not found'))
 
         await expect(

@@ -1,21 +1,23 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ApiTokenService, ApiTokenCreateInput } from '../prisma/lib/apiTokenService'
-import { db } from '../prisma/lib/db'
 
-// Mock the database
-vi.mock('../prisma/lib/db', () => {
-  const mockUpdate = vi.fn(() => Promise.resolve(undefined))
-  const mockDb = {
-    apiToken: {
-      create: vi.fn(),
-      findMany: vi.fn(),
-      findUnique: vi.fn(),
-      delete: vi.fn(),
-      update: mockUpdate,
-    },
-  }
-  return { db: mockDb }
-})
+// Use vi.hoisted to define mock before vi.mock is hoisted
+const mockUpdate = vi.hoisted(() => vi.fn(() => Promise.resolve(undefined)))
+const mockDb = vi.hoisted(() => ({
+  apiToken: {
+    create: vi.fn(),
+    findMany: vi.fn(),
+    findUnique: vi.fn(),
+    delete: vi.fn(),
+    update: mockUpdate,
+  },
+}))
+
+vi.mock('@/prisma/lib/db', () => ({
+  db: mockDb,
+}))
+
+import { db } from '@/prisma/lib/db'
 
 // Mock crypto at module level
 vi.mock('crypto', () => {

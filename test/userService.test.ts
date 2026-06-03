@@ -1,20 +1,22 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { UserService } from '../prisma/lib/userService'
-import { db } from '../prisma/lib/db'
 
-// Mock the database
-vi.mock('../prisma/lib/db', () => {
-  const mockDb = {
-    user: {
-      create: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-      findUnique: vi.fn(),
-      findMany: vi.fn(),
-    },
-  }
-  return { db: mockDb }
-})
+// Use vi.hoisted to define mock before vi.mock is hoisted
+const mockDb = vi.hoisted(() => ({
+  user: {
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    findUnique: vi.fn(),
+    findMany: vi.fn(),
+  },
+}))
+
+vi.mock('@/prisma/lib/db', () => ({
+  db: mockDb,
+}))
+
+import { db } from '@/prisma/lib/db'
 
 // Mock crypto at module level
 vi.mock('crypto', () => {

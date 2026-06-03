@@ -165,10 +165,10 @@ describe('API Client Functions', () => {
   })
 
   describe('getAddress', () => {
-    it('调用高德 API 并转换坐标', async () => {
+    it('调用后端 geocode API', async () => {
       let capturedUrl = ''
       server.use(
-        http.get('https://restapi.amap.com/v3/geocode/regeo', ({ request }) => {
+        http.get('/api/geocode', ({ request }) => {
           capturedUrl = request.url
           return success({
             regeocode: {
@@ -181,16 +181,17 @@ describe('API Client Functions', () => {
 
       const result = await getAddress('116.397428', '39.90923')
       expect(result.regeocode.formatted_address).toBe('北京市朝阳区')
-      expect(capturedUrl).toContain('location=')
+      expect(capturedUrl).toContain('longitude=')
+      expect(capturedUrl).toContain('latitude=')
     })
 
     it('错误响应抛出', async () => {
       server.use(
-        http.get('https://restapi.amap.com/v3/geocode/regeo', () =>
-          new HttpResponse(null, { status: 500 })
+        http.get('/api/geocode', () =>
+          HttpResponse.json({ error: '地址解析失败' }, { status: 500 })
         )
       )
-      await expect(getAddress('116.397428', '39.90923')).rejects.toThrow('无法从高德API获取地址')
+      await expect(getAddress('116.397428', '39.90923')).rejects.toThrow('地址解析失败')
     })
   })
 

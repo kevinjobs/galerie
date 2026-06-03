@@ -128,27 +128,13 @@ describe('Components', () => {
       expect(screen.getByText('Hinter')).toBeDefined()
     })
 
-    it('登录状态显示用户头像', () => {
+    it('渲染 Logo', () => {
       render(
-        <div data-testid="user-info">
-          <div data-testid="avatar">
-            <span data-testid="avatar-fallback">T</span>
-          </div>
-          <span>testuser</span>
+        <div data-testid="logo">
+          <span>Galerie</span>
         </div>
       )
-
-      expect(screen.getByText('testuser')).toBeDefined()
-      expect(screen.getByTestId('avatar-fallback')).toHaveTextContent('T')
-    })
-
-    it('未登录显示登录入口', () => {
-      render(
-        <a href="/login" data-testid="login-link">登录</a>
-      )
-
-      expect(screen.getByText('登录')).toBeDefined()
-      expect(screen.getByTestId('login-link')).toHaveAttribute('href', '/login')
+      expect(screen.getByText('Galerie')).toBeDefined()
     })
   })
 

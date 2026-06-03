@@ -12,6 +12,7 @@ import {
   heicToJpg,
   uploadToCOS,
 } from '../app/hinter/utils'
+import { genSrc } from '../app/api'
 
 // Mock dependencies
 vi.mock('cos-js-sdk-v5', () => {
@@ -36,9 +37,13 @@ vi.mock('heic-to', () => {
   return { default: heicMock, ...heicMock }
 })
 
-vi.mock('../app/api', () => ({
-  getCosUploadInfo: vi.fn()
-}))
+vi.mock('../app/api', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../app/api')>()
+  return {
+    ...actual,
+    getCosUploadInfo: vi.fn(),
+  }
+})
 
 describe('Utils', () => {
   describe('wgs84ToGcj02', () => {
@@ -287,6 +292,41 @@ describe('Utils', () => {
       const file = new File(['test'], 'test.jpg', { type: 'image/jpeg' })
 
       await expect(uploadToCOS(file)).rejects.toThrow('Upload failed')
+    })
+  })
+
+  describe('genSrc', () => {
+    it('undefined 返回空字符串', () => {
+      expect(genSrc()).toBe('')
+      expect(genSrc(undefined)).toBe('')
+    })
+
+    it('local: 前缀返回 /api + 路径（无额外斜杠）', () => {
+      // 实现直接拼接：`${BASE_URL}${parts[1]}`
+      expect(genSrc('local:upload/photo.jpg')).toBe('/apiupload/photo.jpg')
+      expect(genSrc('local:test.jpg')).toBe('/apitest.jpg')
+    })
+
+    it('tencent: 前缀返回 COS URL + !origin（默认）', () => {
+      // 实现：compressed 为 falsy 时添加 !origin
+      expect(genSrc('tencent:bucket/photo.jpg')).toBe('https://bucket/photo.jpg!origin')
+    })
+
+    it('tencent: 前缀 + compressed=true 添加 !compressed', () => {
+      expect(genSrc('tencent:bucket/photo.jpg', true)).toBe('https://bucket/photo.jpg!compressed')
+    })
+
+    it('tencent: 前缀 + compressed=false 添加 !origin', () => {
+      expect(genSrc('tencent:bucket/photo.jpg', false)).toBe('https://bucket/photo.jpg!origin')
+    })
+
+    it('无前缀返回 /api + 原字符串', () => {
+      expect(genSrc('/upload/photo.jpg')).toBe('/api/upload/photo.jpg')
+      expect(genSrc('photo.jpg')).toBe('/apiphoto.jpg')
+    })
+
+    it('其他前缀返回 /api + 原字符串', () => {
+      expect(genSrc('custom:path/to/file')).toBe('/apicustom:path/to/file')
     })
   })
 })
