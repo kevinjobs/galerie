@@ -173,10 +173,10 @@ function MobileNav(_props: NavbarProps) {
   }, [pathname]);
 
   const navItems = [
-    { key: "/", label: "首页", icon: House },
-    { key: "/gallery", label: "相册", icon: Picture },
-    { key: "/map", label: "地图", icon: MapPin },
-    { key: "/hinter", label: "管理", icon: Gear },
+    { key: "/", label: "Home", icon: House },
+    { key: "/gallery", label: "Gallery", icon: Picture },
+    { key: "/map", label: "Map", icon: MapPin },
+    { key: "/hinter", label: "Hinter", icon: Gear },
   ];
 
   const handleNav = (to: string) => {
@@ -205,7 +205,7 @@ function MobileNav(_props: NavbarProps) {
             </Avatar.Fallback>
           </Avatar>
         ) : (
-          <Link href="/login" className="text-sm text-muted">登录</Link>
+          <Link href="/login" className="text-sm text-muted">Login</Link>
         )}
 
         {/* 右侧汉堡按钮 */}
@@ -280,7 +280,7 @@ function MobileNav(_props: NavbarProps) {
                   </Avatar>
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium text-foreground">
-                      {user?.nickname || user?.name || "未命名用户"}
+                      {user?.nickname || user?.name || "Unnamed User"}
                     </p>
                     <p className="truncate text-xs text-muted">{user?.email}</p>
                   </div>
@@ -290,7 +290,7 @@ function MobileNav(_props: NavbarProps) {
                   className="flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm text-danger hover:bg-danger/10 transition-colors"
                 >
                   <ArrowRightFromSquare width={16} height={16} />
-                  <span>退出</span>
+                  <span>Logout</span>
                 </button>
               </div>
             ) : (
@@ -298,7 +298,7 @@ function MobileNav(_props: NavbarProps) {
                 onClick={() => handleNav("/login")}
                 className="w-full rounded-2xl bg-primary py-3 text-center text-sm font-medium text-white"
               >
-                登录
+                Login
               </button>
             )}
           </div>
