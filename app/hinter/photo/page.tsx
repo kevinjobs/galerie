@@ -51,7 +51,6 @@ export default function PhotoPage() {
     total: photos.length,
     publicCount: photos.filter((p) => p.isPublic).length,
     selectedCount: photos.filter((p) => p.isSelected).length,
-    recent: photos[0]?.shootTime || photos[0]?.createTime || "--",
   };
 
   const handleRefresh = () => {
@@ -99,10 +98,6 @@ export default function PhotoPage() {
           <span className="text-border">|</span>
           <span className="text-muted">
             精选 <span className="font-semibold text-warning">{summary.selectedCount}</span>
-          </span>
-          <span className="text-border">|</span>
-          <span className="text-muted">
-            最近 {summary.recent === "--" ? "--" : new Date(summary.recent).toLocaleDateString()}
           </span>
         </div>
       </section>
