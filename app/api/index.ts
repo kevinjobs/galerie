@@ -1,5 +1,4 @@
 import { PhotoCreate, PhotoUpdate, UserCreate, UserUpdate } from "../typings";
-import { wgs84ToGcj02 } from "../hinter/utils";
 
 export const BASE_URL = "/api";
 
@@ -194,18 +193,12 @@ export const getAddress = async (
   longitude: string,
   latitude: string,
 ): Promise<AddressResponse> => {
-  const lng = parseFloat(longitude);
-  const lat = parseFloat(latitude);
-
-  const [gcjLng, gcjLat] = wgs84ToGcj02(lng, lat);
-
-  const baseUrl = "https://restapi.amap.com/v3/geocode/regeo";
-  const key = "be262c006216c542747fce766130cee3";
-  const url = `${baseUrl}?location=${gcjLng},${gcjLat}&key=${key}`;
+  const url = `${BASE_URL}/geocode?longitude=${encodeURIComponent(longitude)}&latitude=${encodeURIComponent(latitude)}`;
   const response = await fetch(url);
 
   if (!response.ok) {
-    throw new Error(`无法从高德API获取地址: ${response.statusText}`);
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `地址解析失败: ${response.statusText}`);
   }
 
   return response.json();
