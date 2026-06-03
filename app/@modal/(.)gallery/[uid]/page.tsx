@@ -547,7 +547,7 @@ export default function GalleryModal({
             }`}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="border border-border rounded-2xl overflow-auto bg-background">
+            <div className="border border-border rounded-2xl overflow-auto bg-background max-h-[60vh]">
               {activePhoto && <PhotoInfo photo={activePhoto} />}
             </div>
           </div>
