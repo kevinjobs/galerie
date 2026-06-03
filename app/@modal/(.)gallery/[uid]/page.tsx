@@ -277,15 +277,27 @@ export default function GalleryModal({
             </div>
           </section>
         </BrowserView>
-        {isPanelOpen && (
-          <MobileView>
-            <section className="opacity-70 fixed bottom-8 left-1/2 -translate-x-1/2 w-full px-4 z-20">
-              <div className="border border-border rounded-2xl overflow-auto bg-background">
-                {activePhoto && <PhotoInfo photo={activePhoto} />}
-              </div>
-            </section>
-          </MobileView>
-        )}
+        {/* 移动端信息栏：点击背景关闭 + 滑入/滑出动画 */}
+        <MobileView>
+          <div
+            className={`fixed inset-0 z-10 transition-opacity duration-300 ${
+              isPanelOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+            }`}
+            onClick={() => setIsPanelOpen(false)}
+          />
+          <div
+            className={`fixed bottom-8 left-1/2 -translate-x-1/2 w-full px-4 z-20 transition-all duration-300 ease-out ${
+              isPanelOpen
+                ? "opacity-70 translate-y-0 pointer-events-auto"
+                : "opacity-0 translate-y-8 pointer-events-none"
+            }`}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="border border-border rounded-2xl overflow-auto bg-background">
+              {activePhoto && <PhotoInfo photo={activePhoto} />}
+            </div>
+          </div>
+        </MobileView>
       </main>
       <footer></footer>
     </div>
