@@ -132,6 +132,7 @@ export default function ProfilePage() {
 
   // 头像
   const [avatarSeed, setAvatarSeed] = useState<string | null>(null);
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
 
   useEffect(() => {
     setAvatarSeed(Math.random().toString(36).slice(2, 10));
@@ -218,6 +219,7 @@ export default function ProfilePage() {
       setSelectedIndex(null);
       setSelectedFile(null);
       setFilePreview(null);
+      setIsAvatarModalOpen(false);
       toast.success("头像已更新");
     } catch (err) {
       toast.danger(`保存头像失败: ${(err as Error).message}`);
@@ -358,10 +360,13 @@ export default function ProfilePage() {
 
       <section className="rounded-3xl border border-border bg-surface p-6 shadow-sm">
         <div className="flex flex-col items-center gap-4 sm:flex-row">
-          <div className="relative size-20 shrink-0">
-            {avatarPreview || currentAvatarSrc ? (
+          <button
+            className="relative size-20 shrink-0 cursor-pointer group"
+            onClick={() => setIsAvatarModalOpen(true)}
+          >
+            {currentAvatarSrc ? (
               <img
-                src={avatarPreview || currentAvatarSrc || ""}
+                src={currentAvatarSrc}
                 className="size-20 rounded-full object-cover"
                 alt="avatar"
               />
@@ -370,56 +375,85 @@ export default function ProfilePage() {
                 {initial}
               </div>
             )}
-          </div>
+            <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+              <PersonPencil width={20} height={20} className="text-white" />
+            </div>
+          </button>
           <div className="text-center sm:text-left">
             <h2 className="text-xl font-bold text-foreground">{user?.nickname || user?.name || "未命名用户"}</h2>
             <p className="text-sm text-muted">{user?.email}</p>
             <p className="mt-1 text-xs text-muted">@{user?.name}</p>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="mt-2"
+              onPress={() => setIsAvatarModalOpen(true)}
+            >
+              更换头像
+            </Button>
           </div>
-        </div>
-
-        <hr className="my-6 border-border" />
-
-        <h3 className="text-sm font-semibold text-foreground mb-4">选择头像</h3>
-
-        {avatarList.length > 0 && (
-          <div className="grid grid-cols-4 gap-4 mb-4">
-            {avatarList.map((dataUri, i) => (
-              <button
-                key={i}
-                onClick={() => handleSelectSystem(i)}
-                className={`rounded-full overflow-hidden size-16 ring-2 transition-all cursor-pointer ${
-                  selectedIndex === i && !selectedFile
-                    ? "ring-primary scale-110"
-                    : "ring-transparent hover:ring-muted"
-                }`}
-              >
-                <img src={dataUri} alt={`avatar ${i + 1}`} className="size-full" />
-              </button>
-            ))}
-          </div>
-        )}
-
-        <div className="flex gap-3 flex-wrap items-center">
-          <Button size="sm" variant="ghost" onPress={handleRefreshAvatars}>
-            刷新头像
-          </Button>
-          <Button size="sm" variant="ghost" onPress={() => fileInputRef.current?.click()}>
-            上传图片
-          </Button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            hidden
-            onChange={handleFileSelect}
-          />
-          {selectedFile && <span className="text-xs text-muted truncate max-w-32">{selectedFile.name}</span>}
-          <Button size="sm" variant="primary" onPress={handleSaveAvatar} isDisabled={savingAvatar}>
-            保存头像
-          </Button>
         </div>
       </section>
+
+      {/* 头像选择弹出层 */}
+      <Modal isOpen={isAvatarModalOpen} onChangeAction={setIsAvatarModalOpen} size="lg" title="选择头像">
+        <div className="p-6">
+          {avatarPreview && (
+            <div className="flex justify-center mb-4">
+              <img
+                src={avatarPreview}
+                className="size-24 rounded-full object-cover ring-2 ring-primary"
+                alt="preview"
+              />
+            </div>
+          )}
+
+          {avatarList.length > 0 && (
+            <div className="grid grid-cols-4 gap-4 mb-4">
+              {avatarList.map((dataUri, i) => (
+                <button
+                  key={i}
+                  onClick={() => handleSelectSystem(i)}
+                  className={`rounded-full overflow-hidden size-16 ring-2 transition-all cursor-pointer ${
+                    selectedIndex === i && !selectedFile
+                      ? "ring-primary scale-110"
+                      : "ring-transparent hover:ring-muted"
+                  }`}
+                >
+                  <img src={dataUri} alt={`avatar ${i + 1}`} className="size-full" />
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="flex gap-3 flex-wrap items-center justify-between">
+            <div className="flex gap-3 flex-wrap items-center">
+              <Button size="sm" variant="ghost" onPress={handleRefreshAvatars}>
+                刷新头像
+              </Button>
+              <Button size="sm" variant="ghost" onPress={() => fileInputRef.current?.click()}>
+                上传图片
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                hidden
+                onChange={handleFileSelect}
+              />
+              {selectedFile && <span className="text-xs text-muted truncate max-w-32">{selectedFile.name}</span>}
+            </div>
+            <div className="flex gap-3">
+              <Button size="sm" variant="secondary" onPress={() => setIsAvatarModalOpen(false)}>
+                取消
+              </Button>
+              <Button size="sm" variant="primary" onPress={handleSaveAvatar} isDisabled={savingAvatar}>
+                {savingAvatar ? "保存中..." : "保存头像"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Modal>
 
       <section className="rounded-3xl border border-border bg-surface p-6 shadow-sm">
         <h2 className="flex items-center gap-2 text-base font-semibold text-foreground">

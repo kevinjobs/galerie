@@ -20,6 +20,16 @@ export default function HinterPage() {
     queryFn: () => getPhotoLists({ orderBy: "shootTime", order: "desc", limit: 5 }),
   });
 
+  // 单独获取公开和精选的总数（仅取 total，limit=1 避免拉取多余数据）
+  const { data: publicData } = useQuery({
+    queryKey: ["photoLists", "dashboard", "public"],
+    queryFn: () => getPhotoLists({ isPublic: true, limit: 1 }),
+  });
+  const { data: selectedData } = useQuery({
+    queryKey: ["photoLists", "dashboard", "selected"],
+    queryFn: () => getPhotoLists({ isSelected: true, limit: 1 }),
+  });
+
   const { data: userData } = useQuery({
     queryKey: ["userLists", "dashboard"],
     queryFn: getUserLists,
@@ -27,8 +37,9 @@ export default function HinterPage() {
 
   const photos: Photo[] = photoData?.lists || [];
   const users: unknown[] = userData || [];
-  const publicCount = photos.filter((p) => p.isPublic).length;
-  const selectedCount = photos.filter((p) => p.isSelected).length;
+  const totalPhotos = photoData?.total ?? 0;
+  const publicCount = publicData?.total ?? 0;
+  const selectedCount = selectedData?.total ?? 0;
 
   return (
     <div className="space-y-6">
@@ -48,7 +59,7 @@ export default function HinterPage() {
             </span>
             <p className="text-sm text-muted">照片总数</p>
           </div>
-          <p className="mt-3 text-3xl font-semibold text-foreground">{photos.length}</p>
+          <p className="mt-3 text-3xl font-semibold text-foreground">{totalPhotos}</p>
         </div>
         <div className="rounded-3xl border border-border bg-surface p-5 shadow-sm">
           <div className="flex items-center gap-3">
