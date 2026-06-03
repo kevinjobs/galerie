@@ -10,6 +10,7 @@ import { verifyToken, genSrc } from "../api";
 import { settingAtom, tokenAtom, userAtom } from "../store";
 import { Setting, UserPlain } from "../typings";
 import { MOBILE_HEADER_HEIGHT, BROWSER_HEADER_HEIGHT } from "../config";
+import { Logo } from "./logo";
 
 export interface NavbarProps {
   data: {
@@ -53,11 +54,9 @@ export function Navbar({ data }: NavbarProps) {
     return (
       <nav className="flex h-full w-200 items-center mx-auto">
         <div className="hinter-logo">
-          <h1 className="text-2xl font-bold">
-            <Link href="/" className="text-black dark:text-white">
-              Galerie
-            </Link>
-          </h1>
+          <Link href="/">
+            <Logo variant="D" />
+          </Link>
         </div>
         <div className="hinter-navbar-center mx-8 grow">
           {data?.map((item) => (
@@ -81,11 +80,9 @@ function BrowserNav({ data }: NavbarProps) {
   return (
     <nav className="flex h-full w-200 items-center mx-auto">
       <div className="hinter-logo">
-        <h1 className="text-2xl font-bold">
-          <Link href="/" className="text-black dark:text-white">
-            Gelerie
-          </Link>
-        </h1>
+        <Link href="/">
+          <Logo variant="D" />
+        </Link>
       </div>
       <div className="hinter-navbar-center mx-8 grow">
         {data?.map((item) => (
@@ -232,7 +229,7 @@ function MobileNav(_props: NavbarProps) {
             }`}
             style={{ height: MOBILE_HEADER_HEIGHT, transitionDelay: menuOpen ? "50ms" : "0ms" }}
           >
-            <h1 className="text-xl font-bold text-foreground">Galerie</h1>
+            <Logo variant="D" />
             <button onClick={handleClose} className="p-1">
               <Xmark width={24} height={24} />
             </button>
