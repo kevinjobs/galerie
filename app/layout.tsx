@@ -1,11 +1,10 @@
 "use client";
 import { Toast } from "@heroui/react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Navbar } from "./components/navbar";
 import "./globals.css";
-import { MOBILE_HEADER_HEIGHT, BROWSER_HEADER_HEIGHT } from "./config";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { usePathname } from "next/navigation";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 export default function RootLayout({
   children,
@@ -16,20 +15,7 @@ export default function RootLayout({
 }>) {
   const pathname = usePathname();
   const isMapPage = pathname === "/map";
-  const [mounted, setMounted] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
   const [queryClient] = useState(() => new QueryClient());
-
-  useEffect(() => {
-    setMounted(true);
-    setIsMobile(window.innerWidth < 768);
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  // 首次 SSR 渲染使用桌面版高度，避免 hydration mismatch
-  const headerHeight = mounted && isMobile ? MOBILE_HEADER_HEIGHT : BROWSER_HEADER_HEIGHT;
 
   return (
     <html lang="en" className="dark" data-theme="dark">
@@ -48,7 +34,7 @@ export default function RootLayout({
               ? "bg-transparent"
               : "backdrop-blur-sm bg-background/0"
           }`}
-          style={{ height: headerHeight }}
+          style={{ height: "var(--header-height)" }}
         >
           <Navbar
             data={[

@@ -2,6 +2,16 @@
 @import "tailwindcss";
 @import "@heroui/styles";
 
+:root {
+  --header-height: 64px;
+}
+
+@media (max-width: 767px) {
+  :root {
+    --header-height: 56px;
+  }
+}
+
 body {
   font-family: 'Outfit', 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', system-ui, sans-serif !important;
 }
