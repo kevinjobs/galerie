@@ -8,7 +8,8 @@ import {
   Input,
   Label,
   toast,
-  TextArea,
+  Select,
+  ListBox,
 } from "@heroui/react";
 import { Controller, useForm } from "react-hook-form";
 import { settingAtom, userAtom } from "@/app/store";
@@ -89,17 +90,17 @@ export function UserEdit({
   };
 
   return (
-    <form onSubmit={handleSubmit(submit)} className="px-6 py-6">
+    <form onSubmit={handleSubmit(submit)} className="px-6 py-6 overflow-x-hidden">
       <h2 className="mb-6 text-center text-2xl font-bold text-foreground">
         {defaultUser?.uid ? "编辑用户" : "新增用户"}
       </h2>
 
-      <div className="mx-auto max-w-lg space-y-5">
+      <div className="mx-auto max-w-xl space-y-5">
         <Controller
           name="uid"
           control={control}
           render={({ field }) => (
-            <div className="grid grid-cols-[4rem_1fr] items-center gap-3">
+            <div className="grid grid-cols-[4rem_minmax(0,1fr)] items-center gap-3">
               <Label className="text-right text-sm">UID</Label>
               <Input {...field} readOnly />
             </div>
@@ -111,7 +112,7 @@ export function UserEdit({
           control={control}
           rules={{ required: "用户名不能为空" }}
           render={({ field }) => (
-            <div className="grid grid-cols-[4rem_1fr] items-center gap-3">
+            <div className="grid grid-cols-[4rem_minmax(0,1fr)] items-center gap-3">
               <Label className="text-right text-sm">用户名</Label>
               <Input {...field} placeholder="请输入用户名"  />
             </div>
@@ -124,7 +125,7 @@ export function UserEdit({
             control={control}
             rules={{ required: "密码不能为空" }}
             render={({ field }) => (
-              <div className="grid grid-cols-[4rem_1fr] items-center gap-3">
+              <div className="grid grid-cols-[4rem_minmax(0,1fr)] items-center gap-3">
                 <Label className="text-right text-sm">密码</Label>
                 <Input {...field} type="password" placeholder="设置密码"  />
               </div>
@@ -137,7 +138,7 @@ export function UserEdit({
           control={control}
           rules={{ required: "邮箱不能为空" }}
           render={({ field }) => (
-            <div className="grid grid-cols-[4rem_1fr] items-center gap-3">
+            <div className="grid grid-cols-[4rem_minmax(0,1fr)] items-center gap-3">
               <Label className="text-right text-sm">Email</Label>
               <Input {...field} placeholder="user@example.com"  />
             </div>
@@ -148,7 +149,7 @@ export function UserEdit({
           name="nickname"
           control={control}
           render={({ field }) => (
-            <div className="grid grid-cols-[4rem_1fr] items-center gap-3">
+            <div className="grid grid-cols-[4rem_minmax(0,1fr)] items-center gap-3">
               <Label className="text-right text-sm">昵称</Label>
               <Input {...field} placeholder="可选"  />
             </div>
@@ -160,7 +161,7 @@ export function UserEdit({
             name="password"
             control={control}
             render={({ field }) => (
-              <div className="grid grid-cols-[4rem_1fr] items-center gap-3">
+              <div className="grid grid-cols-[4rem_minmax(0,1fr)] items-center gap-3">
                 <Label className="text-right text-sm">改密码</Label>
                 <Input {...field} type="password" placeholder="留空则不修改"  />
               </div>
@@ -172,7 +173,7 @@ export function UserEdit({
           name="permissions"
           control={control}
           render={({ field }) => (
-            <div className="grid grid-cols-[4rem_1fr] gap-3">
+            <div className="grid grid-cols-[4rem_minmax(0,1fr)] gap-3">
               <Label className="pt-1 text-right text-sm">权限</Label>
               <CheckboxGroup {...field} className="space-y-3">
                 {permissionGroups.map((group) => (
@@ -197,29 +198,92 @@ export function UserEdit({
           )}
         />
 
-        <Controller
-          name="setting"
-          control={control}
-          render={({ field }) => (
-            <div className="grid grid-cols-[4rem_1fr] gap-3">
-              <Label className="pt-1 text-right text-sm">设置</Label>
-              <TextArea
-                fullWidth
-                rows={8}
-                
-                {...field}
-                value={JSON.stringify(field.value, null, 2)}
-                onChange={(e) => {
-                  try {
-                    field.onChange(JSON.parse(e.target.value));
-                  } catch {
-                    // ignore invalid JSON during editing
-                  }
-                }}
-              />
-            </div>
-          )}
-        />
+        <div className="space-y-4 rounded-2xl border border-border bg-background p-4">
+          <p className="text-sm font-semibold text-foreground">用户设置</p>
+
+          {/* 主题 */}
+          <Controller
+            name="setting.theme"
+            control={control}
+            render={({ field }) => (
+              <div className="grid grid-cols-[5rem_minmax(0,1fr)] items-center gap-3">
+                <Label className="text-right text-sm">主题</Label>
+                <Select {...field} className="w-full min-w-0">
+                  <Select.Trigger>
+                    <Select.Value />
+                    <Select.Indicator />
+                  </Select.Trigger>
+                  <Select.Popover>
+                    <ListBox>
+                      <ListBox.Item id="system" textValue="system">跟随系统<ListBox.ItemIndicator /></ListBox.Item>
+                      <ListBox.Item id="dark" textValue="dark">深色模式<ListBox.ItemIndicator /></ListBox.Item>
+                      <ListBox.Item id="light" textValue="light">浅色模式<ListBox.ItemIndicator /></ListBox.Item>
+                    </ListBox>
+                  </Select.Popover>
+                </Select>
+              </div>
+            )}
+          />
+
+          {/* 语言 */}
+          <Controller
+            name="setting.language"
+            control={control}
+            render={({ field }) => (
+              <div className="grid grid-cols-[5rem_minmax(0,1fr)] items-center gap-3">
+                <Label className="text-right text-sm">语言</Label>
+                <Select {...field} className="w-full min-w-0">
+                  <Select.Trigger>
+                    <Select.Value />
+                    <Select.Indicator />
+                  </Select.Trigger>
+                  <Select.Popover>
+                    <ListBox>
+                      <ListBox.Item id="en" textValue="en">英文<ListBox.ItemIndicator /></ListBox.Item>
+                      <ListBox.Item id="zh-cn" textValue="zh-cn">中文简体<ListBox.ItemIndicator /></ListBox.Item>
+                      <ListBox.Item id="fr" textValue="fr">法语<ListBox.ItemIndicator /></ListBox.Item>
+                    </ListBox>
+                  </Select.Popover>
+                </Select>
+              </div>
+            )}
+          />
+
+          {/* 存储类型 */}
+          <Controller
+            name="setting.upload.type"
+            control={control}
+            render={({ field }) => (
+              <div className="grid grid-cols-[5rem_minmax(0,1fr)] items-center gap-3">
+                <Label className="text-right text-sm">存储方式</Label>
+                <Select {...field} className="w-full min-w-0">
+                  <Select.Trigger>
+                    <Select.Value />
+                    <Select.Indicator />
+                  </Select.Trigger>
+                  <Select.Popover>
+                    <ListBox>
+                      <ListBox.Item id="tencent" textValue="tencent">腾讯云 COS<ListBox.ItemIndicator /></ListBox.Item>
+                      <ListBox.Item id="local" textValue="local">本地服务器<ListBox.ItemIndicator /></ListBox.Item>
+                    </ListBox>
+                  </Select.Popover>
+                </Select>
+              </div>
+            )}
+          />
+
+          {/* 存储目录 */}
+          <Controller
+            name="setting.upload.dir"
+            control={control}
+            render={({ field }) => (
+              <div className="grid grid-cols-[5rem_minmax(0,1fr)] items-center gap-3">
+                <Label className="text-right text-sm">存储目录</Label>
+                <Input {...field} size="sm" className="min-w-0" placeholder="例如 /upload" />
+              </div>
+            )}
+          />
+        </div>
       </div>
 
       <div className="mt-8 flex justify-center gap-3">

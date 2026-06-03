@@ -45,16 +45,8 @@ export interface Setting {
   language?: string;
   upload?: {
     type: string;
-    secretId: string;
-    secretKey: string;
-    bucket: string;
-    region: string;
     dir: string;
   };
-  map?: {
-    key: string;
-    code: string;
-  }
 }
 
 export interface UserPlain {

@@ -9,16 +9,8 @@ export const settingAtom = atomWithStorage<Setting | null>("setting", {
   language: "en",
   upload: {
     type: "tencent",
-    secretId: "",
-    secretKey: "",
-    bucket: "gallery-1252473272",
-    region: "ap-nanjing",
     dir: "",
   },
-  map: {
-    code: '',
-    key: '',
-  }
 });
 
 // 照片导航列表（存储当前画廊视图的照片 UID 有序数组）

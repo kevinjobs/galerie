@@ -170,7 +170,7 @@ export default function UserPage() {
         </div>
       )}
 
-      <Modal isOpen={isOpen} onChangeAction={setIsOpen} size="md">
+      <Modal isOpen={isOpen} onChangeAction={setIsOpen} size="lg">
         <UserEdit
           defaultUser={user as UserPlain}
           onSubmitAction={() => {
