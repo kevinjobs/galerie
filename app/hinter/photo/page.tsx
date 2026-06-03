@@ -88,25 +88,22 @@ export default function PhotoPage() {
           </div>
         </div>
 
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-2xl border border-border bg-surface p-4">
-            <p className="text-xs text-muted">照片总数</p>
-            <p className="mt-2 text-2xl font-semibold text-foreground lg:text-3xl">{summary.total}</p>
-          </div>
-          <div className="rounded-2xl border border-border bg-surface p-4">
-            <p className="text-xs text-muted">公开照片</p>
-            <p className="mt-2 text-2xl font-semibold text-foreground lg:text-3xl">{summary.publicCount}</p>
-          </div>
-          <div className="rounded-2xl border border-border bg-surface p-4">
-            <p className="text-xs text-muted">精选照片</p>
-            <p className="mt-2 text-2xl font-semibold text-foreground lg:text-3xl">{summary.selectedCount}</p>
-          </div>
-          <div className="rounded-2xl border border-border bg-surface p-4">
-            <p className="text-xs text-muted">最近拍摄</p>
-            <p className="mt-2 truncate text-lg font-semibold text-foreground lg:text-2xl">
-              {summary.recent === "--" ? "--" : new Date(summary.recent).toLocaleDateString()}
-            </p>
-          </div>
+        <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+          <span className="text-muted">
+            共 <span className="font-semibold text-foreground">{summary.total}</span> 张
+          </span>
+          <span className="text-border">|</span>
+          <span className="text-muted">
+            公开 <span className="font-semibold text-primary">{summary.publicCount}</span>
+          </span>
+          <span className="text-border">|</span>
+          <span className="text-muted">
+            精选 <span className="font-semibold text-warning">{summary.selectedCount}</span>
+          </span>
+          <span className="text-border">|</span>
+          <span className="text-muted">
+            最近 {summary.recent === "--" ? "--" : new Date(summary.recent).toLocaleDateString()}
+          </span>
         </div>
       </section>
 
