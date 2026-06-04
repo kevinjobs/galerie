@@ -17,6 +17,7 @@ export interface PhotoCreateInput {
   isPublic?: boolean;
   isSelected?: boolean;
   type?: string;
+  userId?: number | null;
 }
 
 export interface PhotoListParams {
@@ -26,6 +27,7 @@ export interface PhotoListParams {
   order?: string;
   isSelected?: boolean;
   isPublic?: boolean;
+  ownerUserId?: number;
 }
 
 const uploadDir = path.join(process.cwd(), "public/upload");
@@ -66,6 +68,7 @@ export abstract class PhotoService {
       order = "desc",
       isSelected,
       isPublic,
+      ownerUserId,
     } = params;
 
     const where: Prisma.PhotoWhereInput = {
@@ -78,6 +81,17 @@ export abstract class PhotoService {
 
     if (isPublic !== undefined) {
       where.isPublic = isPublic;
+    }
+
+    // Filter by owner or public photos
+    if (ownerUserId !== undefined) {
+      if (isPublic === undefined) {
+        // Show public photos + user's own photos
+        where.OR = [
+          { isPublic: true },
+          { userId: ownerUserId },
+        ];
+      }
     }
 
     if (order === "random") {

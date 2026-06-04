@@ -1,9 +1,11 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { MOBILE_HEADER_HEIGHT, BROWSER_HEADER_HEIGHT } from "../config";
 import { Picture, Person, Gear, PersonPencil } from "@gravity-ui/icons";
 import { useEffect, useState } from "react";
+import { usePermission } from "@/app/hooks/usePermission";
+import { Spinner } from "@heroui/react";
 
 const menuItems = [
   {
@@ -12,6 +14,7 @@ const menuItems = [
     description: "浏览与上传图库照片",
     shortLabel: "照片",
     icon: Picture,
+    requiredPermission: "photo.get",
   },
   {
     href: "/hinter/user",
@@ -19,6 +22,7 @@ const menuItems = [
     description: "查看与编辑用户信息",
     shortLabel: "用户",
     icon: Person,
+    requiredPermission: "user.get",
   },
   {
     href: "/hinter/setting",
@@ -26,6 +30,7 @@ const menuItems = [
     description: "系统主题、语言与存储选项",
     shortLabel: "杂项",
     icon: Gear,
+    // Personal preferences - accessible to all authenticated users
   },
   {
     href: "/hinter/profile",
@@ -33,6 +38,7 @@ const menuItems = [
     description: "账户资料与安全操作",
     shortLabel: "资料",
     icon: PersonPencil,
+    // No permission requirement - any authenticated user can access
   },
 ];
 
@@ -42,8 +48,10 @@ export default function HinterLayout({
   children: React.ReactNode;
 }>) {
   const pathname = usePathname();
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const { user, hasPermission } = usePermission();
 
   useEffect(() => {
     setMounted(true);
@@ -53,6 +61,13 @@ export default function HinterLayout({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (mounted && !user) {
+      router.push("/login");
+    }
+  }, [mounted, user, router]);
+
   const headerHeight = mounted && isMobile ? MOBILE_HEADER_HEIGHT : BROWSER_HEADER_HEIGHT;
 
   const isActive = (href: string) => {
@@ -61,6 +76,32 @@ export default function HinterLayout({
     }
     return pathname === href;
   };
+
+  // Filter menu items based on permissions
+  const filteredMenuItems = menuItems.filter((item) => {
+    if (item.requiredPermission) {
+      return hasPermission(item.requiredPermission);
+    }
+    return true; // No requirement = visible to all authenticated users
+  });
+
+  // Show loading state
+  if (!mounted) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Spinner />
+      </div>
+    );
+  }
+
+  // Show redirect state
+  if (!user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Spinner />
+      </div>
+    );
+  }
 
   return (
     <div className="hinter min-h-screen" style={{ paddingTop: headerHeight }}>
@@ -73,7 +114,7 @@ export default function HinterLayout({
           </div>
 
           <nav className="flex flex-col gap-2">
-            {menuItems.map((item) => {
+            {filteredMenuItems.map((item) => {
               const active = isActive(item.href);
               const Icon = item.icon;
               return (
@@ -111,7 +152,7 @@ export default function HinterLayout({
 
       <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-border bg-background/95 backdrop-blur-lg lg:hidden">
         <div className="flex justify-around py-2">
-          {menuItems.map((item) => {
+          {filteredMenuItems.map((item) => {
             const active = isActive(item.href);
             const Icon = item.icon;
             return (

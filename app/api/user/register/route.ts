@@ -1,13 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UserService } from "@/prisma/lib/userService";
-
-const DEFAULT_PERMISSIONS = [
-  "photo.create",
-  "photo.get",
-  "photo.update",
-  "photo.delete",
-  "photo.upload",
-];
+import { ROLES } from "@/prisma/lib/roles";
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,7 +22,7 @@ export async function POST(request: NextRequest) {
       name: defaultName,
       email,
       password,
-      permissions: DEFAULT_PERMISSIONS,
+      role: ROLES.CONTRIBUTOR,
     });
 
     return NextResponse.json(user);

@@ -24,6 +24,8 @@ model Photo {
   isPublic     Boolean   @default(false)
   isSelected   Boolean   @default(false)
   type         String   @default("photo")
+  userId       Int?
+  user         User?     @relation(fields: [userId], references: [id])
 }
 
 model User {
@@ -33,10 +35,13 @@ model User {
   nickname     String?   @default("Nameless User")
   email        String    @unique
   password     String
+  role         String    @default("contributor")
+  isSuperuser  Boolean   @default(false)
   permissions  Json?
   setting      Json?
   avatar       String?
   apiTokens    ApiToken[]
+  photos       Photo[]
 }
 
 model VerifyCode {

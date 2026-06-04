@@ -137,6 +137,8 @@ export abstract class ApiTokenService {
       uid: apiToken.user.uid,
       name: apiToken.user.name,
       email: apiToken.user.email,
+      role: apiToken.user.role,
+      isSuperuser: apiToken.user.isSuperuser,
       permissions,
     };
   }

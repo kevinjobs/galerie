@@ -3,8 +3,6 @@ import { createUser, updateUser } from "@/app/api";
 import { UserPlain } from "@/app/typings";
 import {
   Button,
-  Checkbox,
-  CheckboxGroup,
   Input,
   Label,
   toast,
@@ -14,29 +12,13 @@ import {
 import { Controller, useForm } from "react-hook-form";
 import { settingAtom, userAtom } from "@/app/store";
 import { useAtom } from "jotai";
+import { ROLE_LABELS, ROLE_DESCRIPTIONS, ROLES } from "@/prisma/lib/roles";
+import { usePermission } from "@/app/hooks/usePermission";
 
-const permissionGroups = [
-  {
-    group: "photo",
-    label: "照片",
-    perms: [
-      { value: "photo.upload", label: "上传" },
-      { value: "photo.get", label: "读取" },
-      { value: "photo.create", label: "创建" },
-      { value: "photo.update", label: "更新" },
-      { value: "photo.delete", label: "删除" },
-    ],
-  },
-  {
-    group: "user",
-    label: "用户",
-    perms: [
-      { value: "user.get", label: "读取" },
-      { value: "user.create", label: "创建" },
-      { value: "user.update", label: "更新" },
-      { value: "user.delete", label: "删除" },
-    ],
-  },
+const roleOptions = [
+  { id: ROLES.ADMIN, label: ROLE_LABELS.admin, description: ROLE_DESCRIPTIONS.admin },
+  { id: ROLES.CONTRIBUTOR, label: ROLE_LABELS.contributor, description: ROLE_DESCRIPTIONS.contributor },
+  { id: ROLES.VIEWER, label: ROLE_LABELS.viewer, description: ROLE_DESCRIPTIONS.viewer },
 ];
 
 export function UserEdit({
@@ -50,6 +32,11 @@ export function UserEdit({
 }) {
   const [setting] = useAtom(settingAtom);
   const [currentUser, setCurrentUser] = useAtom(userAtom);
+  const { isSuperuser, user: operatorUser } = usePermission();
+
+  // Determine if current user can edit this user's role
+  const canEditRole = operatorUser?.role === ROLES.ADMIN || isSuperuser;
+  const isEditingSelf = defaultUser?.uid === currentUser?.uid;
 
   const { handleSubmit, control } = useForm<UserPlain>({
     values: {
@@ -59,6 +46,8 @@ export function UserEdit({
       nickname: defaultUser?.nickname || undefined,
       email: defaultUser?.email || "",
       password: defaultUser?.password || undefined,
+      role: defaultUser?.role || ROLES.CONTRIBUTOR,
+      isSuperuser: defaultUser?.isSuperuser || false,
       permissions: defaultUser?.permissions || [],
       setting: defaultUser?.setting || setting || {},
     },
@@ -170,33 +159,43 @@ export function UserEdit({
         )}
 
         <Controller
-          name="permissions"
+          name="role"
           control={control}
           render={({ field }) => (
-            <div className="grid grid-cols-[4rem_minmax(0,1fr)] gap-3">
-              <Label className="pt-1 text-right text-sm">权限</Label>
-              <CheckboxGroup {...field} className="space-y-3">
-                {permissionGroups.map((group) => (
-                  <div key={group.group}>
-                    <p className="mb-1.5 text-xs font-medium text-muted">{group.label}</p>
-                    <div className="flex flex-wrap gap-x-4 gap-y-1.5">
-                      {group.perms.map((perm) => (
-                        <Checkbox key={perm.value} value={perm.value} >
-                          <Checkbox.Control>
-                            <Checkbox.Indicator />
-                          </Checkbox.Control>
-                          <Checkbox.Content>
-                            <Label className="text-sm">{perm.label}</Label>
-                          </Checkbox.Content>
-                        </Checkbox>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </CheckboxGroup>
+            <div className="grid grid-cols-[4rem_minmax(0,1fr)] items-center gap-3">
+              <Label className="text-right text-sm">角色</Label>
+              <Select
+                {...field}
+                className="w-full min-w-0"
+                isDisabled={!canEditRole || isEditingSelf}
+              >
+                <Select.Trigger>
+                  <Select.Value />
+                  <Select.Indicator />
+                </Select.Trigger>
+                <Select.Popover>
+                  <ListBox>
+                    {roleOptions.map((role) => (
+                      <ListBox.Item key={role.id} id={role.id} textValue={role.label}>
+                        <div className="flex flex-col">
+                          <span>{role.label}</span>
+                          <span className="text-xs text-muted">{role.description}</span>
+                        </div>
+                        <ListBox.ItemIndicator />
+                      </ListBox.Item>
+                    ))}
+                  </ListBox>
+                </Select.Popover>
+              </Select>
             </div>
           )}
         />
+
+        {isEditingSelf && (
+          <p className="text-xs text-muted text-center">
+            不能修改自己的角色，请让其他管理员操作
+          </p>
+        )}
 
         <div className="space-y-4 p-0">
           <p className="text-sm font-semibold text-foreground">用户设置</p>

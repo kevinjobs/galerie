@@ -47,6 +47,8 @@ describe('AuthTool', () => {
         uid: 'test-uid',
         name: 'testuser',
         email: 'test@example.com',
+        role: 'contributor',
+        isSuperuser: false,
         permissions: ['photo.get'],
       }
       const token = AuthTool.sign(payload)
@@ -82,6 +84,8 @@ describe('AuthTool', () => {
         uid: 'test-uid',
         name: 'testuser',
         email: 'test@example.com',
+        role: 'contributor',
+        isSuperuser: false,
         permissions: ['photo.get', 'photo.create'],
       }
       const token = AuthTool.sign(payload)
@@ -107,6 +111,8 @@ describe('AuthTool', () => {
         uid: 'test-uid',
         name: 'testuser',
         email: 'test@example.com',
+        role: 'contributor',
+        isSuperuser: false,
         permissions: ['photo.get'],
       }
       const token = AuthTool.sign(payload)
@@ -123,53 +129,6 @@ describe('AuthTool', () => {
     })
   })
 
-  describe('hasPermission', () => {
-    it('有权限时返回 true', () => {
-      const payload: UserInfo = {
-        id: 1,
-        uid: 'test',
-        name: 'test',
-        email: 'test@test.com',
-        permissions: ['photo.get', 'photo.create'],
-      }
-      const token = AuthTool.sign(payload)
-      const result = AuthTool.hasPermission(token, 'photo.get')
-
-      expect(result).toBe(true)
-    })
-
-    it('无权限时返回 false', () => {
-      const payload: UserInfo = {
-        id: 1,
-        uid: 'test',
-        name: 'test',
-        email: 'test@test.com',
-        permissions: ['photo.get'],
-      }
-      const token = AuthTool.sign(payload)
-      const result = AuthTool.hasPermission(token, 'photo.create')
-
-      expect(result).toBe(false)
-    })
-
-    it('无 token 时抛出 Error', () => {
-      expect(() => AuthTool.hasPermission(null, 'photo.get')).toThrow('Unauthorized')
-    })
-
-    it('permissions 为 undefined 时返回 false', () => {
-      const payload: UserInfo = {
-        id: 1,
-        uid: 'test',
-        name: 'test',
-        email: 'test@test.com',
-      }
-      const token = AuthTool.sign(payload)
-      const result = AuthTool.hasPermission(token, 'photo.get')
-
-      expect(result).toBe(false)
-    })
-  })
-
   describe('checkPermission', () => {
     it('JWT 路径：有权限时通过', async () => {
       const payload: UserInfo = {
@@ -177,6 +136,8 @@ describe('AuthTool', () => {
         uid: 'test',
         name: 'test',
         email: 'test@test.com',
+        role: 'contributor',
+        isSuperuser: false,
         permissions: ['photo.get'],
       }
       const token = AuthTool.sign(payload)
@@ -191,6 +152,8 @@ describe('AuthTool', () => {
         uid: 'test',
         name: 'test',
         email: 'test@test.com',
+        role: 'viewer',
+        isSuperuser: false,
         permissions: ['photo.get'],
       }
       const token = AuthTool.sign(payload)
@@ -210,6 +173,8 @@ describe('AuthTool', () => {
         uid: 'test',
         name: 'test',
         email: 'test@test.com',
+        role: 'contributor',
+        isSuperuser: false,
         permissions: ['photo.get'],
       }
       const token = AuthTool.sign(payload)
@@ -226,6 +191,8 @@ describe('AuthTool', () => {
         uid: 'test-uid',
         name: 'testuser',
         email: 'test@example.com',
+        role: 'contributor',
+        isSuperuser: false,
         permissions: ['photo.get'],
       }
       const token = AuthTool.sign(payload)

@@ -14,6 +14,7 @@ export interface Photo {
   isPublic: boolean;
   isSelected: boolean;
   type: string;
+  userId?: number;
 }
 
 export type PhotoCreate = Omit<
@@ -56,6 +57,8 @@ export interface UserPlain {
   nickname?: string;
   email: string;
   password?: string;
+  role: string;
+  isSuperuser: boolean;
   permissions?: string[];
   setting?: Setting;
   avatar?: string;

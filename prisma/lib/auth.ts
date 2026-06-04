@@ -1,12 +1,15 @@
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { PermissionError } from "./errors";
+import { resolvePermissions, ROLES } from "./roles";
 
 export interface UserInfo {
   id: number;
   uid: string;
   name: string;
   email: string;
+  role: string;
+  isSuperuser: boolean;
   permissions?: string[];
 }
 
@@ -50,13 +53,6 @@ export abstract class AuthTool {
     }
   }
 
-  static hasPermission(token: string | null | undefined, allow: string): boolean {
-    if (!token) throw new Error("Unauthorized");
-    const decoded = AuthTool.verify(token);
-    const { permissions } = decoded;
-    return permissions?.includes(allow) ?? false;
-  }
-
   static async checkPermission(bearer: string | null | undefined, permission: string): Promise<void> {
     if (!bearer) throw new PermissionError("No Token Provided");
 
@@ -65,8 +61,8 @@ export abstract class AuthTool {
     // Try JWT first
     try {
       const decoded = jwt.verify(token, getJwtSecret()) as UserInfo;
-      const { permissions } = decoded;
-      if (!permissions || !permissions.includes(permission)) {
+      const effectivePermissions = resolvePermissions(decoded.role, decoded.permissions);
+      if (!effectivePermissions.includes(permission)) {
         throw new PermissionError(`Permission denied: 缺少 ${permission} 权限`);
       }
       return;

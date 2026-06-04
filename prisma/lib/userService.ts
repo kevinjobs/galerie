@@ -1,14 +1,23 @@
 import { db } from "./db";
 import crypto from "crypto";
 import { Photo, User, Prisma } from "@prisma/client";
+import { PermissionError } from "./errors";
+import { ROLES, ROLE_PERMISSIONS, isValidRole } from "./roles";
 
 type UserUpdateInput = {
   name?: string;
   email?: string;
   password?: string;
   nickname?: string;
+  role?: string;
   permissions?: string[];
   avatar?: string;
+};
+
+const ROLE_HIERARCHY: Record<string, number> = {
+  [ROLES.ADMIN]: 3,
+  [ROLES.CONTRIBUTOR]: 2,
+  [ROLES.VIEWER]: 1,
 };
 
 export abstract class UserService {
@@ -16,10 +25,12 @@ export abstract class UserService {
     name: string;
     email: string;
     password: string;
+    role?: string;
     permissions?: string[];
     nickname?: string;
   }): Promise<Omit<User, "password">> {
     const hashedPassword = await this.hashPassword(input.password);
+    const role = input.role && isValidRole(input.role) ? input.role : ROLES.CONTRIBUTOR;
 
     const user = await db.user.create({
       data: {
@@ -27,13 +38,8 @@ export abstract class UserService {
         email: input.email,
         password: hashedPassword,
         nickname: input.nickname || "Nameless User",
-        permissions: input.permissions || [
-          "photo.create",
-          "photo.get",
-          "photo.update",
-          "photo.delete",
-          "photo.upload",
-        ],
+        role,
+        permissions: input.permissions || ROLE_PERMISSIONS[role as keyof typeof ROLE_PERMISSIONS],
       },
     });
 
@@ -43,8 +49,33 @@ export abstract class UserService {
 
   static async update(
     uid: string,
-    input: UserUpdateInput
+    input: UserUpdateInput,
+    operatorUid?: string,
   ): Promise<Omit<User, "password">> {
+    // Prevent privilege escalation
+    if (operatorUid) {
+      const operator = await db.user.findUnique({ where: { uid: operatorUid } });
+      if (!operator) throw new PermissionError("操作者不存在");
+
+      // Non-admin cannot modify anyone's role
+      if (input.role !== undefined && operator.role !== ROLES.ADMIN && !operator.isSuperuser) {
+        throw new PermissionError("只有管理员可以修改用户角色");
+      }
+
+      // Cannot modify own role (prevent self-escalation and admin lock-out)
+      if (operator.uid === uid && input.role !== undefined) {
+        const target = await db.user.findUnique({ where: { uid } });
+        if (target && target.role !== input.role) {
+          throw new PermissionError("不能修改自己的角色，请让其他管理员操作");
+        }
+      }
+
+      // Non-admin cannot grant admin role
+      if (input.role === ROLES.ADMIN && !operator.isSuperuser && operator.role !== ROLES.ADMIN) {
+        throw new PermissionError("只有超级管理员可以授予管理员角色");
+      }
+    }
+
     const data: Prisma.UserUpdateInput = { ...input };
 
     if (input.password) {
@@ -62,7 +93,11 @@ export abstract class UserService {
     return result;
   }
 
-  static async deleteByUid(uid: string): Promise<void> {
+  static async deleteByUid(uid: string, operatorUid?: string): Promise<void> {
+    // Cannot delete yourself
+    if (operatorUid && operatorUid === uid) {
+      throw new PermissionError("不能删除自己的账户");
+    }
     await db.user.delete({ where: { uid } });
   }
 

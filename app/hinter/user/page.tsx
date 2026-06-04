@@ -1,6 +1,7 @@
 "use client";
 import { deleteUserByUid, getUserLists } from "@/app/api";
 import { Confirm, Modal } from "@/app/components";
+import { PermissionGuard } from "@/app/components/PermissionGuard";
 import { UserPlain } from "@/app/typings";
 import { ArrowRotateLeft, Pencil, Plus, TrashBin } from "@gravity-ui/icons";
 import {
@@ -13,6 +14,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { UserEdit } from "./edit";
+import { ROLE_LABELS } from "@/prisma/lib/roles";
 
 export default function UserPage() {
   const [isOpen, setIsOpen] = useState(false);
@@ -38,7 +40,7 @@ export default function UserPage() {
   }, [search, users]);
 
   const handleAddUser = () => {
-    setUser({ name: "", email: "", nickname: "" });
+    setUser({ name: "", email: "", nickname: "", role: "contributor", isSuperuser: false });
     setIsOpen(true);
   };
 
@@ -73,10 +75,12 @@ export default function UserPage() {
             <Button variant="secondary" isIconOnly onPress={handleRefresh}>
               <ArrowRotateLeft width={16} height={16} />
             </Button>
-            <Button onPress={handleAddUser}>
-              <Plus width={16} height={16} />
-              <span className="ml-1 hidden sm:inline">添加用户</span>
-            </Button>
+            <PermissionGuard permission="user.create">
+              <Button onPress={handleAddUser}>
+                <Plus width={16} height={16} />
+                <span className="ml-1 hidden sm:inline">添加用户</span>
+              </Button>
+            </PermissionGuard>
           </div>
         </div>
       </section>
@@ -115,56 +119,52 @@ export default function UserPage() {
               </div>
 
               <div className="mt-4 flex items-center justify-between gap-2">
-                <span className="rounded-full bg-muted/10 px-3 py-1 text-xs text-muted">
-                  @{item.name}
-                </span>
-                <div className="flex gap-1.5">
-                  <Button
-                    isIconOnly
-                    size="sm"
-                    variant="secondary"
-                    onPress={() => handleEditUser(item)}
-                  >
-                    <Pencil width={14} height={14} />
-                  </Button>
-                  <Confirm
-                    title="确认删除该用户？"
-                    variant="danger"
-                    content={<p className="text-danger">删除后无法恢复</p>}
-                    onConfirmAction={async () => {
-                      try {
-                        await deleteUserByUid(item.uid);
-                        toast.success("用户已删除");
-                        refetch();
-                      } catch (err) {
-                        toast.danger(`删除失败: ${(err as Error).message}`);
-                      }
-                    }}
-                  >
-                    <Button isIconOnly size="sm" variant="danger">
-                      <TrashBin width={14} height={14} />
-                    </Button>
-                  </Confirm>
-                </div>
-              </div>
-
-              {item.permissions && item.permissions.length > 0 && (
-                <div className="mt-3 flex flex-wrap gap-1.5">
-                  {item.permissions.slice(0, 3).map((perm) => (
-                    <span
-                      key={perm}
-                      className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] text-primary"
-                    >
-                      {perm}
-                    </span>
-                  ))}
-                  {item.permissions.length > 3 && (
-                    <span className="rounded-full bg-muted/10 px-2 py-0.5 text-[11px] text-muted">
-                      +{item.permissions.length - 3}
+                <div className="flex items-center gap-2">
+                  <span className="rounded-full bg-muted/10 px-3 py-1 text-xs text-muted">
+                    @{item.name}
+                  </span>
+                  <span className="rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+                    {ROLE_LABELS[item.role as keyof typeof ROLE_LABELS] || item.role}
+                  </span>
+                  {item.isSuperuser && (
+                    <span className="rounded-full bg-warning/10 px-2 py-1 text-[10px] font-medium text-warning">
+                      Super
                     </span>
                   )}
                 </div>
-              )}
+                <div className="flex gap-1.5">
+                  <PermissionGuard permission="user.update">
+                    <Button
+                      isIconOnly
+                      size="sm"
+                      variant="secondary"
+                      onPress={() => handleEditUser(item)}
+                    >
+                      <Pencil width={14} height={14} />
+                    </Button>
+                  </PermissionGuard>
+                  <PermissionGuard permission="user.delete">
+                    <Confirm
+                      title="确认删除该用户？"
+                      variant="danger"
+                      content={<p className="text-danger">删除后无法恢复</p>}
+                      onConfirmAction={async () => {
+                        try {
+                          await deleteUserByUid(item.uid);
+                          toast.success("用户已删除");
+                          refetch();
+                        } catch (err) {
+                          toast.danger(`删除失败: ${(err as Error).message}`);
+                        }
+                      }}
+                    >
+                      <Button isIconOnly size="sm" variant="danger">
+                        <TrashBin width={14} height={14} />
+                      </Button>
+                    </Confirm>
+                  </PermissionGuard>
+                </div>
+              </div>
             </div>
           ))}
         </div>

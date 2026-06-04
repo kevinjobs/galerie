@@ -7,6 +7,7 @@ import { useMemo, useState } from "react";
 import { Photo } from "@/app/typings";
 import { useRouter } from "next/navigation";
 import PhotoList from "./photo-list";
+import { PermissionGuard } from "@/app/components/PermissionGuard";
 
 const filterTabs = [
   { key: "all", label: "全部" },
@@ -80,10 +81,12 @@ export default function PhotoPage() {
             <Button variant="secondary" onPress={handleRefresh} isIconOnly={isFetching}>
               <ArrowsRotateLeft width={16} height={16} />
             </Button>
-            <Button onPress={() => router.push("/hinter/photo/new")}>
-              <Plus width={16} height={16} />
-              <span className="ml-1">上传照片</span>
-            </Button>
+            <PermissionGuard permission="photo.create">
+              <Button onPress={() => router.push("/hinter/photo/new")}>
+                <Plus width={16} height={16} />
+                <span className="ml-1">上传照片</span>
+              </Button>
+            </PermissionGuard>
           </div>
         </div>
 

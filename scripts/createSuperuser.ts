@@ -2,18 +2,7 @@ import "dotenv/config";
 import { db } from "../prisma/lib/db";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
-
-const ALL_PERMISSIONS = [
-  "photo.create",
-  "photo.get",
-  "photo.update",
-  "photo.delete",
-  "photo.upload",
-  "user.create",
-  "user.get",
-  "user.update",
-  "user.delete",
-];
+import { ROLES, ROLE_PERMISSIONS } from "../prisma/lib/roles";
 
 async function hashPassword(password: string): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -53,7 +42,9 @@ async function createSuperuser() {
         data: {
           password: hashedPassword,
           nickname: "Super Admin",
-          permissions: ALL_PERMISSIONS,
+          role: ROLES.ADMIN,
+          isSuperuser: true,
+          permissions: ROLE_PERMISSIONS.admin,
         },
       });
       console.log("✅ User updated successfully!");
@@ -65,7 +56,9 @@ async function createSuperuser() {
           email,
           password: hashedPassword,
           nickname: "Super Admin",
-          permissions: ALL_PERMISSIONS,
+          role: ROLES.ADMIN,
+          isSuperuser: true,
+          permissions: ROLE_PERMISSIONS.admin,
         },
       });
       console.log("✅ Superuser created successfully!");

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { AuthTool, JWT_ONLY_PERMISSIONS } from "@/prisma/lib/auth";
 import { PermissionError } from "@/prisma/lib/errors";
 import { ApiTokenService } from "@/prisma/lib/apiTokenService";
+import { resolvePermissions } from "@/prisma/lib/roles";
 
 function isSensitivePermission(perm: string): boolean {
   return JWT_ONLY_PERMISSIONS.includes(perm);
@@ -22,11 +23,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "name and permissions are required" }, { status: 400 });
     }
 
+    // Resolve effective permissions from role
+    const effectivePermissions = resolvePermissions(currentUser.role, currentUser.permissions);
+
     for (const perm of permissions) {
       if (isSensitivePermission(perm)) {
         return NextResponse.json({ error: `权限 "${perm}" 仅限 JWT 使用，不能用于 API Token` }, { status: 400 });
       }
-      if (!currentUser.permissions?.includes(perm)) {
+      if (!effectivePermissions.includes(perm)) {
         return NextResponse.json({ error: `权限 "${perm}" 超出了当前用户的权限范围` }, { status: 400 });
       }
     }
@@ -50,7 +54,7 @@ export async function POST(request: NextRequest) {
       name,
       permissions,
       expiresAt,
-      userPermissions: currentUser.permissions || [],
+      userPermissions: effectivePermissions,
       userId: currentUser.id,
     });
 
