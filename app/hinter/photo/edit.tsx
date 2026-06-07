@@ -10,6 +10,7 @@ import { createPhoto, getAddress, updatePhoto } from "../../api";
 import { Exif, Photo } from "../../typings";
 import { getImageSize, parseExif } from "../utils";
 import { UploadCloud, UploadOnDoneParams } from "./upload-cloud";
+import { MapPicker } from "@/app/components/map-picker";
 
 dayjs.extend(customParseFormat);
 
@@ -43,6 +44,7 @@ export default function EditPanel({ photo, onFinish }: EditPanelProps) {
   const [exifs, setExifs] = useState<Exif | null>(null);
   const [uploadResult, setUploadResult] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
+  const [mapPickerOpen, setMapPickerOpen] = useState(false);
 
   const defaultExifs: Exif = {
     focalLength: "",
@@ -456,6 +458,17 @@ export default function EditPanel({ photo, onFinish }: EditPanelProps) {
                 </FormItem>
               )}
             />
+            <div className="my-2 flex items-center justify-between h-9" data-name="map-picker">
+              <Label className="mr-2 w-14 inline-block">位置</Label>
+              <Button
+                variant="ghost"
+                size="sm"
+                onPress={() => setMapPickerOpen(true)}
+                className="text-sm"
+              >
+                📍 从地图选择
+              </Button>
+            </div>
             <Controller
               name="latitude"
               control={control}
@@ -486,6 +499,25 @@ export default function EditPanel({ photo, onFinish }: EditPanelProps) {
           </Button>
         </footer>
       </form>
+      <MapPicker
+        isOpen={mapPickerOpen}
+        onOpenChange={setMapPickerOpen}
+        onConfirm={(lat, lng) => {
+          setValue("latitude", lat);
+          setValue("longitude", lng);
+          if (lat && lng) {
+            getAddress(lng, lat)
+              .then((res) => {
+                setValue("location", res.regeocode.formatted_address);
+              })
+              .catch((error) => {
+                console.error(error);
+              });
+          }
+        }}
+        initialLat={exifs?.latitude ? String(exifs.latitude) : ""}
+        initialLng={exifs?.longitude ? String(exifs.longitude) : ""}
+      />
     </div>
   );
 }

@@ -80,6 +80,61 @@ export async function convertImgFormat(file: File) {
   return convertedFile;
 }
 
+export function gcj02ToWgs84(lng: number, lat: number): [number, number] {
+  const PI = Math.PI;
+  const A = 6378245.0;
+  const EE = 0.00669342162296594323;
+
+  const transformLat = (x: number, y: number): number => {
+    let ret = -100.0 + 2.0 * x + 3.0 * y + 0.2 * y * y + 0.1 * x * y + 0.2 * Math.sqrt(Math.abs(x));
+    ret += (20.0 * Math.sin(6.0 * x * PI) + 20.0 * Math.sin(2.0 * x * PI)) * 2.0 / 3.0;
+    ret += (20.0 * Math.sin(y * PI) + 40.0 * Math.sin(y / 3.0 * PI)) * 2.0 / 3.0;
+    ret += (160.0 * Math.sin(y / 12.0 * PI) + 320 * Math.sin(y * PI / 30.0)) * 2.0 / 3.0;
+    return ret;
+  };
+
+  const transformLng = (x: number, y: number): number => {
+    let ret = 300.0 + x + 2.0 * y + 0.1 * x * x + 0.1 * x * y + 0.1 * Math.sqrt(Math.abs(x));
+    ret += (20.0 * Math.sin(6.0 * x * PI) + 20.0 * Math.sin(2.0 * x * PI)) * 2.0 / 3.0;
+    ret += (20.0 * Math.sin(x * PI) + 40.0 * Math.sin(x / 3.0 * PI)) * 2.0 / 3.0;
+    ret += (150.0 * Math.sin(x / 12.0 * PI) + 300.0 * Math.sin(x / 30.0 * PI)) * 2.0 / 3.0;
+    return ret;
+  };
+
+  const outOfChina = lng < 72.004 || lng > 137.8347 || lat < 0.8293 || lat > 55.8271;
+  if (outOfChina) {
+    return [lng, lat];
+  }
+
+  // 迭代逼近法反向求解 WGS84
+  let dLat = transformLat(lng - 105.0, lat - 35.0);
+  let dLng = transformLng(lng - 105.0, lat - 35.0);
+  let mgLat = lat - dLat;
+  let mgLng = lng - dLng;
+  let z = Math.sqrt(mgLat * mgLat + mgLng * mgLng);
+  let theta = Math.atan2(mgLng, mgLat);
+
+  for (let i = 0; i < 10; i++) {
+    const radLat = mgLat / 180.0 * PI;
+    const magic = Math.sin(radLat);
+    const sqrtMagic = Math.sqrt(1 - EE * magic * magic);
+    const newDLat = (dLat * 180.0) / (A * (1 - EE) / (magic * sqrtMagic) * PI);
+    const newDLng = (dLng * 180.0) / (A / sqrtMagic * Math.cos(radLat) * PI);
+    const newMgLat = lat - newDLat;
+    const newMgLng = lng - newDLng;
+
+    if (Math.abs(newMgLat - mgLat) < 1e-10 && Math.abs(newMgLng - mgLng) < 1e-10) {
+      break;
+    }
+    mgLat = newMgLat;
+    mgLng = newMgLng;
+    dLat = transformLat(mgLng - 105.0, mgLat - 35.0);
+    dLng = transformLng(mgLng - 105.0, mgLat - 35.0);
+  }
+
+  return [mgLng, mgLat];
+}
+
 export function wgs84ToGcj02(lng: number, lat: number): [number, number] {
   const PI = Math.PI;
   const A = 6378245.0;

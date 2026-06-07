@@ -69,13 +69,20 @@ export default function GalleryPage() {
 
   const allPhotos = useMemo(() => {
     if (!data) return [];
+    const seen = new Set<string>();
     return data.pages.flatMap((p) =>
-      p.lists.map((item: Photo) => ({
-        uid: item.uid,
-        src: item.src,
-        title: item.title,
-        aspectRatio: getAspectRatio(item),
-      })),
+      p.lists
+        .filter((item: Photo) => {
+          if (seen.has(item.uid)) return false;
+          seen.add(item.uid);
+          return true;
+        })
+        .map((item: Photo) => ({
+          uid: item.uid,
+          src: item.src,
+          title: item.title,
+          aspectRatio: getAspectRatio(item),
+        })),
     );
   }, [data]);
 

@@ -25,6 +25,28 @@ export default function RootLayout({
           name="viewport"
           content="initial-scale=1.0, user-scalable=no, width=device-width"
         />
+        {/* PWA: iOS 兼容 */}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Galerie" />
+        <link rel="apple-touch-icon" href="/icon-192x192.png" />
+        {/* PWA: theme-color */}
+        <meta name="theme-color" content="#000000" />
+        {/* PWA: Service Worker 注册 */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                  navigator.serviceWorker.register('/sw.js').then(
+                    reg => console.log('SW registered:', reg.scope),
+                    err => console.log('SW registration failed:', err)
+                  );
+                });
+              }
+            `,
+          }}
+        />
       </head>
       <body className="">
         <Toast.Provider placement="top" />
