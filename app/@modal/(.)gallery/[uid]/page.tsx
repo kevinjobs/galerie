@@ -19,6 +19,15 @@ export default function GalleryModal({
   const { uid: routeUid } = use(params);
   const router = useRouter();
 
+  // ── 入场/出场动画 ──
+  const [mounted, setMounted] = useState(false);
+  const [closing, setClosing] = useState(false);
+  const handleClose = useCallback(() => {
+    setClosing(true);
+    setTimeout(() => router.back(), 250);
+  }, [router]);
+  useEffect(() => { requestAnimationFrame(() => setMounted(true)); }, []);
+
   // ── 本地轮播状态（不触发路由变化） ──
   const [activeUid, setActiveUid] = useState(routeUid);
 
@@ -67,6 +76,12 @@ export default function GalleryModal({
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [offsetX, setOffsetX] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+
+  // 图片加载状态
+  const [loadedImgs, setLoadedImgs] = useState<Record<string, boolean>>({});
+  const markLoaded = useCallback((uid: string) => {
+    setLoadedImgs((prev) => (prev[uid] ? prev : { ...prev, [uid]: true }));
+  }, []);
 
   // ── 缩放状态 ──
   const MIN_SCALE = 1;
@@ -149,22 +164,13 @@ export default function GalleryModal({
 
   // 锁定 body 滚动 + 拦截 touchmove，防止移动端触摸穿透到底层页面
   useEffect(() => {
-    // 1. 锁定 body
-    const prev = {
-      overflow: document.body.style.overflow,
-      position: document.body.style.position,
-      top: document.body.style.top,
-      width: document.body.style.width,
-    };
-    const scrollY = window.scrollY;
-    document.body.style.overflow = "hidden";
-    document.body.style.position = "fixed";
-    document.body.style.top = `-${scrollY}px`;
-    document.body.style.width = "100%";
+    const prevOverflow = document.body.style.overflow;
 
-    // 2. 非 passive touchmove 拦截：移动端的 touchmove 默认 passive，
-    //    必须用 { passive: false } 注册才能让 preventDefault() 生效
-    //    但如果触摸目标在 infoPanelRef 容器内，则允许滚动
+    document.body.style.overflow = "hidden";
+
+    // 非 passive touchmove 拦截：移动端的 touchmove 默认 passive，
+    // 必须用 { passive: false } 注册才能让 preventDefault() 生效
+    // 但如果触摸目标在 infoPanelRef 容器内，则允许滚动
     const block = (e: TouchEvent) => {
       const target = e.target as HTMLElement;
       if (infoPanelRef.current?.contains(target)) {
@@ -176,23 +182,20 @@ export default function GalleryModal({
 
     return () => {
       document.removeEventListener("touchmove", block);
-      document.body.style.overflow = prev.overflow;
-      document.body.style.position = prev.position;
-      document.body.style.top = prev.top;
-      document.body.style.width = prev.width;
-      window.scrollTo(0, scrollY);
+      document.body.style.overflow = prevOverflow;
     };
   }, []);
 
   // 键盘导航
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && !closing) handleClose();
       if (e.key === "ArrowLeft" && hasPrev && !isAnimating) animateTo("prev");
       if (e.key === "ArrowRight" && hasNext && !isAnimating) animateTo("next");
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [hasPrev, hasNext, isAnimating, animateTo]);
+  }, [hasPrev, hasNext, isAnimating, animateTo, closing, handleClose]);
 
   // 滑动手势（缩放时禁用）
   // 速度感应：快速滑动只需较短距离，慢速滑动需要较长距离
@@ -403,6 +406,13 @@ export default function GalleryModal({
   const renderPhotoViewer = (compressed: boolean = true) => {
     // 移动端图片稍微上移，避开底部状态栏
     const imgPosition = compressed ? 'center 42%' : 'center';
+
+    const Spinner = () => (
+      <div className="absolute inset-0 flex items-center justify-center bg-background z-10">
+        <div className="size-8 border-2 border-foreground/20 border-t-foreground rounded-full animate-spin" />
+      </div>
+    );
+
     return (
     <div className="relative h-full overflow-hidden">
       <div
@@ -414,39 +424,51 @@ export default function GalleryModal({
         }}
       >
         {/* 上一张 */}
-        <div className="h-full flex-shrink-0" style={{ width: containerWidth }}>
+        <div className="h-full flex-shrink-0 relative" style={{ width: containerWidth }}>
           {prevPhoto?.src && (
-            <img
-              className="h-full w-full object-contain bg-background"
-              src={genSrc(prevPhoto.src, compressed)}
-              style={{ objectPosition: imgPosition }}
-              alt=""
-              draggable={false}
-            />
+            <>
+              {!loadedImgs[prevUid ?? ""] && <Spinner />}
+              <img
+                className={`h-full w-full object-contain bg-background transition-opacity duration-300 ${loadedImgs[prevUid ?? ""] ? "opacity-100" : "opacity-0"}`}
+                src={genSrc(prevPhoto.src, compressed)}
+                style={{ objectPosition: imgPosition }}
+                alt=""
+                onLoad={() => prevUid && markLoaded(prevUid)}
+                draggable={false}
+              />
+            </>
           )}
         </div>
         {/* 当前（可缩放） */}
-        <div className="h-full flex-shrink-0 overflow-hidden" style={{ width: containerWidth }}>
+        <div className="h-full flex-shrink-0 overflow-hidden relative" style={{ width: containerWidth }}>
           {activePhoto?.src && (
-            <img
-              className="h-full w-full object-contain bg-background"
-              src={genSrc(activePhoto.src, compressed)}
-              style={{ objectPosition: imgPosition, ...zoomTransform }}
-              alt={activePhoto.title || ""}
-              draggable={false}
-            />
+            <>
+              {!loadedImgs[activeUid] && <Spinner />}
+              <img
+                className={`h-full w-full object-contain bg-background transition-opacity duration-300 ${loadedImgs[activeUid] ? "opacity-100" : "opacity-0"}`}
+                src={genSrc(activePhoto.src, compressed)}
+                style={{ objectPosition: imgPosition, ...zoomTransform }}
+                alt={activePhoto.title || ""}
+                onLoad={() => markLoaded(activeUid)}
+                draggable={false}
+              />
+            </>
           )}
         </div>
         {/* 下一张 */}
-        <div className="h-full flex-shrink-0" style={{ width: containerWidth }}>
+        <div className="h-full flex-shrink-0 relative" style={{ width: containerWidth }}>
           {nextPhoto?.src && (
-            <img
-              className="h-full w-full object-contain bg-background"
-              src={genSrc(nextPhoto.src, compressed)}
-              style={{ objectPosition: imgPosition }}
-              alt=""
-              draggable={false}
-            />
+            <>
+              {!loadedImgs[nextUid ?? ""] && <Spinner />}
+              <img
+                className={`h-full w-full object-contain bg-background transition-opacity duration-300 ${loadedImgs[nextUid ?? ""] ? "opacity-100" : "opacity-0"}`}
+                src={genSrc(nextPhoto.src, compressed)}
+                style={{ objectPosition: imgPosition }}
+                alt=""
+                onLoad={() => nextUid && markLoaded(nextUid)}
+                draggable={false}
+              />
+            </>
           )}
         </div>
       </div>
@@ -455,7 +477,12 @@ export default function GalleryModal({
   };
 
   return (
-    <div className="fixed top-0 left-0 w-screen h-screen bg-background overflow-hidden z-50" style={{ overscrollBehavior: "none" }}>
+    <div
+      className={`fixed top-0 left-0 w-screen h-screen bg-background overflow-hidden z-50 transition-all duration-300 ease-out ${
+        closing ? "opacity-0 scale-[0.92]" : mounted ? "opacity-100 scale-100" : "opacity-0 scale-[0.92]"
+      }`}
+      style={{ overscrollBehavior: "none" }}
+    >
       <main className="h-full w-full flex">
         <section
           className="photo-preview-left relative"
@@ -472,7 +499,7 @@ export default function GalleryModal({
                 <CircleInfo />
               </Button>
             )}
-            <Button isIconOnly onClick={() => router.back()} variant="ghost">
+            <Button isIconOnly onClick={handleClose} variant="ghost">
               <Xmark />
             </Button>
           </header>

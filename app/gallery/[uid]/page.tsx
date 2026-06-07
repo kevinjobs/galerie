@@ -47,6 +47,19 @@ export default function GalleryPreview({
   const [offsetX, setOffsetX] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
 
+  // 图片加载状态
+  const [loadedImgs, setLoadedImgs] = useState<Record<string, boolean>>({});
+
+  const markLoaded = useCallback((uid: string) => {
+    setLoadedImgs((prev) => (prev[uid] ? prev : { ...prev, [uid]: true }));
+  }, []);
+
+  const Spinner = () => (
+    <div className="absolute inset-0 flex items-center justify-center">
+      <div className="size-8 border-2 border-foreground/20 border-t-foreground rounded-full animate-spin" />
+    </div>
+  );
+
   const animateTo = useCallback(
     (direction: "prev" | "next") => {
       const targetUid = direction === "next" ? nextUid : prevUid;
@@ -94,7 +107,7 @@ export default function GalleryPreview({
   }
 
   return (
-    <div className="w-screen h-screen py-2 relative">
+    <div className="w-screen h-screen py-2 relative animate-[fade-in_0.3s_ease-out]">
       <div className="relative h-full overflow-hidden">
         <div
           className="flex h-full"
@@ -105,37 +118,49 @@ export default function GalleryPreview({
           }}
         >
           {/* 上一张 */}
-          <div className="w-screen h-full flex-shrink-0">
+          <div className="w-screen h-full flex-shrink-0 relative">
             {prevPhoto?.src && (
-              <img
-                className="h-full w-full object-contain"
-                src={genSrc(prevPhoto.src)}
-                alt=""
-                draggable={false}
-              />
+              <>
+                {!loadedImgs[prevUid ?? ""] && <Spinner />}
+                <img
+                  className={`h-full w-full object-contain transition-opacity duration-300 ${loadedImgs[prevUid ?? ""] ? "opacity-100" : "opacity-0"}`}
+                  src={genSrc(prevPhoto.src)}
+                  alt=""
+                  onLoad={() => prevUid && markLoaded(prevUid)}
+                  draggable={false}
+                />
+              </>
             )}
           </div>
           {/* 当前 */}
-          <div className="w-screen h-full flex-shrink-0">
+          <div className="w-screen h-full flex-shrink-0 relative">
             {activePhoto && (
-              <img
-                src={genSrc(activePhoto.src)}
-                alt={activePhoto.title || "Gallery Preview"}
-                loading="eager"
-                className="object-contain w-full h-full"
-                draggable={false}
-              />
+              <>
+                {!loadedImgs[activeUid] && <Spinner />}
+                <img
+                  src={genSrc(activePhoto.src)}
+                  alt={activePhoto.title || "Gallery Preview"}
+                  loading="eager"
+                  onLoad={() => markLoaded(activeUid)}
+                  className={`object-contain w-full h-full transition-opacity duration-300 ${loadedImgs[activeUid] ? "opacity-100" : "opacity-0"}`}
+                  draggable={false}
+                />
+              </>
             )}
           </div>
           {/* 下一张 */}
-          <div className="w-screen h-full flex-shrink-0">
+          <div className="w-screen h-full flex-shrink-0 relative">
             {nextPhoto?.src && (
-              <img
-                className="h-full w-full object-contain"
-                src={genSrc(nextPhoto.src)}
-                alt=""
-                draggable={false}
-              />
+              <>
+                {!loadedImgs[nextUid ?? ""] && <Spinner />}
+                <img
+                  className={`h-full w-full object-contain transition-opacity duration-300 ${loadedImgs[nextUid ?? ""] ? "opacity-100" : "opacity-0"}`}
+                  src={genSrc(nextPhoto.src)}
+                  alt=""
+                  onLoad={() => nextUid && markLoaded(nextUid)}
+                  draggable={false}
+                />
+              </>
             )}
           </div>
         </div>

@@ -15,3 +15,21 @@
 body {
   font-family: 'Outfit', 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', system-ui, sans-serif !important;
 }
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+html.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+html.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}

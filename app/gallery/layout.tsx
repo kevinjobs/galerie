@@ -13,6 +13,11 @@ export default function GalleryLayout({
     setHeaderHeight(window.innerWidth < 768 ? MOBILE_HEADER_HEIGHT : BROWSER_HEADER_HEIGHT);
   }, []);
 
+  useEffect(() => {
+    document.documentElement.classList.add("hide-scrollbar");
+    return () => document.documentElement.classList.remove("hide-scrollbar");
+  }, []);
+
   return (
     <div style={{ paddingTop: headerHeight }}>
       {children}
