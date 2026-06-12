@@ -1,0 +1,48 @@
+"use client";
+import { useEffect, useState } from "react";
+
+export interface ToolbarProps {
+  items: {
+    name: string;
+    label: string;
+    onPress: (name: string) => void;
+    default?: boolean;
+  }[];
+}
+
+export default function Toolbar({ items }: ToolbarProps) {
+  const getDefaultIdx = () => items.findIndex((item) => item.default);
+  const [offset, setOffset] = useState(getDefaultIdx);
+
+  useEffect(() => {
+    setOffset(getDefaultIdx());
+  }, [items]);
+
+  const handleClick = (i: number) => {
+    setOffset(i);
+  };
+
+  return (
+    <div className="inline-block rounded-full relative p-1 bg-transparent backdrop-blur-lg opacity-70">
+      {items.map((item, i) => {
+        return (
+          <span
+            className="inline-block w-14 text-center py-2 cursor-pointer"
+            data-name={item.name}
+            key={item.name}
+            onClick={() => {
+              handleClick(i);
+              item.onPress(item.name);
+            }}
+          >
+            {item.label}
+          </span>
+        );
+      })}
+      <span
+        className="absolute toolbar-thumb block w-14 h-10 top-1 text-center py-2 bg-foreground rounded-full transition-all transition-duration-300 opacity-15"
+        style={{ translate: `${offset * 56}px` }}
+      ></span>
+    </div>
+  );
+}

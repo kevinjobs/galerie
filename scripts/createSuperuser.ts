@@ -1,0 +1,86 @@
+import "dotenv/config";
+import { db } from "../prisma/lib/db";
+import crypto from "crypto";
+import jwt from "jsonwebtoken";
+import { ROLES, ROLE_PERMISSIONS } from "../prisma/lib/roles";
+
+async function hashPassword(password: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const salt = crypto.randomBytes(16).toString("hex");
+    crypto.scrypt(password, salt, 64, (err, derivedKey) => {
+      if (err) reject(err);
+      resolve(`${salt}:${derivedKey.toString("hex")}`);
+    });
+  });
+}
+
+async function createSuperuser() {
+  const email = process.env.SUPERUSER_EMAIL;
+  const password = process.env.SUPERUSER_PASSWORD;
+
+  if (!email || !password) {
+    console.log("Please set SUPERUSER_EMAIL and SUPERUSER_PASSWORD in .env");
+    console.log("Example:");
+    console.log('SUPERUSER_EMAIL=admin@example.com');
+    console.log('SUPERUSER_PASSWORD=mypassword123');
+    process.exit(1);
+  }
+
+  try {
+    const hashedPassword = await hashPassword(password);
+
+    // 检查是否已存在用户
+    const existingUser = await db.user.findUnique({
+      where: { email },
+    });
+
+    let user;
+    if (existingUser) {
+      // 更新现有用户
+      user = await db.user.update({
+        where: { email },
+        data: {
+          password: hashedPassword,
+          nickname: "Super Admin",
+          role: ROLES.ADMIN,
+          isSuperuser: true,
+          permissions: ROLE_PERMISSIONS.admin,
+        },
+      });
+      console.log("✅ User updated successfully!");
+    } else {
+      // 创建新用户
+      user = await db.user.create({
+        data: {
+          name: "admin",
+          email,
+          password: hashedPassword,
+          nickname: "Super Admin",
+          role: ROLES.ADMIN,
+          isSuperuser: true,
+          permissions: ROLE_PERMISSIONS.admin,
+        },
+      });
+      console.log("✅ Superuser created successfully!");
+    }
+
+    const { password: _, ...userWithoutPassword } = user;
+    const token = jwt.sign(userWithoutPassword, process.env.JWT_SECRET || "default-secret-key", { expiresIn: "7d" });
+
+    console.log("\nUser info:");
+    console.log(JSON.stringify(userWithoutPassword, null, 2));
+    console.log("\nJWT Token:");
+    console.log(token);
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("❌ Error:", error.message);
+    } else {
+      console.error("❌ Unknown error");
+    }
+    process.exit(1);
+  } finally {
+    await db.$disconnect();
+  }
+}
+
+createSuperuser();

@@ -1,0 +1,35 @@
+@import url("https://fonts.googleapis.com/css2?family=Allura&family=Outfit:wght@300..700&display=swap");
+@import "tailwindcss";
+@import "@heroui/styles";
+
+:root {
+  --header-height: 64px;
+}
+
+@media (max-width: 767px) {
+  :root {
+    --header-height: 56px;
+  }
+}
+
+body {
+  font-family: 'Outfit', 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', system-ui, sans-serif !important;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+html.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+html.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}

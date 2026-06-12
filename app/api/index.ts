@@ -1,0 +1,418 @@
+import { PhotoCreate, PhotoUpdate, UserCreate, UserUpdate } from "../typings";
+
+export const BASE_URL = "/api";
+
+export const genSrc = (str?: string, compressed?: boolean) => {
+  if (!str) return "";
+
+  const parts = str.split(":");
+
+  if (parts.length < 2) return `${BASE_URL}${str}`;
+
+  if (parts[0] === "tencent") {
+    const url = `https://${parts[1]}`;
+    const attch = compressed ? '!compressed' : '!origin';
+
+    return url + attch;
+  }
+
+  if (parts[0] === "local") {
+    return `${BASE_URL}${parts[1]}`;
+  }
+
+  return `${BASE_URL}${str}`;
+};
+
+const _fetch = async (url: string, options: RequestInit = {}) => {
+  const resp = await fetch(url, {
+    ...options,
+    headers: {
+      ...options.headers,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("token")?.replaceAll('"', "")}`,
+    },
+  });
+  return resp;
+};
+
+//
+// 以下是图片相关的 API
+//
+
+export const createPhoto = async (photo: PhotoCreate) => {
+  const response = await _fetch(`${BASE_URL}/photo`, {
+    method: "POST",
+    body: JSON.stringify(photo),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(`添加图片失败 [ ${error.error} ]`);
+  }
+
+  return await response.json();
+};
+
+export const getPhotoLists = async (params?: {
+  isSelected?: boolean;
+  offset?: number;
+  limit?: number;
+  orderBy?: string;
+  order?: string;
+  isPublic?: boolean;
+}) => {
+  const p: Record<string, string> = {
+    offset: params?.offset?.toString() || "0",
+    limit: params?.limit?.toString() || "100",
+    orderBy: params?.orderBy || "shootTime",
+    order: params?.order || "desc",
+  };
+
+  if (params?.isSelected !== undefined) {
+    p["isSelected"] = params.isSelected.toString();
+  }
+
+  if (params?.isPublic !== undefined) {
+    p["isPublic"] = params.isPublic.toString();
+  }
+
+  const query = new URLSearchParams(p);
+
+  const response = await _fetch(`${BASE_URL}/photo/lists?${query}`);
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(`获取图片列表失败: [ ${error.error} ]`);
+  }
+
+  return await response.json();
+};
+
+export const getPhotoByUid = async (uid: string) => {
+  const response = await _fetch(`${BASE_URL}/photo?uid=${uid}`);
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(`获取图片失败 [ ${error.error} ]`);
+  }
+
+  return await response.json();
+};
+
+export const updatePhoto = async (uid: string, photo: PhotoUpdate) => {
+  const response = await _fetch(`${BASE_URL}/photo?uid=${uid}`, {
+    method: "PUT",
+    body: JSON.stringify(photo),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(`更新图片失败 [ ${error.error} ]`);
+  }
+
+  return await response.json();
+};
+
+export const deletePhotoByUid = async (uid: string) => {
+  const response = await _fetch(`${BASE_URL}/photo?uid=${uid}`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(`删除图片失败 [ ${error.error} ]`);
+  }
+
+  return await response.json();
+};
+
+/**
+ * 上传图片文件
+ * @param file 图片文件
+ * @returns 传回的信息
+ */
+export const uploadPhoto = async (file: File): Promise<{ src: string }> => {
+  const form = new FormData();
+  form.append("image", file);
+
+  const response = await fetch(`${BASE_URL}/photo/upload`, {
+    method: "POST",
+    body: form,
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")?.replaceAll('"', "")}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(`上传图片失败 [ ${error.error} ]`);
+  }
+
+  return await response.json();
+};
+
+//
+// 以下是地址相关的 API
+//
+
+interface AddressResponse {
+  status: string;
+  regeocode: {
+    addressComponent: {
+      city: string;
+      province: string;
+      adcode: string;
+      district: string;
+      towncode: string;
+      streetNumber: {
+        number: string[];
+        direction: string[];
+        distance: string[];
+        street: string[];
+      };
+      country: string;
+      township: string;
+      businessAreas: string[][];
+      building: {
+        name: string[];
+        type: string[];
+      };
+      neighborhood: {
+        name: string[];
+        type: string[];
+      };
+      citycode: string;
+    };
+    formatted_address: string;
+  };
+  info: string;
+  infocode: string;
+}
+
+export const getAddress = async (
+  longitude: string,
+  latitude: string,
+): Promise<AddressResponse> => {
+  const url = `${BASE_URL}/geocode?longitude=${encodeURIComponent(longitude)}&latitude=${encodeURIComponent(latitude)}`;
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `地址解析失败: ${response.statusText}`);
+  }
+
+  return response.json();
+};
+
+// 获取腾讯云上传信息（临时密钥和 COS 文件路径）
+export const getCosUploadInfo = async (filename: string) => {
+  const token = localStorage.getItem("token")?.replaceAll('"', "");
+  const response = await fetch(`${BASE_URL}/cos/upload?filename=${encodeURIComponent(filename)}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(`获取上传信息失败: [ ${error.error} ]`);
+  }
+
+  return await response.json();
+};
+
+//
+// 以下是用户相关的 API
+//
+
+export const getUserLists = async () => {
+  const response = await _fetch(`${BASE_URL}/user/lists`);
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(`无法获取用户列表: [ ${error.error} ]`);
+  }
+
+  return await response.json();
+};
+
+export const updateUser = async (uid: string, user: UserUpdate) => {
+  const response = await _fetch(`${BASE_URL}/user?uid=${uid}`, {
+    method: "PUT",
+    body: JSON.stringify(user),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(`更新用户失败 [ ${error.error} ]`);
+  }
+
+  return await response.json();
+};
+
+export const createUser = async (user: UserCreate) => {
+  const response = await _fetch(`${BASE_URL}/user`, {
+    method: "POST",
+    body: JSON.stringify(user),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(`创建用户失败 [ ${error.error} ]`);
+  }
+
+  const data = await response.json();
+  return data;
+};
+
+export const deleteUserByUid = async (uid: string) => {
+  const response = await _fetch(`${BASE_URL}/user?uid=${uid}`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(`删除用户失败 [ ${error.error} ]`);
+  }
+
+  return await response.json();
+};
+
+export const registerUser = async (
+  email: string,
+  password: string,
+  verifyCode: string,
+) => {
+  const response = await _fetch(`${BASE_URL}/user/register`, {
+    method: "POST",
+    body: JSON.stringify({ email, password, verifyCode }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(`注册用户失败 [ ${error.error} ]`);
+  }
+
+  return await response.json();
+};
+
+//
+// 以下是认证相关的 API
+//
+
+export const sendVerifyCode = async (email: string) => {
+  const response = await _fetch(
+    `${BASE_URL}/auth/send-verify-code?email=${email}`,
+    {
+      method: "GET",
+    },
+  );
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(`获取验证码失败 [ ${error.error} ]`);
+  }
+
+  return await response.json();
+};
+
+export const signToken = async (email: string, password: string) => {
+  const response = await _fetch(`${BASE_URL}/auth/sign-token`, {
+    method: "POST",
+    body: JSON.stringify({ email, password }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(`获取 token 失败 [ ${error.error} ]`);
+  }
+
+  return await response.json();
+};
+
+export const changePassword = async (oldPassword: string, newPassword: string) => {
+  const response = await _fetch(`${BASE_URL}/user/password`, {
+    method: "PUT",
+    body: JSON.stringify({ oldPassword, newPassword }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || "修改密码失败");
+  }
+
+  return await response.json();
+};
+
+export const verifyToken = async (token: string) => {
+  const response = await _fetch(`${BASE_URL}/auth/verify-token`, {
+    method: "POST",
+    body: JSON.stringify({ token }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(`验证 token 失败 [ ${error.error} ]`);
+  }
+
+  return await response.json();
+};
+
+//
+// API Token 相关
+//
+
+export interface ApiTokenCreateInput {
+  name: string;
+  permissions: string[];
+  expiresIn?: "7d" | "30d" | "1y" | "never";
+}
+
+export interface ApiTokenResponse {
+  uid: string;
+  name: string;
+  permissions: string[];
+  expiresAt: string | null;
+  createdAt: string;
+  lastUsedAt: string | null;
+}
+
+export interface ApiTokenCreateResponse extends ApiTokenResponse {
+  token: string;
+}
+
+export const createApiToken = async (input: ApiTokenCreateInput): Promise<ApiTokenCreateResponse> => {
+  const response = await _fetch(`${BASE_URL}/user/token`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(`创建 API Token 失败 [ ${error.error} ]`);
+  }
+
+  return await response.json();
+};
+
+export const getApiTokens = async (): Promise<ApiTokenResponse[]> => {
+  const response = await _fetch(`${BASE_URL}/user/token`);
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(`获取 API Token 列表失败 [ ${error.error} ]`);
+  }
+
+  return await response.json();
+};
+
+export const deleteApiToken = async (uid: string): Promise<void> => {
+  const response = await _fetch(`${BASE_URL}/user/token?uid=${encodeURIComponent(uid)}`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(`撤销 API Token 失败 [ ${error.error} ]`);
+  }
+};
